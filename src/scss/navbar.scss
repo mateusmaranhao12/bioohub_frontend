@@ -1,0 +1,20 @@
+@import 'variaveis';
+@import 'animations';
+
+.navbar-bioohub {
+    background-color: $azul_roxo;
+    padding: 10px;
+
+    h2 {
+        color: $white;
+        margin: 0;
+        font-size: 1.5rem;
+        transition: transform 0.2s ease-in-out, color 0.2s ease-in-out;
+
+        &:hover {
+            color: $white;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+    }
+}

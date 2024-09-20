@@ -1,0 +1,26 @@
+//animacoes
+
+nav.animate__animated {
+    animation: animate 2s forwards;
+}
+
+.link-in-bio.animate__animated, .p.animate__animated {
+    animation-duration: 1.2s;
+    animation-timing-function: ease-in-out;
+}
+
+.logo.animate__animated {
+    animation-delay: 0.5s; /* Atraso de 0.5 segundos para o logo */
+}
+
+.h3-bioohub.animate__animated {
+    animation-delay: 1s; /* Atraso de 1 segundo para o h3 */
+}
+
+.img1.animate__animated, .img2.animate__animated, .img3.animate__animated, .img4.animate__animated, .img5.animate__animated {
+    animation-delay: 1.5s; //Atraso de 1.5 segundos
+}
+
+.btn-bioohub.animate__animated, .botao-login.animate__animated {
+    animation-delay: 2s; //Atraso de 2 segundos
+}
