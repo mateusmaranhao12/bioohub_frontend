@@ -1,6 +1,7 @@
 <template>
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="row w-75">
+
             <!-- Etapa 1 -->
             <div v-if="etapa === 1"
                 :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"
@@ -19,7 +20,7 @@
                     <button class="animate__animated animate__zoomIn btn btn-secondary btn-form" @click="proximaEtapa()">Grab my link</button>
                 </div>
                 <div class="d-flex justify-content-start">
-                    <small class="animate__animated animate__zoomIn botao-login-tela-cadastro">Or log-in</small>
+                    <router-link to="/login" class="animate__animated animate__zoomIn botao-login-tela-cadastro">Or log-in</router-link>
                 </div>
             </div>
 
