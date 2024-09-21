@@ -1,5 +1,6 @@
 //animacoes
 
+//index
 nav.animate__animated {
     animation: animate 2s forwards;
 }
@@ -23,4 +24,23 @@ nav.animate__animated {
 
 .btn-bioohub.animate__animated, .botao-login.animate__animated {
     animation-delay: 2s; //Atraso de 2 segundos
+}
+
+
+//cadastro
+
+.h2-cadastro.animate__animated {
+    animation-delay: 0.5s;
+}
+
+.h5-cadastro.animate__animated {
+    animation-delay: 0.7s;
+}
+
+.input-name.animate__animated {
+    animation-delay: 0.8s;
+}
+
+.botao-login-tela-cadastro.animate__animated {
+    animation-delay: 1.2s;
 }

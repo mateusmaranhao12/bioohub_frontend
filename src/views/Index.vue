@@ -1,4 +1,5 @@
 <template>
+    <navbar />
     <div class="container">
         <div class="row">
             <div class="col-md-4 mt-3">
@@ -17,9 +18,9 @@
                     Your personal page to show everything you are and create.
                 </p>
                 <div class="d-flex justify-content-center">
-                    <button class="animate__animated animate__fadeIn btn btn-bioohub btn-lg">
+                    <router-link to="/cadastro" class="animate__animated animate__fadeIn btn btn-bioohub btn-lg">
                         Create your Bioohub
-                    </button>
+                    </router-link>
                 </div>
                 <div class="d-flex justify-content-center">
                     <small class="animate__animated animate__fadeIn botao-login">Log-in</small>
@@ -36,9 +37,12 @@
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
+import Navbar from '../components/Navbar.vue'
 
 @Options({
-    components: {}
+    components: {
+        Navbar
+    }
 })
 
 export default class Index extends Vue {

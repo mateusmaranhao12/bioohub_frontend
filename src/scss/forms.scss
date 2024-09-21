@@ -1,0 +1,55 @@
+@import 'animations';
+@import 'variaveis';
+
+.cadastro {
+
+    h2 {
+        font-weight: $bold;
+        margin-top: 20px;
+    }
+
+    h5 {
+        color: rgb(168, 168, 168);
+        margin-bottom: 80px;
+    }
+
+    h6 {
+        color: $black;
+        text-transform: $uppercase;
+        font-weight: $bold;
+    }
+
+    .botao-login-tela-cadastro {
+        margin-top: 10px;
+        color: $gray;
+        cursor: pointer;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    input {
+        background-color: rgb(241, 241, 241);
+        border: none;
+
+        &::placeholder {
+            color: rgb(185, 185, 185);
+        }
+    }
+
+    .input-group-text {
+        background-color: rgb(241, 241, 241);
+        border: none;
+        color: $gray;
+    }
+    
+    .arrow-left {
+        border: none;
+        background-color: $white;
+
+        &:hover {
+            transform: scale(1.2);
+        }
+    }
+}
