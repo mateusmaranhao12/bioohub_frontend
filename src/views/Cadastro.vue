@@ -17,10 +17,12 @@
                 </form>
 
                 <div class="d-grid gap-2">
-                    <button class="animate__animated animate__zoomIn btn btn-secondary btn-form" @click="proximaEtapa()">Grab my link</button>
+                    <button class="animate__animated animate__zoomIn btn btn-secondary btn-form"
+                        @click="proximaEtapa()">Grab my link</button>
                 </div>
                 <div class="d-flex justify-content-start">
-                    <router-link to="/login" class="animate__animated animate__zoomIn botao-login-tela-cadastro">Or log-in</router-link>
+                    <router-link to="/login" class="animate__animated animate__zoomIn botao-login-tela-cadastro">Or
+                        log-in</router-link>
                 </div>
             </div>
 
@@ -52,7 +54,7 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-3">
-                        <button class="btn btn-secondary">Create account</button>
+                        <button @click.prevent="proximaEtapa()" class="btn btn-secondary">Create account</button>
                     </div>
 
                     <div class="mt-3 mb-3">
@@ -60,12 +62,28 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-2">
-                        <button class="btn btn-primary"><i class="fa-brands fa-google"></i> Sign up with Google</button>
+                        <button @click.prevent="proximaEtapa()" class="btn btn-primary">
+                            <i class="fa-brands fa-google"></i> Sign up with Google
+                        </button>
                     </div>
                 </form>
             </div>
 
-            <div class="animate__animated animate__zoomIn col-md-6">
+            <!-- Etapa 3 (Planos) -->
+            <div v-if="etapa === 3"
+                :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"
+                class="cadastro col-md-12">
+                <div class="d-flex justify-content-start">
+                    <button class="arrow-left" @click="etapaAnterior()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                </div>
+
+                <Planos />
+
+            </div>
+
+            <div v-if="etapa !== 3" class="animate__animated animate__zoomIn col-md-6">
                 <img class="img-fluid" src="../assets/tweets.png">
             </div>
         </div>
@@ -73,10 +91,13 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
+import { Options, Vue } from 'vue-class-component'
+import Planos from '../components/Planos.vue'
 
 @Options({
-    components: {}
+    components: {
+        Planos
+    }
 })
 
 export default class Cadastro extends Vue {
@@ -99,7 +120,7 @@ export default class Cadastro extends Vue {
     public proximaEtapa() { //proxima etapa
         this.animacaoSaida = true
         setTimeout(() => {
-            this.etapa = 2
+            this.etapa++
             this.animacaoSaida = false
             this.animacaoEntrada = true
         }, 1000)
@@ -115,7 +136,6 @@ export default class Cadastro extends Vue {
     }
 
 }
-
 </script>
 
 <style lang="scss">
