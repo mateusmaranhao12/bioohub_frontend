@@ -37,7 +37,7 @@
             </div>
 
             <div class="col-md-6">
-                <img class="animate__animated animate__zoomIn img-fluid" src="../assets/verge.png">
+                <img class="animate__animated animate__zoomIn img-fluid" src="../assets/imgs/verge.png">
             </div>
         </div>
     </div>

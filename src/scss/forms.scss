@@ -116,3 +116,48 @@
         padding: 20px;
     }
 }
+
+.redes-sociais {
+
+    width: 70%;
+
+    input {
+        background-color: rgb(241, 241, 241);
+        border: none;
+
+        &::placeholder {
+            color: rgb(185, 185, 185);
+        }
+    }
+
+    .input-group-text {
+        background-color: rgb(241, 241, 241);
+        border: none;
+        color: $gray;
+    }
+
+    .icones {
+        img {
+            width: 8%;
+        }
+    }
+
+    h2 {
+        font-weight: $bold;
+        margin-top: 70px;
+        margin-bottom: 50px;
+        text-align: $center;
+    }
+
+    .card {
+        padding: 10px;
+
+        .card-body {
+            h6 {
+                margin-top: 15px;
+                margin-bottom: 15px;
+            }
+        }
+    }
+
+}

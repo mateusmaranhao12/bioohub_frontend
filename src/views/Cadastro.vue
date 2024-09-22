@@ -73,18 +73,28 @@
             <div v-if="etapa === 3"
                 :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"
                 class="cadastro col-md-12">
-                <div class="d-flex justify-content-start">
-                    <button class="arrow-left" @click="etapaAnterior()">
-                        <i class="fa-solid fa-arrow-left"></i>
-                    </button>
-                </div>
 
                 <Planos />
 
+                <!-- Botões de Skip e Next -->
+                <div class="d-flex mt-3">
+                    <button class="btn btn-light flex-grow-1 me-1" @click="etapaAnterior()">Back</button>
+                    <button class="btn btn-dark flex-grow-1" @click="proximaEtapa()">Next</button>
+                </div>
+
             </div>
 
-            <div v-if="etapa !== 3" class="animate__animated animate__zoomIn col-md-6">
-                <img class="img-fluid" src="../assets/tweets.png">
+            <!-- Etapa 4 (Redes sociais) -->
+            <div v-if="etapa === 4"
+                :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"
+                class="cadastro col-md-12">
+                
+                <RedesSociais />
+
+            </div>
+
+            <div v-if="etapa !== 3 && etapa !== 4" class="animate__animated animate__zoomIn col-md-6">
+                <img class="img-fluid" src="../assets/imgs/tweets.png">
             </div>
         </div>
     </div>
@@ -93,10 +103,12 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component'
 import Planos from '../components/Planos.vue'
+import RedesSociais from '@/components/RedesSociais.vue'
 
 @Options({
     components: {
-        Planos
+        Planos,
+        RedesSociais
     }
 })
 

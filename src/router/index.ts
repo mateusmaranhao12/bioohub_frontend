@@ -4,7 +4,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Cadastro from '@/views/Cadastro.vue'
 import Index from '../views/Index.vue'
 import Login from '../views/Login.vue'
-import Planos from '../components/Planos.vue'
+import RedesSociais from '@/components/RedesSociais.vue'
 
 const routes: Array<RouteRecordRaw> = [
 
@@ -29,12 +29,14 @@ const routes: Array<RouteRecordRaw> = [
     component: Login
   },
 
-  //Planos.vue
+  //RedesSociais.vue
   {
-    path: '/planos',
-    name: 'planos',
-    component: Planos
+    path: '/redessociais',
+    name: 'redessociais',
+    component: RedesSociais
   }
+
+
 ]
 
 const router = createRouter({

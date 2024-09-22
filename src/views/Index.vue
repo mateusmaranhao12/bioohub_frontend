@@ -3,12 +3,12 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4 mt-3">
-                <img src="../assets/support_my_art.png" class="animate__animated animate__zoomIn img-fluid img1">
-                <img src="../assets/verge.png" class="animate__animated animate__zoomIn img-fluid img2">
-                <img src="../assets/gadget.png" class="animate__animated animate__zoomIn img-fluid img3">
+                <img src="../assets/imgs/support_my_art.png" class="animate__animated animate__zoomIn img-fluid img1">
+                <img src="../assets/imgs/verge.png" class="animate__animated animate__zoomIn img-fluid img2">
+                <img src="../assets/imgs/gadget.png" class="animate__animated animate__zoomIn img-fluid img3">
             </div>
             <div class="col-md-5 bioohub">
-                <img src="../assets/logo.png" class="animate__animated animate__bounceIn img-fluid logo">
+                <img src="../assets/imgs/logo.png" class="animate__animated animate__bounceIn img-fluid logo">
                 <h3 class="animate__animated animate__bounceIn h3-bioohub">BiooHub</h3>
                 <h1 class="animate__animated animate__fadeInUp link-in-bio">A Link in Bio.
                     <br>
@@ -28,8 +28,8 @@
 
             </div>
             <div class="col-md-3">
-                <img src="../assets/paint.png" class="animate__animated animate__zoomIn img-fluid img4 img-fluid">
-                <img src="../assets/tweets.png" class="animate__animated animate__zoomIn img-fluid img5 img-fluid">
+                <img src="../assets/imgs/paint.png" class="animate__animated animate__zoomIn img-fluid img4 img-fluid">
+                <img src="../assets/imgs/tweets.png" class="animate__animated animate__zoomIn img-fluid img5 img-fluid">
             </div>
         </div>
     </div>
