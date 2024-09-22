@@ -18,7 +18,7 @@
                     </div>
 
                     <div class="animate__animated animate__zoomIn d-grid gap-2">
-                        <button class="btn btn-secondary">Log In</button>
+                        <button @click="fazerLogin()" class="btn btn-secondary">Log In</button>
                     </div>
 
                     <div class="animate__animated animate__zoomIn mt-3 mb-3 text-center">

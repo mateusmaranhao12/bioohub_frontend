@@ -23,7 +23,7 @@
                     </router-link>
                 </div>
                 <div class="d-flex justify-content-center">
-                    <small class="animate__animated animate__fadeIn botao-login">Log-in</small>
+                    <router-link to="/login" class="animate__animated animate__fadeIn botao-login">Log-in</router-link>
                 </div>
 
             </div>

@@ -47,7 +47,8 @@
     .botao-login {
         margin-top: 10px;
         color: $gray;
-        cursor: pointer;
+        cursor: $pointer;
+        text-decoration: $none;
 
         &:hover {
             text-decoration: underline;
