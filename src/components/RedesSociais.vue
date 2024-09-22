@@ -13,8 +13,8 @@
                 </div>
                 <!-- Botões de Skip e Next -->
                 <div class="d-flex mt-3">
-                    <button class="btn btn-dark flex-grow-1 me-1">Next</button>
-                    <button class="btn btn-light flex-grow-1">Skip</button>
+                    <button @click="cadastrarUsuario()" class="btn btn-dark flex-grow-1 me-1">Next</button>
+                    <button @click="cadastrarUsuario()" class="btn btn-light flex-grow-1">Skip</button>
                 </div>
             </div>
             <div class="col-md-6">
@@ -52,6 +52,7 @@ import { Options, Vue } from 'vue-class-component';
 
 @Options({})
 export default class RedesSociais extends Vue {
+
     redesSociais = [
         {
             nome: 'Instagram',
@@ -71,7 +72,11 @@ export default class RedesSociais extends Vue {
             placeholder: 'your-linkedin',
             usuario: ''
         }
-    ];
+    ]
+
+    public cadastrarUsuario() {
+        this.$router.push('/pagina-usuario')
+    }
 }
 </script>
 

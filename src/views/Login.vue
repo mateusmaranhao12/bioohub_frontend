@@ -26,7 +26,7 @@
                     </div>
 
                     <div class="animate__animated animate__zoomIn d-grid gap-2 mt-2">
-                        <button class="animate__animated animate__zoomIn btn btn-primary"><i class="fa-brands fa-google"></i> Log in with Google</button>
+                        <button @click="fazerLogin()" class="animate__animated animate__zoomIn btn btn-primary"><i class="fa-brands fa-google"></i> Log in with Google</button>
                     </div>
 
                     <div class="animate__animated animate__zoomIn d-flex justify-content-start">
@@ -54,6 +54,10 @@ export default class Login extends Vue {
 
     alternarExibicaoSenha() {
         this.mostrar_senha = !this.mostrar_senha;
+    }
+
+    public fazerLogin() {
+        this.$router.push('/pagina-usuario')
     }
 
 }

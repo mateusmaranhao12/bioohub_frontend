@@ -1,0 +1,152 @@
+@import 'animations';
+@import 'variaveis';
+
+.pagina-usuario {
+
+    .avatar-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        border: 2px dashed $gray;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        /* Permite sobreposição */
+
+        p {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        i {
+            color: #6c757d;
+        }
+
+        .file-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            /* Esconde o input de file */
+            cursor: pointer;
+            /* Garante que o cursor seja um pointer */
+        }
+
+        label {
+            cursor: pointer;
+            /* Faz com que o clique no círculo também acione o input */
+        }
+    }
+
+    .input-usuario {
+        border: none;
+        height: 50px;
+        width: 50%;
+
+        &::placeholder {
+            color: rgb(182, 182, 182);
+            font-weight: $bold;
+        }
+
+        font-weight: $bold;
+    }
+
+    .input-bio {
+        border: $none;
+        width: 50%;
+        font-weight: 100;
+
+        &::placeholder {
+            color: rgb(212, 212, 212);
+        }
+    }
+
+    .link-card {
+        background-color: #f8f9fa;
+        border: 1px dashed $gray;
+        border-radius: 8px;
+        text-align: $center;
+        cursor: pointer;
+        transition: .2s ease;
+
+        position: $relative;
+
+        .plus-icon {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            /* Ajusta a posição para o canto superior direito */
+            font-size: 16px;
+            /* Tamanho do ícone plus */
+        }
+
+        &:hover {
+            background-color: #e0e0e0;
+        }
+
+        &.card-small {
+            width: 120px;
+            height: 120px;
+
+            i {
+                color: #ff8800;
+            }
+        }
+
+        &.card-small2 {
+            width: 120px;
+            height: 120px;
+
+            i {
+                color: #000536;
+            }
+        }
+
+        &.card-vertical {
+            width: 120px;
+            height: 200px;
+
+            i {
+                color: #3900be;
+            }
+        }
+
+        &.card-vertical2 {
+            width: 120px;
+            height: 200px;
+
+            i {
+                color: #be0000;
+            }
+        }
+
+        &.card-horizontal {
+            width: 200px;
+            height: 120px;
+
+            i {
+                color: #008f2b;
+            }
+        }
+
+        &.card-large-square {
+            width: 200px;
+            height: 200px;
+
+            i {
+                color: purple;
+            }
+        }
+
+        p {
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+    }
+}

@@ -4,7 +4,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Cadastro from '@/views/Cadastro.vue'
 import Index from '../views/Index.vue'
 import Login from '../views/Login.vue'
-import RedesSociais from '@/components/RedesSociais.vue'
+import PaginaUsuario from '@/views/PaginaUsuario.vue'
 
 const routes: Array<RouteRecordRaw> = [
 
@@ -29,11 +29,11 @@ const routes: Array<RouteRecordRaw> = [
     component: Login
   },
 
-  //RedesSociais.vue
+  //PaginaUsuario.vue
   {
-    path: '/redessociais',
-    name: 'redessociais',
-    component: RedesSociais
+    path: '/pagina-usuario',
+    name: 'pagina-usuario',
+    component: PaginaUsuario
   }
 
 
