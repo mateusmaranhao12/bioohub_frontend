@@ -1,7 +1,7 @@
 <template>
     <div class="container pagina-usuario">
 
-        <button class="animate__animated animate__zoomIn btn btn-logout">
+        <button @click="fazerLogout()" class="animate__animated animate__zoomIn btn btn-logout">
             <i class="fa-solid fa-sign-out-alt"></i> Logout
         </button>
         <div class="row">
@@ -98,6 +98,10 @@ import Footer from '@/components/Footer.vue'
 })
 
 export default class PaginaUsuario extends Vue {
+
+    public fazerLogout() {
+        this.$router.push('/')
+    }
 
 }
 </script>
