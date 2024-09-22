@@ -1,23 +1,30 @@
 <template>
     <div class="container pagina-usuario">
+
+        <button class="animate__animated animate__zoomIn btn btn-logout">
+            <i class="fa-solid fa-sign-out-alt"></i> Logout
+        </button>
         <div class="row">
 
             <!-- Coluna Dados -->
             <div class="col-md-6 mt-5">
-                <div class="avatar-circle d-flex flex-column justify-content-center align-items-center">
+                <div
+                    class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center">
                     <input type="file" id="file-input" class="file-input" />
-                    <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
+                    <label for="file-input"
+                        class="animate__animated animate__zoomIn d-flex flex-column justify-content-center align-items-center">
                         <i class="fa-solid fa-upload fa-2x mb-2"></i>
                         <p class="text-center mb-0">Add avatar</p>
                     </label>
                 </div>
 
                 <div class="mt-4">
-                    <input type="text" class="form-control input-usuario" placeholder="Your Name" aria-label="Name">
+                    <input type="text" class="animate__animated animate__zoomIn form-control input-usuario"
+                        placeholder="Your Name" aria-label="Name">
                 </div>
                 <div class="mt-2">
-                    <textarea type="text" class="form-control input-bio" placeholder="Your bio..."
-                        aria-label="Bio"></textarea>
+                    <textarea type="text" class="animate__animated animate__zoomIn form-control input-bio"
+                        placeholder="Your bio..." aria-label="Bio"></textarea>
                 </div>
             </div>
 
@@ -25,7 +32,7 @@
             <div class="col-md-6 mt-5">
                 <div class="d-flex flex-wrap gap-3 justify-content-between">
                     <div
-                        class="card link-card card-small d-flex flex-column align-items-center justify-content-center position-relative">
+                        class="animate__animated animate__zoomIn card link-card card-small d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
@@ -34,7 +41,7 @@
                     </div>
 
                     <div
-                        class="card link-card card-vertical d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-vertical d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
@@ -42,7 +49,7 @@
                         <p class="mt-2">Add link</p>
                     </div>
                     <div
-                        class="card link-card card-horizontal d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-horizontal d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
@@ -50,7 +57,7 @@
                         <p class="mt-2">Add music</p>
                     </div>
                     <div
-                        class="card link-card card-large-square d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-large-square d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
@@ -58,7 +65,7 @@
                         <p class="mt-2">Add video</p>
                     </div>
                     <div
-                        class="card link-card card-vertical2 d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-vertical2 d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
@@ -66,7 +73,7 @@
                         <p class="mt-2">Add a location</p>
                     </div>
                     <div
-                        class="card link-card card-small2 d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-small2 d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
@@ -77,13 +84,22 @@
             </div>
         </div>
     </div>
+    <Footer class="animate__animated animate__zoomIn" />
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
+import Footer from '@/components/Footer.vue'
 
-@Options({})
-export default class PaginaUsuario extends Vue { }
+@Options({
+    components: {
+        Footer
+    }
+})
+
+export default class PaginaUsuario extends Vue {
+
+}
 </script>
 
 <style lang="scss">

@@ -1,0 +1,84 @@
+@import 'variaveis';
+@import 'animations';
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%; /* Largura total */
+    max-width: 800px; /* Largura máxima */
+    height: 50px;
+    background-color: $white;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
+    display: $flex;
+    justify-content: space-between; /* Distribui os itens */
+    align-items: $center;
+    border-radius: 10px;
+    z-index: 1000;
+    padding: 0 20px; /* Padding lateral para espaçamento */
+
+    .footer-content {
+        display: $flex;
+        align-items: $center;
+        justify-content: space-between; /* Distribuição dos itens */
+        width: 100%;
+        text-align: $center; /* Alinhamento centralizado */
+        font-size: 14px;
+        color: #333;
+
+        .btn-share {
+            background-color: #28a745;
+            color: $white;
+            padding: 5px 15px;
+            border: $none;
+            border-radius: 5px;
+            height: 35px; /* Altura fixa */
+            font-weight: $bold;
+            cursor: $pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+            &:hover {
+                background-color: #004910;
+                color: $white;
+            }
+        }
+
+        .icone {
+            cursor: $pointer;
+            transition: transform .2s ease;
+            margin: 0 10px; /* Espaçamento entre os ícones */
+
+            &:hover {
+                transform: scale(1.2);
+            }
+        }
+
+        .screen {
+            cursor: $pointer;
+            transition: .3s ease;
+            border-radius: 10px;
+            padding: 10px;
+
+            &:hover {
+                background-color: rgb(207, 207, 207);
+            }
+        }
+    }
+}
+
+// Media query para telas pequenas
+@media (max-width: 600px) {
+    .footer {
+        flex-direction: $column; /* Muda a direção para coluna em telas pequenas */
+        height: $auto; /* Permite que a altura se ajuste automaticamente */
+        padding: 10px 0; /* Ajusta o padding */
+    }
+
+    .footer-content {
+        flex-direction: row; /* Mantém a direção em linha */
+        justify-content: $center; /* Centraliza o conteúdo */
+        flex-wrap: wrap; /* Permite que os itens se movam para a linha seguinte se necessário */
+    }
+}
