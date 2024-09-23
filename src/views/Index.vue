@@ -1,11 +1,10 @@
 <template>
-    <navbar />
     <div class="container">
         <div class="row">
-            <div class="col-md-4 mt-3">
-                <img src="../assets/imgs/support_my_art.png" class="animate__animated animate__zoomIn img-fluid img1">
-                <img src="../assets/imgs/verge.png" class="animate__animated animate__zoomIn img-fluid img2">
-                <img src="../assets/imgs/gadget.png" class="animate__animated animate__zoomIn img-fluid img3">
+            <div class="col-md-4 mt-5">
+                <img src="../assets/imgs/Insta.png" class="animate__animated animate__zoomIn img-fluid img1">
+                <img src="../assets/imgs/63ebce23e53ac60a7fa7bd43_hero youtube.png" class="animate__animated animate__zoomIn img-fluid img2">
+                <img src="../assets/imgs/63e5079c2efbf624bd00d1e3_hero verge-p-800.png" class="animate__animated animate__zoomIn img-fluid img3">
             </div>
             <div class="col-md-5 bioohub">
                 <img src="../assets/imgs/logo.png" class="animate__animated animate__bounceIn img-fluid logo">
@@ -37,11 +36,9 @@
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import Navbar from '../components/Navbar.vue'
 
 @Options({
     components: {
-        Navbar
     }
 })
 

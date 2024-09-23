@@ -36,8 +36,10 @@
                 </form>
             </div>
 
-            <div class="col-md-6">
-                <img class="animate__animated animate__zoomIn img-fluid" src="../assets/imgs/verge.png">
+            <div class="img-rodando animate__animated animate__zoomIn col-md-6">
+                <img class="img-fluid img-rodando-1" src="../assets/imgs/63e5079c2efbf624bd00d1e3_hero verge-p-800.png">
+                <img class="img-fluid img-rodando-2" src="../assets/imgs/63ebce23e53ac60a7fa7bd43_hero youtube.png">
+                <img class="img-fluid img-rodando-3" src="../assets/imgs/Insta.png">
             </div>
         </div>
     </div>

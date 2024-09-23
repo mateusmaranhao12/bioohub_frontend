@@ -1,20 +1,21 @@
 <template>
     <div class="container pagina-usuario">
-
         <button @click="fazerLogout()" class="animate__animated animate__zoomIn btn btn-logout">
             <i class="fa-solid fa-sign-out-alt"></i> Logout
         </button>
         <div class="row">
-
             <!-- Coluna Dados -->
             <div class="col-md-6 mt-5">
                 <div
                     class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center">
-                    <input type="file" id="file-input" class="file-input" />
-                    <label for="file-input"
-                        class="animate__animated animate__zoomIn d-flex flex-column justify-content-center align-items-center">
-                        <i class="fa-solid fa-upload fa-2x mb-2"></i>
-                        <p class="text-center mb-0">Add avatar</p>
+                    <input type="file" id="file-input" class="file-input" accept="image/*" @change="carregarImagem"
+                        style="display:none;">
+                    <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
+                        <img id="avatar-preview" class="img-fluid rounded-circle"
+                            :src="selectedImage || 'default-avatar.jpg'"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        <i v-if="!selectedImage" class="fa-solid fa-upload fa-2x mb-5"></i>
+                        <p v-if="!selectedImage" class="text-center mb-4">Add avatar</p>
                     </label>
                 </div>
 
@@ -83,29 +84,71 @@
                 </div>
             </div>
         </div>
+
+        <!-- Botões no canto inferior esquerdo -->
+        <div class="mt-3 col-md-6">
+            <div class="dropdown dropup mb-2" style="width: 60%;">
+                <button class="animate__animated animate__zoomIn botao-dropdown btn btn-secondary dropdown-toggle w-100" type="button" id="settingsDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-gear"></i> Settings
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
+                    <li><a class="dropdown-item" href="#">Change password</a></li>
+                    <li><a class="dropdown-item" href="#">Change e-mail</a></li>
+                    <li><a class="dropdown-item" href="#">Change username</a></li>
+                </ul>
+            </div>
+
+            <router-link to="/usuario" class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-primary" style="width: 60%;">
+                <i class="fa-solid fa-user"></i> View Profile
+            </router-link>
+        </div>
+
+
+        <Footer class="animate__animated animate__zoomIn" />
     </div>
-    <Footer class="animate__animated animate__zoomIn" />
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import Footer from '@/components/Footer.vue'
+import Footer from '@/components/Footer.vue';
 
 @Options({
     components: {
         Footer
     }
 })
-
 export default class PaginaUsuario extends Vue {
+    public selectedImage: string | null = null; // Propriedade para armazenar a imagem selecionada
 
-    public fazerLogout() {
-        this.$router.push('/')
+    public fazerLogout() { //logout
+        this.$router.push('/');
     }
 
+    public carregarImagem(event: Event) { //carregar imagem
+        const target = event.target as HTMLInputElement;
+        const file = target.files?.[0];
+
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                this.selectedImage = e.target?.result as string; // Atualiza a imagem selecionada
+            };
+
+            reader.readAsDataURL(file);
+        }
+    }
 }
 </script>
 
 <style lang="scss">
 @import '../scss/pagina_usuario.scss';
+
+.dropdown-settings {
+    bottom: 100px;
+    /* Espaço acima do Footer */
+    left: 20px;
+    /* Margem da esquerda */
+}
 </style>

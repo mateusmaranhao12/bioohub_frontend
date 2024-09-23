@@ -5,6 +5,7 @@ import Cadastro from '@/views/Cadastro.vue'
 import Index from '../views/Index.vue'
 import Login from '../views/Login.vue'
 import PaginaUsuario from '@/views/PaginaUsuario.vue'
+import Usuario from '@/views/Usuario.vue'
 
 const routes: Array<RouteRecordRaw> = [
 
@@ -34,6 +35,13 @@ const routes: Array<RouteRecordRaw> = [
     path: '/pagina-usuario',
     name: 'pagina-usuario',
     component: PaginaUsuario
+  },
+
+  //Usuario.vue
+  {
+    path: '/usuario',
+    name: 'usuario',
+    component: Usuario
   }
 
 

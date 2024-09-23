@@ -2,14 +2,30 @@
 @import 'variaveis';
 
 .cadastro {
+
     h2 {
         font-weight: $bold;
         margin-top: 20px;
+        color: $black;
     }
 
     h5 {
         color: rgb(168, 168, 168);
         margin-bottom: 80px;
+    }
+
+    h3 {
+        color: $black;
+        font-weight: $bold;
+        text-align: $center;
+        margin-top: 20px;
+    }
+
+    h4 {
+        color: $black;
+        font-weight: $bold;
+        text-align: justify;
+        margin-top: 20px;
     }
 
     h6 {
@@ -174,5 +190,40 @@
                 margin-bottom: 15px;
             }
         }
+    }
+}
+
+.img-rodando {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+
+    img {
+        width: 30%;
+        animation: rodar 10s linear infinite;
+        margin: 10px;
+    }
+
+    .img-rodando-1,
+    .img-rodando-2 {
+        flex-basis: 40%;
+    }
+
+    .img-rodando-3 {
+        flex-basis: 80%;
+        text-align: center;
+    }
+}
+
+/* Animação de rotação no sentido horário */
+@keyframes rodar {
+    from {
+        transform: rotate(0deg) scale(1);
+    }
+
+    to {
+        transform: rotate(360deg) scale(1);
     }
 }
