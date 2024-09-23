@@ -27,6 +27,32 @@
                     <textarea type="text" class="animate__animated animate__zoomIn form-control input-bio"
                         placeholder="Your bio..." aria-label="Bio"></textarea>
                 </div>
+
+                <!-- Menu Hamburguer visível em dispositivos menores (abaixo do textarea) -->
+                <nav class="navbar navbar-expand-lg navbar-light d-md-none mt-3">
+                    <div class="container-fluid">
+                        <button class="animate__animated animate__zoomIn navbar-toggler mb-3" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                            aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                            Show more
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <button class="btn btn-secondary w-100 mb-2">
+                                        <i class="fa-solid fa-gear"></i> Settings
+                                    </button>
+                                </li>
+                                <li class="nav-item">
+                                    <router-link to="/usuario" class="btn btn-primary w-100">
+                                        <i class="fa-solid fa-user"></i> View Profile
+                                    </router-link>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
             </div>
 
             <!-- Coluna Links -->
@@ -85,11 +111,11 @@
             </div>
         </div>
 
-        <!-- Botões no canto inferior esquerdo -->
-        <div class="mt-3 col-md-6">
+        <!-- Botões visíveis em dispositivos maiores -->
+        <div class="mt-3 col-md-6 d-none d-md-block">
             <div class="dropdown dropup mb-2" style="width: 60%;">
-                <button class="animate__animated animate__zoomIn botao-dropdown btn btn-secondary dropdown-toggle w-100" type="button" id="settingsDropdown"
-                    data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="animate__animated animate__zoomIn botao-dropdown btn btn-secondary dropdown-toggle w-100"
+                    type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fa-solid fa-gear"></i> Settings
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
@@ -99,11 +125,11 @@
                 </ul>
             </div>
 
-            <router-link to="/usuario" class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-primary" style="width: 60%;">
+            <router-link to="/usuario" class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-primary"
+                style="width: 60%;">
                 <i class="fa-solid fa-user"></i> View Profile
             </router-link>
         </div>
-
 
         <Footer class="animate__animated animate__zoomIn" />
     </div>
