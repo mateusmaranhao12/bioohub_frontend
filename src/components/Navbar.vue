@@ -1,7 +1,7 @@
 <template>
     <ul class="animate__animated animate__fadeInDownBig nav navbar-bioohub justify-content-center">
         <li class="nav-item">
-            <h2 class="nav-link" href="#">Bioohub! <i class="fa-solid fa-arrow-right"></i></h2>
+            <h2 class="nav-link" href="#">Welcome to Bioohub!</h2>
         </li>
     </ul>
 </template>
