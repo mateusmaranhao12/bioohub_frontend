@@ -11,8 +11,8 @@
                             <h3 class="card-title">Free Plan</h3>
                             <p class="card-text">Create up to 5 links.</p>
                             <p class="card-text">Ads will be displayed.</p>
-                            <p class="card-price">$0/month</p>
-                            <button class="btn btn-outline-secondary">Get Started</button>
+                            <p class="card-price">R$0/month</p>
+                            <button class="btn btn-outline-dark">Get Started</button>
                         </div>
                     </div>
                 </div>
@@ -24,7 +24,7 @@
                             <h3 class="card-title">Basic Plan</h3>
                             <p class="card-text">Create up to 20 links.</p>
                             <p class="card-text">No ads.</p>
-                            <p class="card-price">$5/month</p>
+                            <p class="card-price">R$5/month</p>
                             <button class="btn btn-primary">Select Plan</button>
                         </div>
                     </div>
@@ -37,7 +37,7 @@
                             <h3 class="card-title">Premium Plan</h3>
                             <p class="card-text">Unlimited links.</p>
                             <p class="card-text">No ads.</p>
-                            <p class="card-price">$10/month</p>
+                            <p class="card-price">R$10/month</p>
                             <button class="btn btn-primary">Select Plan</button>
                         </div>
                     </div>
