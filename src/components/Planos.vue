@@ -5,7 +5,7 @@
 
             <div class="row justify-content-center">
                 <!-- Plano Free -->
-                <div class="col-md-4">
+                <div class="col-sm-6 col-md-4">
                     <div class="card shadow">
                         <div class="card-body text-center">
                             <h3 class="card-title">Free Plan</h3>
@@ -18,7 +18,7 @@
                 </div>
 
                 <!-- Plano Pago Básico -->
-                <div class="col-md-4">
+                <div class="col-sm-6 col-md-4">
                     <div class="card shadow">
                         <div class="card-body text-center">
                             <h3 class="card-title">Basic Plan</h3>
@@ -31,7 +31,7 @@
                 </div>
 
                 <!-- Plano Pago Premium -->
-                <div class="col-md-4">
+                <div class="col-sm-6 col-md-4">
                     <div class="card shadow">
                         <div class="card-body text-center">
                             <h3 class="card-title">Premium Plan</h3>
@@ -51,7 +51,7 @@
 import { Options, Vue } from 'vue-class-component';
 
 @Options({})
-export default class Planos extends Vue { }
+export default class Planos extends Vue {}
 </script>
 
 <style lang="scss" scoped>

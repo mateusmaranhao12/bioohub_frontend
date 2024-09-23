@@ -39,7 +39,7 @@
 
                 <form>
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-6 mb-2">
                             <input type="text" class="form-control" placeholder="email" aria-label="E-mail">
                         </div>
                         <div class="col-md-6">
@@ -61,7 +61,7 @@
                         <h6>Or</h6>
                     </div>
 
-                    <div class="d-grid gap-2 mt-2">
+                    <div class="d-grid gap-2 mt-2 mb-2">
                         <button @click.prevent="proximaEtapa()" class="btn btn-primary">
                             <i class="fa-brands fa-google"></i> Sign up with Google
                         </button>

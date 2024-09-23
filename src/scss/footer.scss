@@ -81,4 +81,14 @@
         justify-content: $center; /* Centraliza o conteúdo */
         flex-wrap: wrap; /* Permite que os itens se movam para a linha seguinte se necessário */
     }
+
+    // Oculta o botão "Share my Bioohub"
+    .btn-share {
+        display: none;
+    }
+
+    // Oculta os ícones da tela (PC e Mobile)
+    .screen {
+        display: none;
+    }
 }

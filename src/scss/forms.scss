@@ -2,7 +2,6 @@
 @import 'variaveis';
 
 .cadastro {
-
     h2 {
         font-weight: $bold;
         margin-top: 20px;
@@ -55,7 +54,6 @@
 }
 
 .login-form {
-
     input {
         background-color: rgb(241, 241, 241);
         border: none;
@@ -107,19 +105,38 @@
 
 .planos {
     .card-price {
-        font-size: 1.5rem;
-        font-weight: bold;
+        font-size: 1.2rem;
+        font-weight: $bold;
     }
 
     .card {
         margin-bottom: 30px;
         padding: 20px;
     }
+
+    @media (max-width: 576px) {
+        .card {
+            font-size: 0.8rem; // Reduz o tamanho da fonte em telas pequenas
+            margin-bottom: 15px; // Reduz a margem inferior
+            padding: 10px; // Ajusta o padding para dispositivos menores
+        }
+    }
+
+    @media (max-width: 375px) {
+        .card {
+            font-size: 0.8rem; // Reduz o tamanho da fonte em telas pequenas
+            margin-bottom: 25px; // Reduz a margem inferior
+            padding: 5px; // Ajusta o padding para dispositivos menores
+        }
+    }
+
+    .card {
+        margin: 10px; // Espaço entre os cards
+        overflow: hidden; // Garante que o conteúdo não "escape"
+    }
 }
 
 .redes-sociais {
-
-
     input {
         background-color: rgb(241, 241, 241);
         border: none;
@@ -158,5 +175,4 @@
             }
         }
     }
-
 }
