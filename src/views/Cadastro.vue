@@ -11,7 +11,7 @@
 
                 <form>
                     <div class="animate__animated animate__zoomIn input-name input-group mb-3">
-                        <span class="input-group-text">bento.me/</span>
+                        <span class="input-group-text">bioohub.me/</span>
                         <input type="text" class="form-control" placeholder="your-name" aria-label="Username">
                     </div>
                 </form>
