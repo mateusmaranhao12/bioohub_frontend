@@ -44,38 +44,41 @@
                         <div class="collapse navbar-collapse" id="navbarNav">
                             <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <div class="dropdown dropup mb-2">
-                                        <button
-                                            class="animate__animated animate__zoomIn botao-dropdown btn btn-secondary dropdown-toggle w-100"
-                                            type="button" id="settingsDropdown" data-bs-toggle="dropdown"
-                                            aria-expanded="false">
-                                            <i class="fa-solid fa-gear"></i> Configurações
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                                            <li>
-                                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                    data-bs-target="#alterarSenhaModal">Alterar senha</a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                    data-bs-target="#alterarEmailModal">Alterar e-mail</a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                    data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
-                                            </li>
-                                        </ul>
+                                    <div class="d-flex justify-content-start gap-2">
+                                        <div class="dropdown dropup mb-2">
+                                            <button
+                                                class="animate__animated animate__zoomIn botao-dropdown btn btn-configuracoes dropdown-toggle btn-sm"
+                                                type="button" id="settingsDropdown" data-bs-toggle="dropdown"
+                                                aria-expanded="false">
+                                                <i class="fa-solid fa-gear"></i>
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#alterarSenhaModal">Alterar senha</a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#alterarEmailModal">Alterar e-mail</a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        <router-link to="/usuario"
+                                            class="animate__animated animate__zoomIn btn btn-visualizar-perfil btn-sm">
+                                            <i class="fa-solid fa-user"></i>
+                                        </router-link>
                                     </div>
-                                </li>
-                                <li class="nav-item">
-                                    <router-link to="/usuario" class="btn btn-primary w-100">
-                                        <i class="fa-solid fa-user"></i> Visualizar perfil
-                                    </router-link>
                                 </li>
                             </ul>
                         </div>
                     </div>
                 </nav>
+
             </div>
 
             <!-- Coluna Links -->
@@ -140,39 +143,36 @@
 
         <!-- Botões visíveis em dispositivos maiores -->
         <div class="mt-3 col-md-6 d-none d-md-block">
-            <div class="dropdown dropup mb-2" style="width: 60%;">
-                <button class="animate__animated animate__zoomIn botao-dropdown btn btn-secondary dropdown-toggle w-100"
-                    type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa-solid fa-gear"></i> Configurações
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                    <li>
-                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#alterarSenhaModal">
-                            Alterar senha
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
-                            data-bs-target="#alterarEmailModal">
-                            Alterar e-mail
-                        </a>
-                        <small class="text-muted d-block ms-3 me-3">mateusnmaranhao@gmail.com</small>
-                    </li>
-                    <li>
-                        <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
-                            data-bs-target="#alterarUsuarioModal">
-                            Alterar usuário
-                        </a>
-                        <small class="text-muted d-block ms-3 me-3">mateusmaranhao12</small>
-                    </li>
-                </ul>
+            <div class="d-flex justify-content-start gap-2" style="width: 60%;">
+                <div class="dropdown dropup mb-2">
+                    <button
+                        class="animate__animated animate__zoomIn botao-dropdown btn btn-configuracoes dropdown-toggle btn-sm"
+                        type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
+                        <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                data-bs-target="#alterarSenhaModal">Alterar senha</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
+                                data-bs-target="#alterarEmailModal">Alterar e-mail</a>
+                            <small class="text-muted d-block ms-3 me-3">mateusnmaranhao@gmail.com</small>
+                        </li>
+                        <li>
+                            <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
+                                data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
+                            <small class="text-muted d-block ms-3 me-3">mateusmaranhao12</small>
+                        </li>
+                    </ul>
+                </div>
 
+                <router-link to="/usuario"
+                    class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-visualizar-perfil btn-sm">
+                    <i class="fa-solid fa-user"></i>
+                </router-link>
             </div>
-
-            <router-link to="/usuario" class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-primary"
-                style="width: 60%;">
-                <i class="fa-solid fa-user"></i> Visualizar perfil
-            </router-link>
         </div>
 
         <Footer class="animate__animated animate__zoomIn" />

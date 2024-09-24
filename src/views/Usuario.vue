@@ -1,30 +1,21 @@
 <template>
     <div class="container pagina-usuario">
-
         <div class="row">
 
             <!-- Coluna Dados -->
-            <div class="col-md-6 mt-5">
+            <div class="col-md-6 mt-5 d-flex flex-column align-items-center text-center d-md-block">
                 <div
                     class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center">
                     <img src="../assets/imgs/11a570b9-08cb-461b-bef6-5b83e8a7f991.jpeg" alt="Avatar"
                         class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
-                    <i class="fa-solid fa-upload fa-2x mb-2"></i>
-                    <p class="text-center mb-0">Adicionar avatar</p>
                 </div>
 
-                <div class="mt-4 animate__animated animate__zoomIn">
-                    <h2>Mateus Maranhao</h2>
+                <div class="mt-4 animate__animated animate__zoomIn w-100">
+                    <h2 class="text-start text-md-start text-center">Mateus Maranhao</h2>
                 </div>
-                <div class="mt-2 animate__animated animate__zoomIn">
-                    <p style="color: rgb(190, 190, 190)">lorem ipsum dolor sit amet</p>
-                </div>
-
-                <!-- Botão Criar Bioohub no canto inferior esquerdo -->
-                <div class="animate__animated animate__zoomIn d-flex justify-content-start mt-3 mb-3">
-                    <router-link to="/cadastro" class="btn btn-bioohub">
-                        Criar meu Bioohub
-                    </router-link>
+                <div class="mt-2 animate__animated animate__zoomIn w-100">
+                    <p class="text-start text-md-start text-center" style="color: rgb(190, 190, 190)">lorem ipsum dolor
+                        sit amet</p>
                 </div>
             </div>
 
@@ -57,6 +48,13 @@
                         <i class="fa-solid fa-share-alt fa-2x"></i>
                     </div>
                 </div>
+            </div>
+
+            <!-- Botão Criar Bioohub no canto inferior esquerdo -->
+            <div class="animate__animated animate__zoomIn d-flex justify-content-center mt-5 mb-3">
+                <router-link to="/cadastro" class="btn btn-bioohub">
+                    Criar meu Bioohub
+                </router-link>
             </div>
         </div>
     </div>
