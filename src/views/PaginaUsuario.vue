@@ -82,7 +82,7 @@
             </div>
 
             <!-- Coluna Links -->
-            <div class="col-md-6 mt-5">
+            <div class="col-md-6 mt-5 mb-5">
                 <div class="d-flex flex-wrap gap-3 justify-content-between">
                     <div
                         class="animate__animated animate__zoomIn card link-card card-small d-flex flex-column align-items-center justify-content-center position-relative">
