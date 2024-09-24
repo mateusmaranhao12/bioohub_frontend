@@ -3,6 +3,7 @@
         <button @click="fazerLogout()" class="animate__animated animate__zoomIn btn btn-logout">
             <i class="fa-solid fa-sign-out-alt"></i> Logout
         </button>
+
         <div class="row">
             <!-- Coluna Dados -->
             <div class="col-md-6 mt-5">
@@ -27,6 +28,9 @@
                     <textarea type="text" class="animate__animated animate__zoomIn form-control input-bio"
                         placeholder="Sua biografia..." aria-label="Bio"></textarea>
                 </div>
+                <div class="animate__animated animate__zoomIn mt-5">
+                    <h6>Nenhuma visualização hoje</h6>
+                </div>
 
                 <!-- Menu Hamburguer visível em dispositivos menores (abaixo do textarea) -->
                 <nav class="navbar navbar-expand-lg navbar-light d-md-none mt-3">
@@ -48,9 +52,18 @@
                                             <i class="fa-solid fa-gear"></i> Configurações
                                         </button>
                                         <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                                            <li><a class="dropdown-item" href="#">Alterar senha</a></li>
-                                            <li><a class="dropdown-item" href="#">Alterar e-mail</a></li>
-                                            <li><a class="dropdown-item" href="#">Alterar usuário</a></li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                    data-bs-target="#alterarSenhaModal">Alterar senha</a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                    data-bs-target="#alterarEmailModal">Alterar e-mail</a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                    data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
+                                            </li>
                                         </ul>
                                     </div>
                                 </li>
@@ -71,7 +84,7 @@
                     <div
                         class="animate__animated animate__zoomIn card link-card card-small d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
+                            <i class="fa-solid fa-plus"></i>
                         </div>
                         <i class="fa-solid fa-mountain fa-2x"></i>
                         <p class="mt-2">Adicionar imagem</p>
@@ -80,41 +93,41 @@
                     <div
                         class="animate__animated animate__zoomIn card link-card card-vertical d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
+                            <i class="fa-solid fa-plus"></i>
                         </div>
                         <i class="fa-solid fa-globe fa-2x"></i>
                         <p class="mt-2">Adicionar link</p>
                     </div>
+
                     <div
                         class="animate__animated animate__zoomIn card link-card card-horizontal d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
+                            <i class="fa-brands fa-spotify fa-2x"></i>
                         </div>
-                        <i class="fa-brands fa-spotify fa-2x"></i>
-                        <p class="mt-2">Adicionar music</p>
+                        <p class="mt-2">Adicionar música</p>
                     </div>
+
                     <div
                         class="animate__animated animate__zoomIn card link-card card-large-square d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
+                            <i class="fa-solid fa-video fa-2x"></i>
                         </div>
-                        <i class="fa-solid fa-video fa-2x"></i>
-                        <p class="mt-2">Adicionar video</p>
+                        <p class="mt-2">Adicionar vídeo</p>
                     </div>
+
                     <div
                         class="animate__animated animate__zoomIn card link-card card-vertical2 d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
+                            <i class="fa-solid fa-location-dot fa-2x"></i>
                         </div>
-                        <i class="fa-solid fa-location-dot fa-2x"></i>
-                        <p class="mt-2">Adicionar uma localização</p>
+                        <p class="mt-2">Adicionar localização</p>
                     </div>
+
                     <div
                         class="animate__animated animate__zoomIn card link-card card-small2 d-flex flex-column align-items-center justify-content-center">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
+                            <i class="fa-solid fa-share-alt fa-2x"></i>
                         </div>
-                        <i class="fa-solid fa-share-alt fa-2x"></i>
                         <p class="mt-2">Adicionar link</p>
                     </div>
                 </div>
@@ -129,10 +142,25 @@
                     <i class="fa-solid fa-gear"></i> Configurações
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                    <li><a class="dropdown-item" href="#">Alterar senha</a></li>
-                    <li><a class="dropdown-item" href="#">Alterar e-mail</a></li>
-                    <li><a class="dropdown-item" href="#">Alterar usuário</a></li>
+                    <li>
+                        <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#alterarSenhaModal">
+                            Alterar senha
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal" data-bs-target="#alterarEmailModal">
+                            Alterar e-mail
+                        </a>
+                        <small class="text-muted d-block ms-3 me-3">mateusnmaranhao@gmail.com</small>
+                    </li>
+                    <li>
+                        <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal" data-bs-target="#alterarUsuarioModal">
+                            Alterar usuário
+                        </a>
+                        <small class="text-muted d-block ms-3 me-3">mateusmaranhao12</small>
+                    </li>
                 </ul>
+
             </div>
 
             <router-link to="/usuario" class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-primary"
@@ -142,16 +170,27 @@
         </div>
 
         <Footer class="animate__animated animate__zoomIn" />
+
+        <!-- Inclui os modais -->
+        <AlterarSenha />
+        <AlterarEmail />
+        <AlterarUsuario />
     </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import Footer from '@/components/Footer.vue';
+import AlterarSenha from '@/components/AlterarSenha.vue';
+import AlterarEmail from '@/components/AlterarEmail.vue';
+import AlterarUsuario from '@/components/AlterarUsuario.vue';
 
 @Options({
     components: {
-        Footer
+        Footer,
+        AlterarSenha,
+        AlterarEmail,
+        AlterarUsuario,
     }
 })
 export default class PaginaUsuario extends Vue {
@@ -161,17 +200,13 @@ export default class PaginaUsuario extends Vue {
         this.$router.push('/');
     }
 
-    public carregarImagem(event: Event) { //carregar imagem
-        const target = event.target as HTMLInputElement;
-        const file = target.files?.[0];
-
+    public carregarImagem(event: Event) { // Manipulador de upload de imagem
+        const file = (event.target as HTMLInputElement).files?.[0];
         if (file) {
             const reader = new FileReader();
-
-            reader.onload = (e) => {
-                this.selectedImage = e.target?.result as string; // Atualiza a imagem selecionada
+            reader.onload = () => {
+                this.selectedImage = reader.result as string;
             };
-
             reader.readAsDataURL(file);
         }
     }
