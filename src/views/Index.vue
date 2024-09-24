@@ -1,7 +1,7 @@
 <template>
     <div class="container">
         <div class="row">
-            <div class="col-md-4 mt-5">
+            <div class="col-md-4 mt-5 d-none d-md-block">
                 <img src="../assets/imgs/Insta.png" class="animate__animated animate__zoomIn img-fluid img1">
                 <img src="../assets/imgs/63ebce23e53ac60a7fa7bd43_hero youtube.png" class="animate__animated animate__zoomIn img-fluid img2">
                 <img src="../assets/imgs/63e5079c2efbf624bd00d1e3_hero verge-p-800.png" class="animate__animated animate__zoomIn img-fluid img3">
@@ -26,7 +26,7 @@
                 </div>
 
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3 d-none d-md-block">
                 <img src="../assets/imgs/paint.png" class="animate__animated animate__zoomIn img-fluid img4 img-fluid">
                 <img src="../assets/imgs/tweets.png" class="animate__animated animate__zoomIn img-fluid img5 img-fluid">
             </div>
