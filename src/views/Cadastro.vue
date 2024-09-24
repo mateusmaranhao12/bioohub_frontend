@@ -94,7 +94,7 @@
             <!-- Etapa 3 (Planos) -->
             <div v-if="etapa === 3"
                 :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"
-                class="cadastro col-md-12">
+                class="cadastro col-md-12 mt-3 mb-3">
 
                 <Planos />
 
