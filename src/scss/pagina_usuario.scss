@@ -2,47 +2,78 @@
 @import 'variaveis';
 
 .pagina-usuario {
+
+    h2 {
+        font-weight: $bold;
+        color: $black;
+    }
+
+    .btn-bioohub {
+        bottom: 20px;
+        left: 20px;
+        padding: 10px 20px;
+        background-color: #9436ff;
+        color: white;
+        border-radius: 5px;
+        font-size: 16px;
+        text-align: center;
+        transition: background-color 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-bioohub:hover {
+        background-color: #4500b3;
+    }
+
     .avatar-circle {
-        width: 150px; /* Ajustado para manter proporção */
+        width: 150px;
+        /* Ajustado para manter proporção */
         height: 150px;
         border-radius: 50%;
         background-color: #f5f5f5;
         border: 2px dashed $gray;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        cursor: pointer;
-        position: relative;
+        display: $flex;
+        flex-direction: $column;
+        justify-content: $center;
+        align-items: $center;
+        text-align: $center;
+        cursor: $pointer;
+        position: $relative;
         transition: .3s ease;
 
-        i, p {
-            position: absolute; /* Para que fiquem dentro do círculo */
+        i,
+        p {
+            position: absolute;
+            /* Para que fiquem dentro do círculo */
             color: #6c757d;
         }
 
         p {
-            bottom: 10px; /* Ajuste para a posição do texto */
+            bottom: 10px;
+            /* Ajuste para a posição do texto */
             font-size: 14px;
-            text-align: center;
+            text-align: $center;
         }
 
         i {
-            bottom: 35px; /* Ajuste para a posição do ícone */
+            bottom: 35px;
+            /* Ajuste para a posição do ícone */
             font-size: 24px;
         }
 
         .file-input {
-            position: absolute;
+            position: $absolute;
             width: 100%;
             height: 100%;
-            opacity: 0; /* Esconde o input de file */
-            cursor: pointer; /* Garante que o cursor seja um pointer */
+            opacity: 0;
+            /* Esconde o input de file */
+            cursor: $pointer;
+            /* Garante que o cursor seja um pointer */
         }
 
         label {
-            cursor: pointer; /* Faz com que o clique no círculo também acione o input */
+            cursor: $pointer;
+            /* Faz com que o clique no círculo também acione o input */
             width: 100%;
             height: 100%;
         }
@@ -53,7 +84,7 @@
     }
 
     .input-usuario {
-        border: none;
+        border: $none;
         height: 50px;
         width: 50%;
 
@@ -66,7 +97,7 @@
     }
 
     .input-bio {
-        border: none;
+        border: $none;
         width: 50%;
         font-weight: 100;
 
@@ -79,16 +110,18 @@
         background-color: #f8f9fa;
         border: 1px dashed $gray;
         border-radius: 8px;
-        text-align: center;
-        cursor: pointer;
+        text-align: $center;
+        cursor: $pointer;
         transition: .2s ease;
-        position: relative;
+        position: $relative;
 
         .plus-icon {
-            position: absolute;
+            position: $absolute;
             top: 8px;
-            right: 8px; /* Ajusta a posição para o canto superior direito */
-            font-size: 16px; /* Tamanho do ícone plus */
+            right: 8px;
+            /* Ajusta a posição para o canto superior direito */
+            font-size: 16px;
+            /* Tamanho do ícone plus */
         }
 
         &:hover {
@@ -157,12 +190,12 @@
     }
 
     .btn-logout {
-        position: absolute;
+        position: $absolute;
         top: 20px;
         right: 20px;
         background-color: $azul-roxo;
         color: $white;
-        border: none;
+        border: $none;
         border-radius: 5px;
         padding: 10px 15px;
         transition: background-color 0.3s ease;

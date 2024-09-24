@@ -2,7 +2,7 @@
     <footer class="mb-3 footer d-flex justify-content-center align-items-center">
     <div class="footer-content row">
         <div class="col-md-4">
-            <button class="btn btn-share">Share my Bioohub</button>
+            <button class="btn btn-share">Compartilhar meu Bioohub</button>
         </div>
         <div class="col-md-4 d-flex justify-content-center">
             <i class="fa-solid fa-link fa-2x me-2 icone" title="Add link" style="color: #000000;"></i>

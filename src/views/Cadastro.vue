@@ -9,27 +9,27 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <h2 class="animate__animated animate__zoomIn h2-cadastro mb-3">First, claim your unique link
+                        <h2 class="animate__animated animate__zoomIn h2-cadastro mb-3">Primeiro, escolha seu link exclusivo
                         </h2>
-                        <h5 class="animate__animated animate__zoomIn h5-cadastro">The good ones are still available!
+                        <h5 class="animate__animated animate__zoomIn h5-cadastro">Os bons ainda estão disponíveis!
                         </h5>
 
                         <form>
                             <div class="animate__animated animate__zoomIn input-name input-group mb-3">
                                 <span class="input-group-text">bioohub.me/</span>
-                                <input type="text" class="form-control" placeholder="your-name" aria-label="Username">
+                                <input type="text" class="form-control" placeholder="usuario" aria-label="Username">
                             </div>
                         </form>
 
                         <div class="d-grid gap-2">
                             <button class="animate__animated animate__zoomIn btn btn-secondary btn-form"
-                                @click="proximaEtapa()">Grab my link</button>
+                                @click="proximaEtapa()">Próxima etapa</button>
                         </div>
 
                         <div class="d-flex justify-content-start">
                             <router-link to="/login"
                                 class="animate__animated animate__zoomIn botao-login-tela-cadastro">
-                                Or log-in
+                                Ou faça log-in
                             </router-link>
                         </div>
                     </div>
@@ -49,17 +49,17 @@
                             <i class="fa-solid fa-arrow-left"></i>
                         </button>
                     </div>
-                    <h2 class="mb-5">First, claim your unique link</h2>
+                    <h2 class="mb-5">Insira seu e-mail e senha</h2>
 
                     <form>
                         <div class="row">
                             <div class="col-md-6 mb-2">
-                                <input type="text" class="form-control" placeholder="email" aria-label="E-mail">
+                                <input type="text" class="form-control" placeholder="e-mail" aria-label="E-mail">
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
                                     <input :type="mostrar_senha ? 'text' : 'password'" class="form-control"
-                                        placeholder="password" aria-label="Password" v-model="senha">
+                                        placeholder="senha" aria-label="Senha" v-model="senha">
                                     <button class="btn btn-outline-secondary" type="button"
                                         @click="alternarExibicaoSenha">
                                         <i :class="mostrar_senha ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
@@ -69,16 +69,16 @@
                         </div>
 
                         <div class="d-grid gap-2 mt-3">
-                            <button @click.prevent="proximaEtapa()" class="btn btn-secondary">Create account</button>
+                            <button @click.prevent="proximaEtapa()" class="btn btn-secondary">Criar conta</button>
                         </div>
 
                         <div class="mt-3 mb-3">
-                            <h6>Or</h6>
+                            <h6>Ou</h6>
                         </div>
 
                         <div class="d-grid gap-2 mt-2 mb-2">
                             <button @click.prevent="proximaEtapa()" class="btn btn-primary">
-                                <i class="fa-brands fa-google"></i> Sign up with Google
+                                <i class="fa-brands fa-google"></i> Cadastre-se com o Google
                             </button>
                         </div>
                     </form>
@@ -100,8 +100,8 @@
 
                 <!-- Botões de Skip e Next -->
                 <div class="d-flex mt-3">
-                    <button class="btn btn-light flex-grow-1 me-1" @click="etapaAnterior()">Back</button>
-                    <button class="btn btn-dark flex-grow-1" @click="proximaEtapa()">Next</button>
+                    <button class="btn btn-light flex-grow-1 me-1" @click="etapaAnterior()">Voltar</button>
+                    <button class="btn btn-dark flex-grow-1" @click="proximaEtapa()">Próxima</button>
                 </div>
 
             </div>
