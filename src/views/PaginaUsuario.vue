@@ -84,50 +84,54 @@
                     <div
                         class="animate__animated animate__zoomIn card link-card card-small d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus"></i>
+                            <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
                         <i class="fa-solid fa-mountain fa-2x"></i>
                         <p class="mt-2">Adicionar imagem</p>
                     </div>
 
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-vertical d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-vertical d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus"></i>
+                            <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
                         <i class="fa-solid fa-globe fa-2x"></i>
                         <p class="mt-2">Adicionar link</p>
                     </div>
 
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-horizontal d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-horizontal d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-brands fa-spotify fa-2x"></i>
+                            <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
+                        <i class="fa-brands fa-spotify fa-2x"></i>
                         <p class="mt-2">Adicionar música</p>
                     </div>
 
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-large-square d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-large-square d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-video fa-2x"></i>
+                            <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
+                        <i class="fa-solid fa-video fa-2x"></i>
                         <p class="mt-2">Adicionar vídeo</p>
                     </div>
 
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-vertical2 d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-vertical2 d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-location-dot fa-2x"></i>
+                            <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
+                        <i class="fa-solid fa-location-dot fa-2x"></i>
                         <p class="mt-2">Adicionar localização</p>
                     </div>
 
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-small2 d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-small2 d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-share-alt fa-2x"></i>
+                            <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
+                        <i class="fa-solid fa-share-alt fa-2x"></i>
                         <p class="mt-2">Adicionar link</p>
                     </div>
                 </div>
@@ -148,13 +152,15 @@
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal" data-bs-target="#alterarEmailModal">
+                        <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
+                            data-bs-target="#alterarEmailModal">
                             Alterar e-mail
                         </a>
                         <small class="text-muted d-block ms-3 me-3">mateusnmaranhao@gmail.com</small>
                     </li>
                     <li>
-                        <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal" data-bs-target="#alterarUsuarioModal">
+                        <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
+                            data-bs-target="#alterarUsuarioModal">
                             Alterar usuário
                         </a>
                         <small class="text-muted d-block ms-3 me-3">mateusmaranhao12</small>

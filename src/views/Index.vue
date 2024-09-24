@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-        <div class="row">
+        <div class="row align-items-center justify-content-center">
             <div class="col-md-4 mt-5 d-none d-md-block">
                 <img src="../assets/imgs/Insta.png" class="animate__animated animate__zoomIn img-fluid img1">
                 <img src="../assets/imgs/63e5079c2efbf624bd00d1e3_hero verge-p-800.png" class="animate__animated animate__zoomIn img-fluid img3">
