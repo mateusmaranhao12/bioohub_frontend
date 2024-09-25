@@ -188,7 +188,17 @@ export default class Cadastro extends Vue {
     mensagemErroEmail = ''
 
     public cadastrarUsuario() {
+        //responde ao localhost
+        /*
         axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
+            usuario: this.usuarios.usuario,
+            email: this.usuarios.email,
+            senha: this.usuarios.senha
+        })
+        */
+
+        //responde ao servidor
+        axios.post('https://bioohub.me/src/backend/api/cadastrar_usuario.php', {
             usuario: this.usuarios.usuario,
             email: this.usuarios.email,
             senha: this.usuarios.senha
@@ -314,7 +324,16 @@ export default class Cadastro extends Vue {
                 }
 
                 // Verificação se o usuário ou e-mail já existe
+                //responde ao servidor localhost
+                /*
                 axios.post('http://localhost/Projetos/bioohub/backend/api/verificar_usuario.php', {
+                    usuario: this.usuarios.usuario,
+                    email: this.usuarios.email
+                })
+                */
+
+                //responde ao servidor no cpanel
+                axios.post('https://bioohub.me/src/backend/api/verificar_usuario.php', {
                     usuario: this.usuarios.usuario,
                     email: this.usuarios.email
                 })
