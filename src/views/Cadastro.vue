@@ -3,7 +3,9 @@
         <div class="row w-75">
 
             <!--Alerta de erro ou de sucesso-->
-            <Alerta :mensagem_alerta="mensagem_alerta" />
+            <div class="col-md-12 d-flex justify-content-center mt-2">
+                <Alerta :mensagem_alerta="mensagem_alerta" />
+            </div>
 
             <!-- Etapa 1 -->
             <div v-if="etapa === 1"
@@ -185,7 +187,6 @@ export default class Cadastro extends Vue {
     mensagemErroUsuario = ''
     mensagemErroEmail = ''
 
-    //cadastrar usuario
     public cadastrarUsuario() {
         axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
             usuario: this.usuarios.usuario,
@@ -193,17 +194,24 @@ export default class Cadastro extends Vue {
             senha: this.usuarios.senha
         })
             .then(response => {
-                console.log('usuario cadastrado: ', response.data)
-                this.mostrarMensagemAlerta('fa-solid fa-check', response.data.message, 'alert-success') // Mensagem de sucesso
+                console.log('usuario cadastrado: ', response.data);
+                // Armazena a mensagem de sucesso no sessionStorage
+                sessionStorage.setItem('mensagem_alerta', JSON.stringify({
+                    icone: 'fa-solid fa-check-circle',
+                    mensagem: response.data.message,
+                    status: 'alert-sucesso'
+                }));
+                // Redireciona para PaginaUsuario
                 this.$router.push('/pagina-usuario')
             })
             .catch(error => {
+                // Lógica de erro permanece a mesma
                 if (error.response && error.response.data) {
                     console.log('erro ao cadastrar usuario: ', error.response.data)
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error') // Mensagem de erro
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error')
                 } else {
                     console.log('Erro inesperado:', error)
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro inesperado. Tente novamente.', 'alert-error') // Mensagem de erro inesperado
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro inesperado. Tente novamente.', 'alert-error')
                 }
             })
     }
@@ -350,7 +358,6 @@ export default class Cadastro extends Vue {
             }, 5000)
         }, 0)
     }
-
 
 }
 </script>

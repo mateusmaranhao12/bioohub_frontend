@@ -1,5 +1,11 @@
 <template>
     <div class="container pagina-usuario">
+
+        <!--Alerta de sucesso ao cadastrar usuario-->
+        <div class="col-md-12 d-flex justify-content-center mt-2">
+            <Alerta :mensagem_alerta="mensagem_alerta" />
+        </div>
+
         <button @click="fazerLogout()" class="animate__animated animate__zoomIn btn btn-logout">
             <i class="fa-solid fa-sign-out-alt"></i> Logout
         </button>
@@ -185,14 +191,17 @@
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import Footer from '@/components/Footer.vue';
-import AlterarSenha from '@/components/AlterarSenha.vue';
-import AlterarEmail from '@/components/AlterarEmail.vue';
-import AlterarUsuario from '@/components/AlterarUsuario.vue';
+import { Options, Vue } from 'vue-class-component'
+import Alerta from '@/components/Alerta.vue'
+import Footer from '@/components/Footer.vue'
+import AlterarSenha from '@/components/AlterarSenha.vue'
+import AlterarEmail from '@/components/AlterarEmail.vue'
+import AlterarUsuario from '@/components/AlterarUsuario.vue'
+import { Alert } from '@/interfaces/Alert'
 
 @Options({
     components: {
+        Alerta,
         Footer,
         AlterarSenha,
         AlterarEmail,
@@ -200,21 +209,46 @@ import AlterarUsuario from '@/components/AlterarUsuario.vue';
     }
 })
 export default class PaginaUsuario extends Vue {
-    public selectedImage: string | null = null; // Propriedade para armazenar a imagem selecionada
+    public selectedImage: string | null = null // Propriedade para armazenar a imagem selecionada
+    public mensagem_alerta: Alert | null = null
+
+    mounted() {
+        // Recupera a mensagem do sessionStorage
+        const mensagem = sessionStorage.getItem('mensagem_alerta');
+        if (mensagem) {
+            const alertData = JSON.parse(mensagem);
+            this.mensagem_alerta = alertData; // Define a mensagem de alerta
+            sessionStorage.removeItem('mensagem_alerta'); // Remove a mensagem após exibi-la
+
+            // Exibe a mensagem usando a função mostrarMensagemAlerta
+            this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status);
+        }
+    }
 
     public fazerLogout() { //logout
-        this.$router.push('/');
+        this.$router.push('/')
     }
 
     public carregarImagem(event: Event) { // Manipulador de upload de imagem
-        const file = (event.target as HTMLInputElement).files?.[0];
+        const file = (event.target as HTMLInputElement).files?.[0]
         if (file) {
-            const reader = new FileReader();
+            const reader = new FileReader()
             reader.onload = () => {
-                this.selectedImage = reader.result as string;
+                this.selectedImage = reader.result as string
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(file)
         }
+    }
+
+    // Método para exibir mensagens de alerta
+    //mostrar mensagem alerta
+    private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
+        setTimeout(() => {
+            this.mensagem_alerta = { icone, mensagem, status }
+            setTimeout(() => {
+                this.mensagem_alerta = null
+            }, 5000)
+        }, 0)
     }
 }
 </script>
