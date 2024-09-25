@@ -11,12 +11,12 @@
                     <form>
                         <div class="mb-3">
                             <label for="senhaAnterior" class="form-label">Senha anterior</label>
-                            <input type="password" class="form-control" id="novaSenha"
+                            <input type="password" class="form-control"
                                 placeholder="Digite sua nova senha">
                         </div>
                         <div class="mb-3">
                             <label for="novaSenha" class="form-label">Nova Senha</label>
-                            <input type="password" class="form-control" id="novaSenha"
+                            <input type="password" class="form-control"
                                 placeholder="Digite sua nova senha">
                         </div>
                         <div class="mb-3">

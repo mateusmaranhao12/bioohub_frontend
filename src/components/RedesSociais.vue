@@ -13,8 +13,8 @@
                 </div>
                 <!-- Botões de Skip e Next -->
                 <div class="d-flex mt-3">
-                    <button @click="cadastrarUsuario()" class="btn btn-dark flex-grow-1 me-1">Próximo</button>
-                    <button @click="cadastrarUsuario()" class="btn btn-light flex-grow-1">Pular</button>
+                    <button @click="$emit('cadastrar')" class="btn btn-dark flex-grow-1 me-1">Próximo</button>
+                    <button @click="$emit('cadastrar')" class="btn btn-light flex-grow-1">Pular</button>
                 </div>
             </div>
             <div class="col-md-6">

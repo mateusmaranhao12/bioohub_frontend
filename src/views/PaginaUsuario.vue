@@ -13,7 +13,7 @@
                         style="display:none;">
                     <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
                         <img id="avatar-preview" class="img-fluid rounded-circle"
-                            :src="selectedImage || 'default-avatar.jpg'"
+                            :src="selectedImage || '../default-image.png'"
                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         <i v-if="!selectedImage" class="fa-solid fa-upload fa-2x mb-5"></i>
                         <p v-if="!selectedImage" class="text-center mb-4">Adicionar foto</p>

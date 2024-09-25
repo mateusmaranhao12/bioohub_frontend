@@ -2,6 +2,9 @@
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="row w-75">
 
+            <!--Alerta de erro ou de sucesso-->
+            <Alerta :mensagem_alerta="mensagem_alerta" />
+
             <!-- Etapa 1 -->
             <div v-if="etapa === 1"
                 :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"
@@ -9,22 +12,26 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <h2 class="animate__animated animate__zoomIn h2-cadastro mb-3">Primeiro, escolha seu link exclusivo
+                        <h2 class="animate__animated animate__zoomIn h2-cadastro mb-3">Primeiro, escolha seu link
+                            exclusivo
                         </h2>
                         <h5 class="animate__animated animate__zoomIn h5-cadastro">Os bons ainda estão disponíveis!
                         </h5>
 
-                        <form>
+                        <form @submit.prevent="proximaEtapa">
                             <div class="animate__animated animate__zoomIn input-name input-group mb-3">
                                 <span class="input-group-text">bioohub.me/</span>
-                                <input type="text" class="form-control" placeholder="usuario" aria-label="Username">
+                                <input @input="validarUsuario" v-model="usuarios.usuario" type="text"
+                                    class="form-control" placeholder="usuario" aria-label="Username">
+                            </div>
+                            <span :style="{ color: corMensagemUsuario }">{{ mensagemUsuario }}</span>
+
+                            <div class="d-grid gap-2">
+                                <button
+                                    class="mt-2 animate__animated animate__zoomIn btn btn-secondary btn-form">Próxima
+                                    etapa</button>
                             </div>
                         </form>
-
-                        <div class="d-grid gap-2">
-                            <button class="animate__animated animate__zoomIn btn btn-secondary btn-form"
-                                @click="proximaEtapa()">Próxima etapa</button>
-                        </div>
 
                         <div class="d-flex justify-content-start">
                             <router-link to="/login"
@@ -42,7 +49,9 @@
 
 
             <!-- Etapa 2 -->
-            <div v-if="etapa === 2" class="row cadastro" :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"> <!-- Adicionado row aqui -->
+            <div v-if="etapa === 2" class="row cadastro"
+                :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }">
+                <!-- Adicionado row aqui -->
                 <div class="col-md-6 mb-2">
                     <div class="d-flex justify-content-start">
                         <button class="arrow-left" @click="etapaAnterior()">
@@ -51,25 +60,28 @@
                     </div>
                     <h2 class="mb-5">Insira seu e-mail e senha</h2>
 
-                    <form>
+                    <form @submit.prevent="proximaEtapa">
                         <div class="row">
                             <div class="col-md-6 mb-2">
-                                <input type="text" class="form-control" placeholder="e-mail" aria-label="E-mail">
+                                <input v-model="usuarios.email" type="text" class="form-control" placeholder="e-mail"
+                                    aria-label="E-mail">
                             </div>
                             <div class="col-md-6">
                                 <div class="input-group">
-                                    <input :type="mostrar_senha ? 'text' : 'password'" class="form-control"
-                                        placeholder="senha" aria-label="Senha" v-model="senha">
+                                    <input @input="validarSenha" v-model="usuarios.senha"
+                                        :type="mostrar_senha ? 'text' : 'password'" class="form-control"
+                                        placeholder="senha" aria-label="Senha">
                                     <button class="btn btn-outline-secondary" type="button"
                                         @click="alternarExibicaoSenha">
                                         <i :class="mostrar_senha ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
                                     </button>
                                 </div>
+                                <span :style="{ color: corMensagemSenha }">{{ mensagemSenha }}</span>
                             </div>
                         </div>
 
                         <div class="d-grid gap-2 mt-3">
-                            <button @click.prevent="proximaEtapa()" class="btn btn-secondary">Criar conta</button>
+                            <button class="btn btn-secondary">Criar conta</button>
                         </div>
 
                         <div class="mt-3 mb-3">
@@ -77,7 +89,7 @@
                         </div>
 
                         <div class="d-grid gap-2 mt-2 mb-2">
-                            <button @click.prevent="proximaEtapa()" class="btn btn-primary">
+                            <button class="btn btn-primary">
                                 <i class="fa-brands fa-google"></i> Cadastre-se com o Google
                             </button>
                         </div>
@@ -111,7 +123,8 @@
                 :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"
                 class="cadastro col-md-12">
 
-                <RedesSociais />
+                <!--Funcao cadastrar usuario-->
+                <RedesSociais @cadastrar="cadastrarUsuario()" />
 
             </div>
         </div>
@@ -123,10 +136,14 @@
 import { Options, Vue } from 'vue-class-component'
 import Planos from '../components/Planos.vue'
 import RedesSociais from '@/components/RedesSociais.vue'
+import Alerta from '@/components/Alerta.vue'
 import GrabLink from '@/components/GrabLink.vue'
+import axios from 'axios'
+import { Alert } from '@/interfaces/Alert'
 
 @Options({
     components: {
+        Alerta,
         Planos,
         RedesSociais,
         GrabLink
@@ -146,20 +163,176 @@ export default class Cadastro extends Vue {
     animacaoEntrada = false
     animacaoSaida = false
 
+    //usuarios
+    usuarios = {
+        usuario: '',
+        email: '',
+        senha: ''
+    }
+
+    //mensagem_alerta
+    mensagem_alerta: Alert | null = null
+
+    //mensagens de validação de senha
+    mensagemSenha = ''
+    corMensagemSenha = 'black'
+
+    //mensagens de validação de usuario
+    mensagemUsuario = ''
+    corMensagemUsuario = 'black'
+
+    //mensagem de erro de usuario ou email ja em uso
+    mensagemErroUsuario = ''
+    mensagemErroEmail = ''
+
+    //cadastrar usuario
+    public cadastrarUsuario() {
+        axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
+            usuario: this.usuarios.usuario,
+            email: this.usuarios.email,
+            senha: this.usuarios.senha
+        })
+            .then(response => {
+                console.log('usuario cadastrado: ', response.data)
+                this.mostrarMensagemAlerta('fa-solid fa-check', response.data.message, 'alert-success') // Mensagem de sucesso
+                this.$router.push('/pagina-usuario')
+            })
+            .catch(error => {
+                if (error.response && error.response.data) {
+                    console.log('erro ao cadastrar usuario: ', error.response.data)
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error') // Mensagem de erro
+                } else {
+                    console.log('Erro inesperado:', error)
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro inesperado. Tente novamente.', 'alert-error') // Mensagem de erro inesperado
+                }
+            })
+    }
+
+    //validar email
+    public validarEmail(email: string): boolean {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    }
+
+    //validar senha
+    public validarSenha() {
+
+        const senha = this.usuarios.senha
+        if (senha.length < 5) {
+            this.mensagemSenha = 'Senha fraca'
+            this.corMensagemSenha = 'red'
+        } else if (senha.length >= 5 && senha.length < 8) {
+            this.mensagemSenha = 'Vulnerável'
+            this.corMensagemSenha = 'orange'
+        } else if (senha.length >= 10 && !/[A-Z]/.test(senha)) {
+            this.mensagemSenha = 'Forte'
+            this.corMensagemSenha = 'green'
+        } else if (senha.length >= 10 && /[A-Z]/.test(senha) && /[!@#$%^&*(),.?":{}|<>]/.test(senha)) {
+            this.mensagemSenha = 'Senha muito forte'
+            this.corMensagemSenha = 'darkgreen'
+        } else if (senha.length >= 10) {
+            this.mensagemSenha = 'Forte'
+            this.corMensagemSenha = 'green'
+        }
+
+    }
+
+    //validar usuario
+    public validarUsuario() {
+
+        const usuario = this.usuarios.usuario
+        if (usuario.length < 4) {
+            this.mensagemUsuario = 'Usuário muito curto'
+            this.corMensagemUsuario = 'red'
+        } else if (usuario.length >= 4) {
+            this.mensagemUsuario = 'Usuário válido'
+            this.corMensagemUsuario = 'green'
+        }
+
+    }
+
+    //alternar exibicao da senha
     public alternarExibicaoSenha() {
         this.mostrar_senha = !this.mostrar_senha
     }
 
     public proximaEtapa() { //proxima etapa
-        this.animacaoSaida = true
-        setTimeout(() => {
-            this.etapa++
-            this.animacaoSaida = false
-            this.animacaoEntrada = true
-        }, 1000)
+        this.validarDados()
+            .then(() => {
+                // Avança para a próxima etapa se a validação for bem-sucedida
+                this.animacaoSaida = true
+                setTimeout(() => {
+                    this.etapa++
+                    this.animacaoSaida = false
+                    this.animacaoEntrada = true
+                }, 1000)
+            })
+            .catch((error) => {
+                // Mensagem de erro já exibida dentro do método validarDados()
+                console.log(error)
+            })
     }
 
-    public etapaAnterior() { //etapa anterior
+    public validarDados(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            // Verificação da etapa 1 (usuário)
+            if (this.etapa === 1) {
+                if (this.usuarios.usuario.length < 4) {
+                    this.mensagemErroUsuario = 'Insira um nome de usuário com no mínimo 4 caracteres!'
+                    this.mensagemErroEmail = ''
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroUsuario, 'alert-error')
+                    return reject(new Error(this.mensagemErroUsuario))
+                } else {
+                    this.mensagemErroUsuario = ''
+                }
+            }
+
+            // Verificação da etapa 2 (e-mail e senha)
+            if (this.etapa === 2) {
+                if (!this.validarEmail(this.usuarios.email)) {
+                    this.mensagemErroEmail = 'Insira um e-mail válido!'
+                    this.mensagemErroUsuario = ''
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error')
+                    return reject(new Error(this.mensagemErroEmail))
+                } else {
+                    this.mensagemErroEmail = ''
+                }
+
+                if (this.usuarios.senha.length < 5) {
+                    this.mensagemErroEmail = ''
+                    this.mensagemErroUsuario = ''
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Insira uma senha com no mínimo 5 caracteres!', 'alert-error')
+                    return reject(new Error('Insira uma senha com no mínimo 5 caracteres!'))
+                }
+
+                // Verificação se o usuário ou e-mail já existe
+                axios.post('http://localhost/Projetos/bioohub/backend/api/verificar_usuario.php', {
+                    usuario: this.usuarios.usuario,
+                    email: this.usuarios.email
+                })
+                    .then(response => {
+                        resolve() // Se a verificação for bem-sucedida
+                    })
+                    .catch(error => {
+                        if (error.response && error.response.data) {
+                            this.mensagemErroEmail = error.response.data.message
+                            this.mensagemErroUsuario = ''
+                            this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error')
+                            return reject(new Error(this.mensagemErroEmail)) // Rejeita a promise sem logar no console
+                        }
+                    })
+
+                return
+            }
+
+            // Se todas as validações passarem, resolve a Promise
+            resolve()
+        })
+    }
+
+
+    //etapa anterior
+    public etapaAnterior() {
         this.animacaoSaida = true
         setTimeout(() => {
             this.etapa--
@@ -167,6 +340,17 @@ export default class Cadastro extends Vue {
             this.animacaoEntrada = true
         }, 1000)
     }
+
+    //mostrar mensagem alerta
+    private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
+        setTimeout(() => {
+            this.mensagem_alerta = { icone, mensagem, status }
+            setTimeout(() => {
+                this.mensagem_alerta = null
+            }, 5000)
+        }, 0)
+    }
+
 
 }
 </script>
