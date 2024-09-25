@@ -2,17 +2,17 @@
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="row w-75">
 
+            <!--Alerta de erro ou de sucesso-->
+            <div class="col-md-12 d-flex justify-content-center mt-2">
+                <Alerta :mensagem_alerta="mensagem_alerta" />
+            </div>
+
             <!-- Etapa 1 -->
             <div v-if="etapa === 1"
                 :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"
                 class="cadastro">
 
                 <div class="row">
-
-                    <!--Alerta de erro ou de sucesso-->
-                    <div class="col-md-12 d-flex justify-content-center mt-2">
-                        <Alerta :mensagem_alerta="mensagem_alerta" />
-                    </div>
 
                     <div class="col-md-6">
                         <h2 class="animate__animated animate__zoomIn h2-cadastro mb-3">Primeiro, escolha seu link
@@ -44,7 +44,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-6">
+                    <div class="d-none d-md-block col-md-6">
                         <GrabLink />
                     </div>
                 </div>
@@ -56,10 +56,6 @@
                 :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }">
                 <!-- Adicionado row aqui -->
                 <div class="col-md-6 mb-2">
-                    <!--Alerta de erro ou de sucesso-->
-                    <div class="col-md-12 d-flex justify-content-center mt-2">
-                        <Alerta :mensagem_alerta="mensagem_alerta" />
-                    </div>
                     <div class="d-flex justify-content-start">
                         <button class="arrow-left" @click="etapaAnterior()">
                             <i class="fa-solid fa-arrow-left"></i>
@@ -104,7 +100,7 @@
                 </div>
 
                 <!-- Adicionando o img-rodando na mesma linha -->
-                <div class="col-md-6 img-rodando animate__animated animate__zoomIn">
+                <div class="col-md-6 d-none d-md-block img-rodando animate__animated animate__zoomIn">
                     <img class="img-fluid img-rodando-2" src="../assets/imgs/63ebce23e53ac60a7fa7bd43_hero youtube.png">
                     <img class="img-fluid img-rodando-3" src="../assets/imgs/Insta.png">
                 </div>
