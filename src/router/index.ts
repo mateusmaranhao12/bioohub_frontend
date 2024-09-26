@@ -7,6 +7,11 @@ import Login from '../views/Login.vue'
 import PaginaUsuario from '@/views/PaginaUsuario.vue'
 import Usuario from '@/views/Usuario.vue'
 
+function isAuthenticated() { //verificar se o usuario está autenticado
+  //verificar se o email do usuário está salvo no sessionStorage
+  return !!sessionStorage.getItem('user_email')
+}
+
 const routes: Array<RouteRecordRaw> = [
 
   //Index.vue
@@ -34,7 +39,15 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/pagina-usuario',
     name: 'pagina-usuario',
-    component: PaginaUsuario
+    component: PaginaUsuario,
+    beforeEnter: (to, from, next) => {
+
+      if (!isAuthenticated()) {
+        next({ name: 'login' })
+      } else {
+        next()
+      }
+    }
   },
 
   //Usuario.vue

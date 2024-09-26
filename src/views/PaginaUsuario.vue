@@ -214,6 +214,10 @@ import { mapActions } from 'vuex'
     }
 })
 export default class PaginaUsuario extends Vue {
+
+    email = ''
+    senha = ''
+
     public selectedImage: string | null = null // Propriedade para armazenar a imagem selecionada
     public mensagem_alerta: Alert | null = null
 
@@ -230,17 +234,25 @@ export default class PaginaUsuario extends Vue {
 
             this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status)
         }
+
+        // Recuperar o email do usuário do sessionStorage
+        this.email = sessionStorage.getItem('user_email') || ''
     }
 
-    public fazerLogout() {
+    public fazerLogout() { //fazer logout
+        
         this.logout()
             .then(() => {
+                sessionStorage.removeItem('user_email') // Remover o email do sessionStorage
                 this.$router.push('/')
             })
             .catch((error: unknown) => {
                 console.error("Logout failed:", error)
             })
+
     }
+
+
 
     public carregarImagem(event: Event) { // Manipulador de upload de imagem
         const file = (event.target as HTMLInputElement).files?.[0]

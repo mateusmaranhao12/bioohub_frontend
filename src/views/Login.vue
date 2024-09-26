@@ -102,6 +102,8 @@ export default class Login extends Vue {
             })
 
             if (response.data.success) {
+                // Salvar o email do usuário no sessionStorage
+                sessionStorage.setItem('user_email', this.email);
 
                 sessionStorage.setItem('mensagem_alerta', JSON.stringify({
                     icone: 'fa-solid fa-check-circle',
