@@ -198,8 +198,7 @@ export default class Cadastro extends Vue {
         })*/
 
         //responde ao servidor
-
-
+        
         axios.post('https://bioohub.me/src/backend/api/cadastrar_usuario.php', {
             usuario: this.usuarios.usuario,
             email: this.usuarios.email,
