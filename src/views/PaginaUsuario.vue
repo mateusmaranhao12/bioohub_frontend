@@ -198,6 +198,7 @@ import AlterarSenha from '@/components/AlterarSenha.vue'
 import AlterarEmail from '@/components/AlterarEmail.vue'
 import AlterarUsuario from '@/components/AlterarUsuario.vue'
 import { Alert } from '@/interfaces/Alert'
+import { mapActions } from 'vuex'
 
 @Options({
     components: {
@@ -206,11 +207,18 @@ import { Alert } from '@/interfaces/Alert'
         AlterarSenha,
         AlterarEmail,
         AlterarUsuario,
+    },
+
+    methods: {
+        ...mapActions(['logout'])
     }
 })
 export default class PaginaUsuario extends Vue {
     public selectedImage: string | null = null // Propriedade para armazenar a imagem selecionada
     public mensagem_alerta: Alert | null = null
+
+    //mapeando ações do vuex
+    private logout!: () => Promise<void>
 
     mounted() {
         // Recupera a mensagem do sessionStorage
@@ -224,8 +232,14 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    public fazerLogout() { //logout
-        this.$router.push('/')
+    public fazerLogout() {
+        this.logout()
+            .then(() => {
+                this.$router.push('/')
+            })
+            .catch((error: unknown) => {
+                console.error("Logout failed:", error)
+            })
     }
 
     public carregarImagem(event: Event) { // Manipulador de upload de imagem
@@ -234,7 +248,7 @@ export default class PaginaUsuario extends Vue {
             const reader = new FileReader()
             reader.onload = () => {
                 this.selectedImage = reader.result as string
-            };
+            }
             reader.readAsDataURL(file)
         }
     }

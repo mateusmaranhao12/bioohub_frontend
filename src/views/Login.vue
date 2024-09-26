@@ -9,7 +9,7 @@
                 <div class="col-md-12 d-flex justify-content-center mt-2">
                     <Alerta :mensagem_alerta="mensagem_alerta" />
                 </div>
-                
+
                 <form>
                     <div class="animate__animated animate__zoomIn mb-4">
                         <input type="email" v-model="email" class="form-control" placeholder="Email" aria-label="Email">
@@ -59,10 +59,15 @@ import { Options, Vue } from 'vue-class-component'
 import axios from 'axios'
 import { Alert } from '@/interfaces/Alert'
 import Alerta from '@/components/Alerta.vue'
+import { mapActions } from 'vuex'
 
 @Options({
     components: {
         Alerta
+    },
+
+    methods: {
+        ...mapActions(['login'])
     }
 })
 
@@ -74,6 +79,9 @@ export default class Login extends Vue {
 
     //mensagem_alerta
     mensagem_alerta: Alert | null = null
+
+    //mapeando ações do vuex
+    private login!: () => Promise<void>
 
     //alternar exibiçao da senha
     alternarExibicaoSenha() {
