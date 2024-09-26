@@ -214,14 +214,13 @@ export default class PaginaUsuario extends Vue {
 
     mounted() {
         // Recupera a mensagem do sessionStorage
-        const mensagem = sessionStorage.getItem('mensagem_alerta');
+        const mensagem = sessionStorage.getItem('mensagem_alerta')
         if (mensagem) {
-            const alertData = JSON.parse(mensagem);
-            this.mensagem_alerta = alertData; // Define a mensagem de alerta
-            sessionStorage.removeItem('mensagem_alerta'); // Remove a mensagem após exibi-la
+            const alertData = JSON.parse(mensagem)
+            this.mensagem_alerta = alertData // Define a mensagem de alerta
+            sessionStorage.removeItem('mensagem_alerta') // Remove a mensagem após exibi-la
 
-            // Exibe a mensagem usando a função mostrarMensagemAlerta
-            this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status);
+            this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status)
         }
     }
 
