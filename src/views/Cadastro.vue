@@ -188,37 +188,40 @@ export default class Cadastro extends Vue {
     mensagemErroUsuario = ''
     mensagemErroEmail = ''
 
-    public cadastrarUsuario() {
-        //responde ao localhost
+    public cadastrarUsuario() { //cadastrar usuario
 
+        //responde ao servidor localhost
         /*axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
             usuario: this.usuarios.usuario,
             email: this.usuarios.email,
             senha: this.usuarios.senha
         })*/
 
-        //responde ao servidor
-        
+        //responde ao servidor cpanel
         axios.post('https://bioohub.me/src/backend/api/cadastrar_usuario.php', {
             usuario: this.usuarios.usuario,
             email: this.usuarios.email,
             senha: this.usuarios.senha
         })
             .then(response => {
-                console.log('usuario cadastrado: ', response.data);
+                console.log('usuario cadastrado: ', response.data)
+
+                // Armazena o email do usuário no sessionStorage
+                sessionStorage.setItem('user_email', this.usuarios.email)
+
                 // Armazena a mensagem de sucesso no sessionStorage
                 sessionStorage.setItem('mensagem_alerta', JSON.stringify({
                     icone: 'fa-solid fa-check-circle',
                     mensagem: response.data.message,
                     status: 'alert-sucesso'
-                }));
+                }))
+
                 // Redireciona para PaginaUsuario
                 this.$router.push('/pagina-usuario')
             })
             .catch(error => {
-                // Lógica de erro permanece a mesma
                 if (error.response && error.response.data) {
-                    console.log('erro ao cadastrar usuario: ', error.response.data)
+                    console.log('erro ao cadastrar usuario: ', error.response.data);
                     this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error')
                 } else {
                     console.log('Erro inesperado:', error)
@@ -338,20 +341,20 @@ export default class Cadastro extends Vue {
                     email: this.usuarios.email
                 })
 
-                
-                .then(response => {
-                    resolve() // Se a verificação for bem-sucedida
-                })
-                .catch(error => {
-                    if (error.response && error.response.data) {
-                        this.mensagemErroEmail = error.response.data.message
-                        this.mensagemErroUsuario = ''
-                        this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error')
-                        return reject(new Error(this.mensagemErroEmail)) // Rejeita a promise sem logar no console
-                    }
-                })
 
-            return
+                    .then(response => {
+                        resolve() // Se a verificação for bem-sucedida
+                    })
+                    .catch(error => {
+                        if (error.response && error.response.data) {
+                            this.mensagemErroEmail = error.response.data.message
+                            this.mensagemErroUsuario = ''
+                            this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error')
+                            return reject(new Error(this.mensagemErroEmail)) // Rejeita a promise sem logar no console
+                        }
+                    })
+
+                return
             }
 
             // Se todas as validações passarem, resolve a Promise
