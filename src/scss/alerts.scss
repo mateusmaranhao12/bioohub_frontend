@@ -15,4 +15,10 @@
         color: $white;
         font-weight: $bold;
     }
+
+    &.alert-aviso {
+        background-color: rgb(255, 153, 0);
+        color: $white;
+        font-weight: $bold;
+    }
 }

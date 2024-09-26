@@ -6,10 +6,6 @@
             <Alerta :mensagem_alerta="mensagem_alerta" />
         </div>
 
-        <button @click="fazerLogout()" class="animate__animated animate__zoomIn btn btn-logout">
-            <i class="fa-solid fa-sign-out-alt"></i> Logout
-        </button>
-
         <div class="row">
             <!-- Coluna Dados -->
             <div class="col-md-6 mt-5">
@@ -70,6 +66,10 @@
                                                 <li>
                                                     <a class="dropdown-item" href="#" data-bs-toggle="modal"
                                                         data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
+                                                </li>
+                                                <li>
+                                                    <a @click="fazerLogout()" class="dropdown-item" href="#">
+                                                        <i class="fa-solid fa-sign-out-alt"></i> Logout</a>
                                                 </li>
                                             </ul>
                                         </div>
@@ -171,6 +171,10 @@
                                 data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
                             <small class="text-muted d-block ms-3 me-3">mateusmaranhao12</small>
                         </li>
+                        <li>
+                            <a @click="fazerLogout()" class="dropdown-item mt-2" href="#">
+                                <i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+                        </li>
                     </ul>
                 </div>
 
@@ -240,7 +244,7 @@ export default class PaginaUsuario extends Vue {
     }
 
     public fazerLogout() { //fazer logout
-        
+
         this.logout()
             .then(() => {
                 sessionStorage.removeItem('user_email') // Remover o email do sessionStorage

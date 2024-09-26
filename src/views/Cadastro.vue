@@ -92,7 +92,7 @@
                         </div>
 
                         <div class="d-grid gap-2 mt-2 mb-2">
-                            <button class="btn btn-primary">
+                            <button class="btn btn-primary" @click.prevent="cadastroComGoogle()">
                                 <i class="fa-brands fa-google"></i> Cadastre-se com o Google
                             </button>
                         </div>
@@ -127,7 +127,7 @@
                 class="cadastro col-md-12">
 
                 <!--Funcao cadastrar usuario-->
-                <RedesSociais @cadastrar="cadastrarUsuario()" />
+                <RedesSociais @validar-e-continuar="validarEContinuar" @pular="pularEtapa" />
 
             </div>
         </div>
@@ -188,47 +188,184 @@ export default class Cadastro extends Vue {
     mensagemErroUsuario = ''
     mensagemErroEmail = ''
 
-    //cadastrar usuario
-    public cadastrarUsuario() {
+    //redes sociais selecionadas
+    redesSociaisSelecionadas: Array<{ nome: string, usuario: string }> = [];
+    usuario_id: number | null = null; // Armazenar o ID do usuário
 
-        //responde ao servidor localhost
-        /*axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
-            usuario: this.usuarios.usuario,
-            email: this.usuarios.email,
-            senha: this.usuarios.senha
-        })*/
+    // Cadastrar usuário
+    public cadastrarUsuario(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            console.log('Dados a serem enviados para cadastro de usuário: ', {
+                usuario: this.usuarios.usuario,
+                email: this.usuarios.email,
+                senha: this.usuarios.senha
+            });
 
-        //responde ao servidor cpanel
-        axios.post('https://bioohub.me/src/backend/api/cadastrar_usuario.php', {
-            usuario: this.usuarios.usuario,
-            email: this.usuarios.email,
-            senha: this.usuarios.senha
-        })
-            .then(response => {
-                console.log('usuario cadastrado: ', response.data)
+            // Responde ao servidor cpanel
+            /*axios.post('https://bioohub.me/src/backend/api/cadastrar_usuario.php', {
+                usuario: this.usuarios.usuario,
+                email: this.usuarios.email,
+                senha: this.usuarios.senha
+            })*/
 
-                // Armazena o email do usuário no sessionStorage
-                sessionStorage.setItem('user_email', this.usuarios.email)
+            // Responde ao servidor localhost
+            axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
+                usuario: this.usuarios.usuario,
+                email: this.usuarios.email,
+                senha: this.usuarios.senha
+            })
+                .then(response => {
+                    console.log('Usuario cadastrado: ', response.data);
 
-                // Armazena a mensagem de sucesso no sessionStorage
-                sessionStorage.setItem('mensagem_alerta', JSON.stringify({
-                    icone: 'fa-solid fa-check-circle',
-                    mensagem: response.data.message,
-                    status: 'alert-sucesso'
-                }))
+                    // Armazena o email do usuário no sessionStorage
+                    sessionStorage.setItem('user_email', this.usuarios.email);
 
-                // Redireciona para PaginaUsuario
-                this.$router.push('/pagina-usuario')
+                    // Armazena a mensagem de sucesso no sessionStorage
+                    sessionStorage.setItem('mensagem_alerta', JSON.stringify({
+                        icone: 'fa-solid fa-check-circle',
+                        mensagem: response.data.message,
+                        status: 'alert-sucesso'
+                    }));
+
+                    this.usuario_id = response.data.usuario_id;
+
+                    // Verificar se adicionou redes sociais
+                    if (this.redesSociaisSelecionadas.length > 0) {
+                        this.cadastrarRedesSociais().then(resolve).catch(reject);
+                    } else {
+                        // Redireciona para a página do usuário se não houver redes sociais
+                        this.$router.push('/pagina-usuario');
+                        resolve(); // Resolve a promise
+                    }
+                })
+                .catch(error => {
+                    if (error.response && error.response.data) {
+                        console.log('Erro ao cadastrar usuario: ', error.response.data);
+                        this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error');
+                        return reject(new Error(error.response.data.message));
+                    } else {
+                        console.log('Erro inesperado:', error);
+                        this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro inesperado. Tente novamente.', 'alert-error');
+                        return reject(new Error('Erro inesperado.'));
+                    }
+                });
+        });
+    }
+
+    // Adicionar redes sociais
+    public cadastrarRedesSociais(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            console.log('Dados a serem enviados para cadastro de redes sociais: ', {
+                usuario_id: this.usuario_id,
+                redes: this.redesSociaisSelecionadas
+            });
+
+            axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', {
+                usuario_id: this.usuario_id,
+                redes: this.redesSociaisSelecionadas
+            })
+                .then(response => {
+                    console.log('Redes sociais cadastradas: ', response.data);
+                    this.$router.push('/pagina-usuario');
+                    resolve(); // Resolve a promise
+                })
+                .catch(error => {
+                    console.log('Erro ao cadastrar redes sociais: ', error); // Log do erro
+                    if (error.response && error.response.data) {
+                        console.error('Resposta do servidor: ', error.response.data); // Log da resposta do servidor
+                    } else {
+                        console.error('Erro inesperado:', error);
+                    }
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro ao cadastrar redes sociais.', 'alert-error');
+                    reject(new Error('Erro ao cadastrar redes sociais.')); // Rejeita a promise
+                });
+        });
+    }
+
+    // Validar dados
+    public validarDados(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            // Verificação da etapa 1 (usuário)
+            if (this.etapa === 1) {
+                if (this.usuarios.usuario.length < 4) {
+                    this.mensagemErroUsuario = 'Insira um nome de usuário com no mínimo 4 caracteres!';
+                    this.mensagemErroEmail = '';
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroUsuario, 'alert-error');
+                    return reject(new Error(this.mensagemErroUsuario));
+                } else {
+                    this.mensagemErroUsuario = '';
+                }
+            }
+
+            // Verificação da etapa 2 (e-mail e senha)
+            if (this.etapa === 2) {
+                if (!this.validarEmail(this.usuarios.email)) {
+                    this.mensagemErroEmail = 'Insira um e-mail válido!';
+                    this.mensagemErroUsuario = '';
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error');
+                    return reject(new Error(this.mensagemErroEmail));
+                } else {
+                    this.mensagemErroEmail = '';
+                }
+
+                if (this.usuarios.senha.length < 5) {
+                    this.mensagemErroEmail = '';
+                    this.mensagemErroUsuario = '';
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Insira uma senha com no mínimo 5 caracteres!', 'alert-error');
+                    return reject(new Error('Insira uma senha com no mínimo 5 caracteres!'));
+                }
+
+                // Verificação se o usuário ou e-mail já existe
+                axios.post('http://localhost/Projetos/bioohub/backend/api/verificar_usuario.php', {
+                    usuario: this.usuarios.usuario,
+                    email: this.usuarios.email
+                })
+                    .then(response => {
+                        resolve(); // Se a verificação for bem-sucedida
+                    })
+                    .catch(error => {
+                        if (error.response && error.response.data) {
+                            this.mensagemErroEmail = error.response.data.message;
+                            this.mensagemErroUsuario = '';
+                            this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error');
+                            return reject(new Error(this.mensagemErroEmail)); // Rejeita a promise sem logar no console
+                        }
+                    });
+
+                return; // Importante retornar aqui para evitar que a execução continue
+            }
+
+            // Se todas as validações passarem, resolve a Promise
+            resolve();
+        });
+    }
+
+    // Validar e continuar
+    public async validarEContinuar() {
+        try {
+            await this.validarDados();
+            await this.cadastrarUsuario();
+        } catch (error) {
+            console.error('Erro na validação ou cadastro: ', error);
+        }
+    }
+
+    // Pular etapa
+    public pularEtapa() {
+        // Chama o método de cadastro de usuário antes de redirecionar
+        this.cadastrarUsuario()
+            .then(() => {
+                // Redireciona para a página do usuário
+                this.$router.push('/pagina-usuario');
             })
             .catch(error => {
-                if (error.response && error.response.data) {
-                    console.log('erro ao cadastrar usuario: ', error.response.data);
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error')
-                } else {
-                    console.log('Erro inesperado:', error)
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro inesperado. Tente novamente.', 'alert-error')
-                }
-            })
+                console.error('Erro ao cadastrar usuário durante a etapa de pular:', error);
+            });
+    }
+
+
+    public cadastroComGoogle() {
+        console.log('cadastro com google')
     }
 
     //validar email
@@ -295,74 +432,6 @@ export default class Cadastro extends Vue {
                 console.log(error)
             })
     }
-
-    public validarDados(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            // Verificação da etapa 1 (usuário)
-            if (this.etapa === 1) {
-                if (this.usuarios.usuario.length < 4) {
-                    this.mensagemErroUsuario = 'Insira um nome de usuário com no mínimo 4 caracteres!'
-                    this.mensagemErroEmail = ''
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroUsuario, 'alert-error')
-                    return reject(new Error(this.mensagemErroUsuario))
-                } else {
-                    this.mensagemErroUsuario = ''
-                }
-            }
-
-            // Verificação da etapa 2 (e-mail e senha)
-            if (this.etapa === 2) {
-                if (!this.validarEmail(this.usuarios.email)) {
-                    this.mensagemErroEmail = 'Insira um e-mail válido!'
-                    this.mensagemErroUsuario = ''
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error')
-                    return reject(new Error(this.mensagemErroEmail))
-                } else {
-                    this.mensagemErroEmail = ''
-                }
-
-                if (this.usuarios.senha.length < 5) {
-                    this.mensagemErroEmail = ''
-                    this.mensagemErroUsuario = ''
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Insira uma senha com no mínimo 5 caracteres!', 'alert-error')
-                    return reject(new Error('Insira uma senha com no mínimo 5 caracteres!'))
-                }
-
-                // Verificação se o usuário ou e-mail já existe
-                //responde ao servidor localhost
-
-                /*axios.post('http://localhost/Projetos/bioohub/backend/api/verificar_usuario.php', {
-                    usuario: this.usuarios.usuario,
-                    email: this.usuarios.email
-                })*/
-
-                //responde ao servidor no cpanel
-                axios.post('https://bioohub.me/src/backend/api/verificar_usuario.php', {
-                    usuario: this.usuarios.usuario,
-                    email: this.usuarios.email
-                })
-
-
-                    .then(response => {
-                        resolve() // Se a verificação for bem-sucedida
-                    })
-                    .catch(error => {
-                        if (error.response && error.response.data) {
-                            this.mensagemErroEmail = error.response.data.message
-                            this.mensagemErroUsuario = ''
-                            this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error')
-                            return reject(new Error(this.mensagemErroEmail)) // Rejeita a promise sem logar no console
-                        }
-                    })
-
-                return
-            }
-
-            // Se todas as validações passarem, resolve a Promise
-            resolve()
-        })
-    }
-
 
     //etapa anterior
     public etapaAnterior() {

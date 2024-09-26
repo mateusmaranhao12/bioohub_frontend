@@ -188,6 +188,17 @@
                 margin-top: 15px;
                 margin-bottom: 15px;
             }
+
+            .btn-remove {
+                position: absolute; // Permite que o botão de remover fique no canto superior direito
+                top: 10px; // Distância do topo
+                right: 10px; // Distância da direita
+                display: none; // Oculta o botão por padrão
+            }
+        }
+
+        &:hover .btn-remove {
+            display: block; // Mostra o botão de remover quando o card é hovered
         }
     }
 }
