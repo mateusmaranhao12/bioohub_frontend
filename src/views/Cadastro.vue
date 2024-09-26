@@ -188,7 +188,8 @@ export default class Cadastro extends Vue {
     mensagemErroUsuario = ''
     mensagemErroEmail = ''
 
-    public cadastrarUsuario() { //cadastrar usuario
+    //cadastrar usuario
+    public cadastrarUsuario() {
 
         //responde ao servidor localhost
         /*axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
