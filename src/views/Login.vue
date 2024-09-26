@@ -96,7 +96,15 @@ export default class Login extends Vue {
         }
 
         try {
+            /*
+            //localhost
             const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/login.php', {
+                email: this.email,
+                senha: this.senha
+            })*/
+
+            //servidor cpanel
+            const response = await axios.post('https://bioohub.me/src/backend/api/login.php', {
                 email: this.email,
                 senha: this.senha
             })
