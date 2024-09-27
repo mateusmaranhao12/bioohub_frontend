@@ -164,12 +164,12 @@
                         <li>
                             <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
                                 data-bs-target="#alterarEmailModal">Alterar e-mail</a>
-                            <small class="text-muted d-block ms-3 me-3">mateusnmaranhao@gmail.com</small>
+                            <small class="text-muted d-block ms-3 me-3">{{ email }}</small>
                         </li>
                         <li>
                             <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
                                 data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
-                            <small class="text-muted d-block ms-3 me-3">mateusmaranhao12</small>
+                            <small class="text-muted d-block ms-3 me-3">{{ usuario }}</small>
                         </li>
                         <li>
                             <a @click="fazerLogout()" class="dropdown-item mt-2" href="#">
@@ -212,21 +212,21 @@ import { mapActions } from 'vuex'
         AlterarEmail,
         AlterarUsuario,
     },
-
     methods: {
-        ...mapActions(['logout'])
+        ...mapActions(['logout']) // Mapeando a ação de logout
     }
 })
 export default class PaginaUsuario extends Vue {
 
-    email = ''
-    senha = ''
-
+    usuario = '' // Armazenar nome do usuário
+    email = '' // Armazenar email do usuário
+    senha = '' // Pode ser utilizado futuramente
     public selectedImage: string | null = null // Propriedade para armazenar a imagem selecionada
-    public mensagem_alerta: Alert | null = null
+    public mensagem_alerta: Alert | null = null // Armazenar mensagem de alerta
 
-    //mapeando ações do vuex
+    // Mapeando ações do Vuex
     private logout!: () => Promise<void>
+    $store: any // Tipagem do Vuex store
 
     mounted() {
         // Recupera a mensagem do sessionStorage
@@ -239,24 +239,22 @@ export default class PaginaUsuario extends Vue {
             this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status)
         }
 
-        // Recuperar o email do usuário do sessionStorage
-        this.email = sessionStorage.getItem('user_email') || ''
+        // Recupera o usuário e email do Vuex store ou do sessionStorage como fallback
+        this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || ''
+        this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || ''
     }
 
-    public fazerLogout() { //fazer logout
-
+    public fazerLogout() { // Método para logout
         this.logout()
             .then(() => {
                 sessionStorage.removeItem('user_email') // Remover o email do sessionStorage
-                this.$router.push('/')
+                sessionStorage.removeItem('user_name') // Remover o nome do usuário do sessionStorage
+                this.$router.push('/') // Redirecionar para a página inicial
             })
             .catch((error: unknown) => {
-                console.error("Logout failed:", error)
+                console.error("Logout failed:", error) // Logar o erro
             })
-
     }
-
-
 
     public carregarImagem(event: Event) { // Manipulador de upload de imagem
         const file = (event.target as HTMLInputElement).files?.[0]
@@ -270,13 +268,12 @@ export default class PaginaUsuario extends Vue {
     }
 
     // Método para exibir mensagens de alerta
-    //mostrar mensagem alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
         setTimeout(() => {
             this.mensagem_alerta = { icone, mensagem, status }
             setTimeout(() => {
                 this.mensagem_alerta = null
-            }, 5000)
+            }, 5000) // Remove a mensagem após 5 segundos
         }, 0)
     }
 }
