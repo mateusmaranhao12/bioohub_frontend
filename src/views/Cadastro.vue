@@ -127,7 +127,7 @@
                 class="cadastro col-md-12">
 
                 <!--Funcao cadastrar usuario-->
-                <RedesSociais @validar-e-continuar="validarEContinuar" @pular="pularEtapa" />
+                <RedesSociais :userId="userId" @pular="pularEtapa" />
 
             </div>
         </div>
@@ -150,6 +150,13 @@ import { Alert } from '@/interfaces/Alert'
         Planos,
         RedesSociais,
         GrabLink
+    },
+
+    props: {
+        userId: {
+            type: Number,
+            required: true
+        }
     }
 })
 
@@ -165,6 +172,9 @@ export default class Cadastro extends Vue {
     //animações de entrada e saida
     animacaoEntrada = false
     animacaoSaida = false
+
+    // Armazena o ID do usuário
+    private userId: number | null = null
 
     //usuarios
     usuarios = {
@@ -192,94 +202,55 @@ export default class Cadastro extends Vue {
     redesSociaisSelecionadas: Array<{ nome: string, usuario: string }> = [];
     usuario_id: number | null = null; // Armazenar o ID do usuário
 
+
     // Cadastrar usuário
-    public cadastrarUsuario(): Promise<void> {
-        return new Promise((resolve, reject) => {
+    public async cadastrarUsuario(): Promise<any> {
+        try {
             console.log('Dados a serem enviados para cadastro de usuário: ', {
                 usuario: this.usuarios.usuario,
                 email: this.usuarios.email,
                 senha: this.usuarios.senha
             });
 
-            // Responde ao servidor cpanel
-            /*axios.post('https://bioohub.me/src/backend/api/cadastrar_usuario.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
                 usuario: this.usuarios.usuario,
                 email: this.usuarios.email,
                 senha: this.usuarios.senha
-            })*/
-
-            // Responde ao servidor localhost
-            axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
-                usuario: this.usuarios.usuario,
-                email: this.usuarios.email,
-                senha: this.usuarios.senha
-            })
-                .then(response => {
-                    console.log('Usuario cadastrado: ', response.data);
-
-                    // Armazena o email do usuário no sessionStorage
-                    sessionStorage.setItem('user_email', this.usuarios.email);
-
-                    // Armazena a mensagem de sucesso no sessionStorage
-                    sessionStorage.setItem('mensagem_alerta', JSON.stringify({
-                        icone: 'fa-solid fa-check-circle',
-                        mensagem: response.data.message,
-                        status: 'alert-sucesso'
-                    }));
-
-                    this.usuario_id = response.data.usuario_id;
-
-                    // Verificar se adicionou redes sociais
-                    if (this.redesSociaisSelecionadas.length > 0) {
-                        this.cadastrarRedesSociais().then(resolve).catch(reject);
-                    } else {
-                        // Redireciona para a página do usuário se não houver redes sociais
-                        this.$router.push('/pagina-usuario');
-                        resolve(); // Resolve a promise
-                    }
-                })
-                .catch(error => {
-                    if (error.response && error.response.data) {
-                        console.log('Erro ao cadastrar usuario: ', error.response.data);
-                        this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error');
-                        return reject(new Error(error.response.data.message));
-                    } else {
-                        console.log('Erro inesperado:', error);
-                        this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro inesperado. Tente novamente.', 'alert-error');
-                        return reject(new Error('Erro inesperado.'));
-                    }
-                });
-        });
-    }
-
-    // Adicionar redes sociais
-    public cadastrarRedesSociais(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            console.log('Dados a serem enviados para cadastro de redes sociais: ', {
-                usuario_id: this.usuario_id,
-                redes: this.redesSociaisSelecionadas
             });
 
-            axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', {
-                usuario_id: this.usuario_id,
-                redes: this.redesSociaisSelecionadas
-            })
-                .then(response => {
-                    console.log('Redes sociais cadastradas: ', response.data);
-                    this.$router.push('/pagina-usuario');
-                    resolve(); // Resolve a promise
-                })
-                .catch(error => {
-                    console.log('Erro ao cadastrar redes sociais: ', error); // Log do erro
-                    if (error.response && error.response.data) {
-                        console.error('Resposta do servidor: ', error.response.data); // Log da resposta do servidor
-                    } else {
-                        console.error('Erro inesperado:', error);
-                    }
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro ao cadastrar redes sociais.', 'alert-error');
-                    reject(new Error('Erro ao cadastrar redes sociais.')); // Rejeita a promise
-                });
-        });
+            console.log('Usuário cadastrado: ', response.data);
+
+            // Armazena o email e o ID do usuário no sessionStorage
+            sessionStorage.setItem('user_email', this.usuarios.email);
+            sessionStorage.setItem('user_id', response.data.usuario_id); // Armazenando ID do usuário
+
+            // Armazena a mensagem de sucesso no sessionStorage
+            sessionStorage.setItem('mensagem_alerta', JSON.stringify({
+                icone: 'fa-solid fa-check-circle',
+                mensagem: response.data.message,
+                status: 'alert-sucesso'
+            }));
+
+            // Log do ID do usuário
+            console.log('ID do usuário armazenado:', response.data.usuario_id);
+
+            // Redireciona o usuário após o cadastro
+            this.$router.push({ name: 'planos', params: { userId: response.data.usuario_id } }); // Passando o ID do usuário
+
+            return response; // Retorne a resposta corretamente
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response && error.response.data) {
+                    console.log('Erro ao cadastrar usuario: ', error.response.data);
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error');
+                    throw new Error(error.response.data.message);
+                }
+            }
+
+            console.log('Erro inesperado:', error);
+            this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro inesperado. Tente novamente.', 'alert-error');
+            throw new Error('Erro inesperado.');
+        }
     }
 
     // Validar dados
@@ -328,7 +299,7 @@ export default class Cadastro extends Vue {
                             this.mensagemErroEmail = error.response.data.message;
                             this.mensagemErroUsuario = '';
                             this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error');
-                            return reject(new Error(this.mensagemErroEmail)); // Rejeita a promise sem logar no console
+                            return reject(new Error(this.mensagemErroEmail));
                         }
                     });
 
@@ -338,16 +309,6 @@ export default class Cadastro extends Vue {
             // Se todas as validações passarem, resolve a Promise
             resolve();
         });
-    }
-
-    // Validar e continuar
-    public async validarEContinuar() {
-        try {
-            await this.validarDados();
-            await this.cadastrarUsuario();
-        } catch (error) {
-            console.error('Erro na validação ou cadastro: ', error);
-        }
     }
 
     // Pular etapa
@@ -363,6 +324,62 @@ export default class Cadastro extends Vue {
             });
     }
 
+    // Adicionar redes sociais
+    public cadastrarRedesSociais(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            console.log('Dados a serem enviados para cadastro de redes sociais: ', {
+                usuario_id: this.usuario_id,
+                redes: this.redesSociaisSelecionadas
+            });
+
+            axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', {
+                usuario_id: this.usuario_id,
+                redes: this.redesSociaisSelecionadas
+            })
+                .then(response => {
+                    console.log('Redes sociais cadastradas: ', response.data);
+                    this.$router.push('/pagina-usuario');
+                    resolve(); // Resolve a promise
+                })
+                .catch(error => {
+                    console.log('Erro ao cadastrar redes sociais: ', error);
+                    if (error.response && error.response.data) {
+                        console.error('Resposta do servidor: ', error.response.data);
+                    } else {
+                        console.error('Erro inesperado:', error);
+                    }
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro ao cadastrar redes sociais.', 'alert-error');
+                    reject(new Error('Erro ao cadastrar redes sociais.'));
+                });
+        });
+    }
+
+    //proxima etapa
+    public async proximaEtapa() {
+        try {
+            await this.validarDados(); // Valida os dados da etapa atual
+
+            if (this.etapa === 2) {
+                // Cadastra o usuário e armazena o ID
+                const response = await this.cadastrarUsuario(); // Chame a função de cadastro
+
+                // Armazena o ID do usuário após o cadastro
+                if (response && response.data) {
+                    this.userId = response.data.usuario_id; // Assumindo que o ID do usuário é armazenado em usuario_id
+                }
+            }
+
+            // Avança para a próxima etapa se a validação for bem-sucedida
+            this.animacaoSaida = true;
+            setTimeout(() => {
+                this.etapa++;
+                this.animacaoSaida = false;
+                this.animacaoEntrada = true;
+            }, 1000);
+        } catch (error) {
+            console.log(error); // Mensagem de erro já exibida dentro do método validarDados()
+        }
+    }
 
     public cadastroComGoogle() {
         console.log('cadastro com google')
@@ -416,22 +433,6 @@ export default class Cadastro extends Vue {
         this.mostrar_senha = !this.mostrar_senha
     }
 
-    public proximaEtapa() { //proxima etapa
-        this.validarDados()
-            .then(() => {
-                // Avança para a próxima etapa se a validação for bem-sucedida
-                this.animacaoSaida = true
-                setTimeout(() => {
-                    this.etapa++
-                    this.animacaoSaida = false
-                    this.animacaoEntrada = true
-                }, 1000)
-            })
-            .catch((error) => {
-                // Mensagem de erro já exibida dentro do método validarDados()
-                console.log(error)
-            })
-    }
 
     //etapa anterior
     public etapaAnterior() {

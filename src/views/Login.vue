@@ -2,7 +2,6 @@
     <div class="container d-flex justify-content-center align-items-center vh-100">
         <div class="row w-75">
             <div class="col-md-6 login-form">
-
                 <h2 class="animate__animated animate__zoomIn mb-5">Faça log-in com sua conta</h2>
 
                 <!--Alerta de erro ou de sucesso-->
@@ -76,61 +75,46 @@ export default class Login extends Vue {
     email = ''
     senha = ''
     mostrar_senha = false
-
-    //mensagem_alerta
     mensagem_alerta: Alert | null = null
-
-    //mapeando ações do vuex
     private login!: () => Promise<void>
 
-    //alternar exibiçao da senha
     alternarExibicaoSenha() {
         this.mostrar_senha = !this.mostrar_senha
     }
 
-    //fazer login
     async fazerLogin() {
         if (!this.email || !this.senha) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, preencha todos os campos.', 'alert-error')
-            return
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, preencha todos os campos.', 'alert-error');
+            return;
         }
 
         try {
-            
-            //localhost
             const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/login.php', {
                 email: this.email,
                 senha: this.senha
-            })
-
-            //servidor cpanel
-            /*const response = await axios.post('https://bioohub.me/src/backend/api/login.php', {
-                email: this.email,
-                senha: this.senha
-            })*/
+            });
 
             if (response.data.success) {
-                // Salvar o email do usuário no sessionStorage
                 sessionStorage.setItem('user_email', this.email);
-
                 sessionStorage.setItem('mensagem_alerta', JSON.stringify({
                     icone: 'fa-solid fa-check-circle',
                     mensagem: response.data.message,
                     status: 'alert-sucesso'
-                }))
-                this.$router.push('/pagina-usuario')
+                }));
+
+                // Redirecionar para a página do usuário após o login bem-sucedido
+                this.$router.push('/pagina-usuario');
 
             } else {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
             }
 
         } catch (error) {
-            console.error('Erro ao fazer login:', error)
-            alert('Ocorreu um erro ao tentar fazer login.')
+            console.error('Erro ao fazer login:', error);
+            alert('Ocorreu um erro ao tentar fazer login.');
         }
     }
 
-    //mostrar mensagem alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
         setTimeout(() => {
             this.mensagem_alerta = { icone, mensagem, status }

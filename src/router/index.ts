@@ -5,6 +5,8 @@ import Cadastro from '@/views/Cadastro.vue'
 import Index from '../views/Index.vue'
 import Login from '../views/Login.vue'
 import PaginaUsuario from '@/views/PaginaUsuario.vue'
+import Planos from '@/components/Planos.vue'
+import RedesSociais from '@/components/RedesSociais.vue'
 import Usuario from '@/views/Usuario.vue'
 
 function isAuthenticated() { //verificar se o usuario está autenticado
@@ -23,9 +25,24 @@ const routes: Array<RouteRecordRaw> = [
 
   //Cadastro.vue
   {
-    path: '/cadastro',
+    path: '/cadastro/:userId?',
     name: 'cadastro',
-    component: Cadastro
+    component: Cadastro,
+    props: (route) => ({ userId: route.params.userId }),
+    children: [
+      {
+        path: 'redes-sociais', // Rota filha para RedesSociais
+        name: 'redes-sociais',
+        component: RedesSociais,
+        props: (route) => ({ userId: route.params.userId })
+      },
+      {
+        path: 'planos', // Rota filha para Planos
+        name: 'planos',
+        component: Planos,
+        props: (route) => ({ userId: route.params.userId })
+      }
+    ]
   },
 
   //Login.vue

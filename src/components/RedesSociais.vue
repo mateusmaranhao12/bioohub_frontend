@@ -54,8 +54,10 @@
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import Alerta from '@/components/Alerta.vue'
-import { Alert } from '@/interfaces/Alert'
+import { Prop } from 'vue-property-decorator'; // Adicione esta linha
+import Alerta from '@/components/Alerta.vue';
+import { Alert } from '@/interfaces/Alert';
+import axios from 'axios';
 
 @Options({
     components: {
@@ -63,8 +65,10 @@ import { Alert } from '@/interfaces/Alert'
     }
 })
 export default class RedesSociais extends Vue {
-    mensagem_alerta: Alert | null = null
-    isAdded = false
+    @Prop({ required: true }) userId!: number;
+
+    mensagem_alerta: Alert | null = null;
+    isAdded = false;
 
     redesSociais = [
         {
@@ -105,9 +109,12 @@ export default class RedesSociais extends Vue {
         if (rede.usuario) {
             const usuarioMatch = this.extractUsername(rede.nome, rede.usuario);
             if (usuarioMatch) {
-                rede.nomeUsuario = usuarioMatch
-                rede.exibirCard = true
-                this.isAdded = true
+                rede.nomeUsuario = usuarioMatch;
+                rede.exibirCard = true;
+                this.isAdded = true;
+
+                // Limpar o campo de input que armazena o link da rede social
+                rede.usuario = ''; // Isto irá limpar o campo de input
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-circle-info', `Por favor, insira um link válido para ${rede.nome}`, 'alert-aviso');
             }
@@ -149,26 +156,58 @@ export default class RedesSociais extends Vue {
 
     public removerRedeSocial(index: number) {
         this.redesSociais[index].exibirCard = false;
-        // Se o card for removido, você pode decidir se quer desabilitar o botão "Próximo"
-        // this.isAdded = this.redesSociais.some(rede => rede.exibirCard);
     }
 
     public pularEtapaRedes() {
-        this.$emit('pular');
+        this.$router.push({ name: 'pagina-usuario' });
     }
 
     public validarEContinuar() {
-        // Aqui você pode adicionar qualquer lógica de validação antes de redirecionar
-        this.$emit('validar-e-continuar');
+        this.cadastrarRedesSociais()
+            .then(() => {
+                this.$router.push({ name: 'pagina-usuario' });
+            })
+            .catch(() => {
+                this.mostrarMensagemAlerta('fa-solid fa-circle-exclamation', 'Erro ao cadastrar redes sociais.', 'alert-error');
+            });
     }
+
+    public cadastrarRedesSociais(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            const redes = this.redesSociais
+                .filter(rede => rede.exibirCard)
+                .map(rede => ({ url: rede.usuario })); // Altere para incluir apenas a URL
+
+            // Verifique se há redes para cadastrar
+            if (redes.length === 0) {
+                reject(new Error('Nenhuma rede social foi adicionada.'));
+                return;
+            }
+
+            // Enviar usuario_id e as redes corretas
+            axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', { usuario_id: this.userId, redes })
+                .then(response => {
+                    if (response.data.success) {
+                        resolve();
+                    } else {
+                        reject(new Error('Cadastro falhou: ' + response.data.message));
+                    }
+                })
+                .catch(err => {
+                    console.error('Erro ao cadastrar redes sociais:', err); // Log do erro para depuração
+                    reject(err);
+                });
+        });
+    }
+
 
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
         setTimeout(() => {
-            this.mensagem_alerta = { icone, mensagem, status }
+            this.mensagem_alerta = { icone, mensagem, status };
             setTimeout(() => {
-                this.mensagem_alerta = null
-            }, 5000)
-        }, 0)
+                this.mensagem_alerta = null;
+            }, 5000);
+        }, 0);
     }
 }
 </script>
