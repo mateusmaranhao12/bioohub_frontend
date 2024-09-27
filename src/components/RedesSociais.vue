@@ -113,8 +113,6 @@ export default class RedesSociais extends Vue {
                 rede.exibirCard = true;
                 this.isAdded = true;
 
-                // Limpar o campo de input que armazena o link da rede social
-                rede.usuario = ''; // Isto irá limpar o campo de input
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-circle-info', `Por favor, insira um link válido para ${rede.nome}`, 'alert-aviso');
             }

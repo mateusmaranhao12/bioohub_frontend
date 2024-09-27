@@ -202,8 +202,7 @@ export default class Cadastro extends Vue {
     redesSociaisSelecionadas: Array<{ nome: string, usuario: string }> = [];
     usuario_id: number | null = null; // Armazenar o ID do usuário
 
-
-    // Cadastrar usuário
+    //cadastrar usuario
     public async cadastrarUsuario(): Promise<any> {
         try {
             console.log('Dados a serem enviados para cadastro de usuário: ', {
@@ -223,6 +222,7 @@ export default class Cadastro extends Vue {
             // Armazena o email e o ID do usuário no sessionStorage
             sessionStorage.setItem('user_email', this.usuarios.email);
             sessionStorage.setItem('user_id', response.data.usuario_id); // Armazenando ID do usuário
+            sessionStorage.setItem('user_name', this.usuarios.usuario); // Armazenando nome de usuário
 
             // Armazena a mensagem de sucesso no sessionStorage
             sessionStorage.setItem('mensagem_alerta', JSON.stringify({

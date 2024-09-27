@@ -25,7 +25,7 @@ const routes: Array<RouteRecordRaw> = [
 
   //Cadastro.vue
   {
-    path: '/cadastro/:userId?',
+    path: '/cadastro',
     name: 'cadastro',
     component: Cadastro,
     props: (route) => ({ userId: route.params.userId }),
