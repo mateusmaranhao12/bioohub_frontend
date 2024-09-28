@@ -189,12 +189,13 @@
 
         <!-- Inclui os modais -->
         <AlterarSenha />
-        <AlterarEmail />
-        <AlterarUsuario />
+        <AlterarEmail @emailAlterado="atualizarEmail" />
+        <AlterarUsuario @usuarioAlterado="atualizarUsuario" />
     </div>
 </template>
 
 <script lang="ts">
+
 import { Options, Vue } from 'vue-class-component'
 import Alerta from '@/components/Alerta.vue'
 import Footer from '@/components/Footer.vue'
@@ -205,6 +206,7 @@ import { Alert } from '@/interfaces/Alert'
 import { mapActions } from 'vuex'
 
 @Options({
+
     components: {
         Alerta,
         Footer,
@@ -212,10 +214,13 @@ import { mapActions } from 'vuex'
         AlterarEmail,
         AlterarUsuario,
     },
+
     methods: {
         ...mapActions(['logout']) // Mapeando a ação de logout
     }
+
 })
+
 export default class PaginaUsuario extends Vue {
 
     usuario = '' // Armazenar nome do usuário
@@ -239,12 +244,15 @@ export default class PaginaUsuario extends Vue {
             this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status)
         }
 
-        // Recupera o usuário e email do Vuex store ou do sessionStorage como fallback
+        // Recupera o usuário, email e ID do sessionStorage
         this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || ''
         this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || ''
+        const userId = sessionStorage.getItem('user_id')
+        console.log('User ID:', userId)
     }
 
-    public fazerLogout() { // Método para logout
+    //logout 
+    public fazerLogout() {
         this.logout()
             .then(() => {
                 sessionStorage.removeItem('user_email') // Remover o email do sessionStorage
@@ -252,11 +260,12 @@ export default class PaginaUsuario extends Vue {
                 this.$router.push('/') // Redirecionar para a página inicial
             })
             .catch((error: unknown) => {
-                console.error("Logout failed:", error) // Logar o erro
+                console.error('Logout failed:', error) // Logar o erro
             })
     }
 
-    public carregarImagem(event: Event) { // Manipulador de upload de imagem
+    //carregar imagem
+    public carregarImagem(event: Event) {
         const file = (event.target as HTMLInputElement).files?.[0]
         if (file) {
             const reader = new FileReader()
@@ -267,7 +276,19 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    // Método para exibir mensagens de alerta
+    //atualizar usuario
+    public atualizarUsuario(novoUsuario: string) {
+        this.usuario = novoUsuario
+        sessionStorage.setItem('user_name', novoUsuario) // Atualiza o valor no sessionStorage também
+    }
+
+    //atualizar usuario
+    public atualizarEmail(novoEmail: string) {
+        this.email = novoEmail
+        sessionStorage.setItem('user_email', novoEmail) // Atualiza o valor no sessionStorage também
+    }
+
+    //mostrar mensagem alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
         setTimeout(() => {
             this.mensagem_alerta = { icone, mensagem, status }
@@ -277,6 +298,7 @@ export default class PaginaUsuario extends Vue {
         }, 0)
     }
 }
+
 </script>
 
 <style lang="scss">

@@ -91,7 +91,7 @@ export default class Login extends Vue {
     //fazer login
     async fazerLogin() {
         if (!this.email || !this.senha) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, preencha todos os campos.', 'alert-error')
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, preencha todos os campos.', 'alert-error');
             return
         }
 
@@ -102,24 +102,24 @@ export default class Login extends Vue {
             })
 
             if (response.data.success) {
-                // Salvar o email e o usuário no sessionStorage
-                sessionStorage.setItem('user_email', this.email);
-                sessionStorage.setItem('user_name', response.data.user.usuario);
+                // Salvar o email, nome de usuário e ID no sessionStorage
+                sessionStorage.setItem('user_email', this.email)
+                sessionStorage.setItem('user_name', response.data.user.usuario)
+                sessionStorage.setItem('user_id', response.data.user.id)
 
                 sessionStorage.setItem('mensagem_alerta', JSON.stringify({
                     icone: 'fa-solid fa-check-circle',
                     mensagem: response.data.message,
                     status: 'alert-sucesso'
                 }))
+
                 this.$router.push('/pagina-usuario')
-            }
-            else {
+            } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
             }
-
         } catch (error) {
-            console.error('Erro ao fazer login:', error)
-            alert('Ocorreu um erro ao tentar fazer login.')
+            console.error('Erro ao fazer login:', error);
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Ocorreu um erro ao fazer login', 'alert-error')
         }
     }
 
