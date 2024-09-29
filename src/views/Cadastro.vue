@@ -199,8 +199,8 @@ export default class Cadastro extends Vue {
     mensagemErroEmail = ''
 
     //redes sociais selecionadas
-    redesSociaisSelecionadas: Array<{ nome: string, usuario: string }> = [];
-    usuario_id: number | null = null; // Armazenar o ID do usuário
+    redesSociaisSelecionadas: Array<{ nome: string, usuario: string }> = []
+    usuario_id: number | null = null // Armazenar o ID do usuário
 
     //cadastrar usuario
     public async cadastrarUsuario(): Promise<any> {
@@ -209,47 +209,47 @@ export default class Cadastro extends Vue {
                 usuario: this.usuarios.usuario,
                 email: this.usuarios.email,
                 senha: this.usuarios.senha
-            });
+            })
 
             const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
                 usuario: this.usuarios.usuario,
                 email: this.usuarios.email,
                 senha: this.usuarios.senha
-            });
+            })
 
-            console.log('Usuário cadastrado: ', response.data);
+            console.log('Usuário cadastrado: ', response.data)
 
             // Armazena o email e o ID do usuário no sessionStorage
-            sessionStorage.setItem('user_email', this.usuarios.email);
-            sessionStorage.setItem('user_id', response.data.usuario_id); // Armazenando ID do usuário
-            sessionStorage.setItem('user_name', this.usuarios.usuario); // Armazenando nome de usuário
+            sessionStorage.setItem('user_email', this.usuarios.email)
+            sessionStorage.setItem('user_id', response.data.usuario_id) // Armazenando ID do usuário
+            sessionStorage.setItem('user_name', this.usuarios.usuario) // Armazenando nome de usuário
 
             // Armazena a mensagem de sucesso no sessionStorage
             sessionStorage.setItem('mensagem_alerta', JSON.stringify({
                 icone: 'fa-solid fa-check-circle',
                 mensagem: response.data.message,
                 status: 'alert-sucesso'
-            }));
+            }))
 
             // Log do ID do usuário
-            console.log('ID do usuário armazenado:', response.data.usuario_id);
+            console.log('ID do usuário armazenado:', response.data.usuario_id)
 
             // Redireciona o usuário após o cadastro
-            this.$router.push({ name: 'planos', params: { userId: response.data.usuario_id } }); // Passando o ID do usuário
+            this.$router.push({ name: 'planos', params: { userId: response.data.usuario_id } }) // Passando o ID do usuário
 
-            return response; // Retorne a resposta corretamente
+            return response // Retorne a resposta corretamente
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (error.response && error.response.data) {
-                    console.log('Erro ao cadastrar usuario: ', error.response.data);
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error');
-                    throw new Error(error.response.data.message);
+                    console.log('Erro ao cadastrar usuario: ', error.response.data)
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', error.response.data.message, 'alert-error')
+                    throw new Error(error.response.data.message)
                 }
             }
 
-            console.log('Erro inesperado:', error);
-            this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro inesperado. Tente novamente.', 'alert-error');
-            throw new Error('Erro inesperado.');
+            console.log('Erro inesperado:', error)
+            this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro inesperado. Tente novamente.', 'alert-error')
+            throw new Error('Erro inesperado.')
         }
     }
 
@@ -259,31 +259,31 @@ export default class Cadastro extends Vue {
             // Verificação da etapa 1 (usuário)
             if (this.etapa === 1) {
                 if (this.usuarios.usuario.length < 4) {
-                    this.mensagemErroUsuario = 'Insira um nome de usuário com no mínimo 4 caracteres!';
-                    this.mensagemErroEmail = '';
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroUsuario, 'alert-error');
-                    return reject(new Error(this.mensagemErroUsuario));
+                    this.mensagemErroUsuario = 'Insira um nome de usuário com no mínimo 4 caracteres!'
+                    this.mensagemErroEmail = ''
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroUsuario, 'alert-error')
+                    return reject(new Error(this.mensagemErroUsuario))
                 } else {
-                    this.mensagemErroUsuario = '';
+                    this.mensagemErroUsuario = ''
                 }
             }
 
             // Verificação da etapa 2 (e-mail e senha)
             if (this.etapa === 2) {
                 if (!this.validarEmail(this.usuarios.email)) {
-                    this.mensagemErroEmail = 'Insira um e-mail válido!';
-                    this.mensagemErroUsuario = '';
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error');
-                    return reject(new Error(this.mensagemErroEmail));
+                    this.mensagemErroEmail = 'Insira um e-mail válido!'
+                    this.mensagemErroUsuario = ''
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error')
+                    return reject(new Error(this.mensagemErroEmail))
                 } else {
-                    this.mensagemErroEmail = '';
+                    this.mensagemErroEmail = ''
                 }
 
                 if (this.usuarios.senha.length < 5) {
-                    this.mensagemErroEmail = '';
-                    this.mensagemErroUsuario = '';
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Insira uma senha com no mínimo 5 caracteres!', 'alert-error');
-                    return reject(new Error('Insira uma senha com no mínimo 5 caracteres!'));
+                    this.mensagemErroEmail = ''
+                    this.mensagemErroUsuario = ''
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Insira uma senha com no mínimo 5 caracteres!', 'alert-error')
+                    return reject(new Error('Insira uma senha com no mínimo 5 caracteres!'))
                 }
 
                 // Verificação se o usuário ou e-mail já existe
@@ -292,23 +292,23 @@ export default class Cadastro extends Vue {
                     email: this.usuarios.email
                 })
                     .then(response => {
-                        resolve(); // Se a verificação for bem-sucedida
+                        resolve() // Se a verificação for bem-sucedida
                     })
                     .catch(error => {
                         if (error.response && error.response.data) {
-                            this.mensagemErroEmail = error.response.data.message;
-                            this.mensagemErroUsuario = '';
-                            this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error');
-                            return reject(new Error(this.mensagemErroEmail));
+                            this.mensagemErroEmail = error.response.data.message
+                            this.mensagemErroUsuario = ''
+                            this.mostrarMensagemAlerta('fa-solid fa-circle-info', this.mensagemErroEmail, 'alert-error')
+                            return reject(new Error(this.mensagemErroEmail))
                         }
-                    });
+                    })
 
-                return; // Importante retornar aqui para evitar que a execução continue
+                return // Importante retornar aqui para evitar que a execução continue
             }
 
             // Se todas as validações passarem, resolve a Promise
-            resolve();
-        });
+            resolve()
+        })
     }
 
     // Pular etapa
@@ -317,11 +317,11 @@ export default class Cadastro extends Vue {
         this.cadastrarUsuario()
             .then(() => {
                 // Redireciona para a página do usuário
-                this.$router.push('/pagina-usuario');
+                this.$router.push('/pagina-usuario')
             })
             .catch(error => {
-                console.error('Erro ao cadastrar usuário durante a etapa de pular:', error);
-            });
+                console.error('Erro ao cadastrar usuário durante a etapa de pular:', error)
+            })
     }
 
     // Adicionar redes sociais
@@ -330,54 +330,54 @@ export default class Cadastro extends Vue {
             console.log('Dados a serem enviados para cadastro de redes sociais: ', {
                 usuario_id: this.usuario_id,
                 redes: this.redesSociaisSelecionadas
-            });
+            })
 
             axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', {
                 usuario_id: this.usuario_id,
                 redes: this.redesSociaisSelecionadas
             })
                 .then(response => {
-                    console.log('Redes sociais cadastradas: ', response.data);
-                    this.$router.push('/pagina-usuario');
-                    resolve(); // Resolve a promise
+                    console.log('Redes sociais cadastradas: ', response.data)
+                    this.$router.push('/pagina-usuario')
+                    resolve() // Resolve a promise
                 })
                 .catch(error => {
-                    console.log('Erro ao cadastrar redes sociais: ', error);
+                    console.log('Erro ao cadastrar redes sociais: ', error)
                     if (error.response && error.response.data) {
-                        console.error('Resposta do servidor: ', error.response.data);
+                        console.error('Resposta do servidor: ', error.response.data)
                     } else {
-                        console.error('Erro inesperado:', error);
+                        console.error('Erro inesperado:', error)
                     }
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro ao cadastrar redes sociais.', 'alert-error');
-                    reject(new Error('Erro ao cadastrar redes sociais.'));
-                });
-        });
+                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro ao cadastrar redes sociais.', 'alert-error')
+                    reject(new Error('Erro ao cadastrar redes sociais.'))
+                })
+        })
     }
 
     //proxima etapa
     public async proximaEtapa() {
         try {
-            await this.validarDados(); // Valida os dados da etapa atual
+            await this.validarDados() // Valida os dados da etapa atual
 
             if (this.etapa === 2) {
                 // Cadastra o usuário e armazena o ID
-                const response = await this.cadastrarUsuario(); // Chame a função de cadastro
+                const response = await this.cadastrarUsuario() // Chame a função de cadastro
 
                 // Armazena o ID do usuário após o cadastro
                 if (response && response.data) {
-                    this.userId = response.data.usuario_id; // Assumindo que o ID do usuário é armazenado em usuario_id
+                    this.userId = response.data.usuario_id // Assumindo que o ID do usuário é armazenado em usuario_id
                 }
             }
 
             // Avança para a próxima etapa se a validação for bem-sucedida
-            this.animacaoSaida = true;
+            this.animacaoSaida = true
             setTimeout(() => {
-                this.etapa++;
-                this.animacaoSaida = false;
-                this.animacaoEntrada = true;
-            }, 1000);
+                this.etapa++
+                this.animacaoSaida = false
+                this.animacaoEntrada = true
+            }, 1000)
         } catch (error) {
-            console.log(error); // Mensagem de erro já exibida dentro do método validarDados()
+            console.log(error) // Mensagem de erro já exibida dentro do método validarDados()
         }
     }
 
@@ -387,8 +387,8 @@ export default class Cadastro extends Vue {
 
     //validar email
     public validarEmail(email: string): boolean {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(email);
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+        return regex.test(email)
     }
 
     //validar senha
