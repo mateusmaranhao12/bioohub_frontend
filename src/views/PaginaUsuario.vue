@@ -101,11 +101,58 @@
 
                     <div
                         class="animate__animated animate__zoomIn card link-card card-vertical d-flex flex-column align-items-center justify-content-center position-relative">
-                        <div class="plus-icon position-absolute">
+                        <!-- Exibir links se houver algum adicionado -->
+                        <div v-for="link in $store.getters.links" :key="link.id"
+                            class="mt-3 d-flex flex-column align-items-center position-relative">
+                            <i v-if="!adicionandoLink && !editandoLink"
+                                :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
+
+                            <!-- Deletar link -->
+                            <div v-if="!adicionandoLink && !editandoLink" @click="deletarLink(link.id)"
+                                class="delete-icon" style="position: absolute; top: -10px; right: -15px;">
+                                <i class="fa-solid fa-trash"></i>
+                            </div>
+
+                            <!-- Ícone de editar fora do card, em cima dele, somente se a rede social for válida -->
+                            <div v-if="!adicionandoLink && !editandoLink" @click="iniciarEdicaoLink(link)"
+                                class="edit-icon" style="position: absolute; top: 30px; right: -15px;">
+                                <i class="fa-solid fa-pencil-alt"></i>
+                            </div>
+
+                            <button v-if="!adicionandoLink && !editandoLink" @click="redirecionarParaLink(link)"
+                                class="btn btn-secondary btn-sm mt-2">
+                                Seguir
+                            </button>
+                        </div>
+
+                        <!-- Ícone do globo e texto "Adicionar Link" (inicial) -->
+                        <div v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
+                            @click="iniciarAdicaoLink" class="plus-icon position-absolute"
+                            style="top: 10px; right: 10px;">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
-                        <i class="fa-solid fa-globe fa-2x"></i>
-                        <p class="mt-2">Adicionar link</p>
+
+                        <i v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
+                            class="fa-solid fa-globe fa-2x"></i>
+                        <p v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
+                            class="mt-2">
+                            Adicionar link
+                        </p>
+
+                        <!-- Exibir input e botão somente após clicar no ícone "+" -->
+                        <div v-if="adicionandoLink || editandoLink" class="w-100 d-flex flex-column align-items-center">
+                            <i v-if="editandoLink" @click="cancelarEdicao" class="mb-3 fa-solid fa-arrow-left"
+                                style="cursor: pointer;"></i>
+                            <input v-model="novoLink" type="text" class="form-control mt-2"
+                                placeholder="Insira o link" />
+
+                            <!-- Botão alterna entre adicionar e editar -->
+                            <button @click="editandoLink ? editarLink() : adicionarLink()"
+                                :class="editandoLink ? 'btn btn-success mt-2 btn-sm' : 'btn btn-primary mt-2 btn-sm'">
+                                <i :class="editandoLink ? 'fa-solid fa-check' : 'fa-solid fa-plus'"
+                                    style="color: white;"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div
@@ -185,6 +232,8 @@
             </div>
         </div>
 
+        <!--<button class="btn btn-light" @click="clearLinks">Limpar Links</button>-->
+
         <Footer class="animate__animated animate__zoomIn" />
 
         <!-- Inclui os modais -->
@@ -195,7 +244,6 @@
 </template>
 
 <script lang="ts">
-
 import { Options, Vue } from 'vue-class-component'
 import Alerta from '@/components/Alerta.vue'
 import Footer from '@/components/Footer.vue'
@@ -204,9 +252,10 @@ import AlterarEmail from '@/components/AlterarEmail.vue'
 import AlterarUsuario from '@/components/AlterarUsuario.vue'
 import { Alert } from '@/interfaces/Alert'
 import { mapActions } from 'vuex'
+import { Link } from '@/interfaces/Link'
+import axios from 'axios'
 
 @Options({
-
     components: {
         Alerta,
         Footer,
@@ -222,12 +271,208 @@ import { mapActions } from 'vuex'
 })
 
 export default class PaginaUsuario extends Vue {
-
     usuario = '' // Armazenar nome do usuário
     email = '' // Armazenar email do usuário
     senha = '' // Pode ser utilizado futuramente
     public selectedImage: string | null = null // Propriedade para armazenar a imagem selecionada
     public mensagem_alerta: Alert | null = null // Armazenar mensagem de alerta
+
+    // Editar ou inserir links
+    public linkId: number | null = null
+    public adicionandoLink = false
+    public editandoLink = false
+    public novoLink = ''
+
+    // Inserir rede social (ex: instagram)
+    public redeSocial = ''
+    public linkParaRedirecionar: string | null = null // Nova variável para o link a ser redirecionado
+
+    // Iniciar edição do link
+    public iniciarAdicaoLink(link: Link) {
+        this.adicionandoLink = true
+        this.novoLink = ''
+        this.redeSocial = ''
+        this.linkParaRedirecionar = ''
+        this.linkParaRedirecionar = link.url
+    }
+
+    // Iniciar edição do link
+    public iniciarEdicaoLink(link: Link) {
+        this.editandoLink = true
+        this.novoLink = link.url // Preenche o campo com o link atual
+        this.linkId = link.id // Armazena o ID do link que está sendo editado
+        this.redeSocial = link.redeSocial // Preenche a rede social
+    }
+
+    // Carrega os links do localStorage
+    created() {
+        this.$store.dispatch('loadLinks') // Carrega os links do Vuex
+            .then(() => {
+                const links: Link[] = this.$store.getters.links; // Adicionando o tipo Link[]
+                console.log("Links carregados:", links);
+
+                if (!links.length) {
+                    // Carregar links do localStorage se o Vuex estiver vazio
+                    const linksString = localStorage.getItem('links');
+                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]');
+
+                    linksFromLocalStorage.forEach((link: Link) => {
+                        this.$store.commit('ADD_LINK', link); // Adiciona os links do localStorage ao Vuex
+                    });
+                }
+            })
+            .catch((error: any) => {
+                console.error('Erro ao carregar links:', error);
+            });
+    }
+
+    // Adicionar link
+    public async adicionarLink() {
+        const regex = /^(ftp|http|https):\/\/[^ "]+$/
+
+        if (this.novoLink.trim() === '' || !regex.test(this.novoLink)) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Tente novamente.', 'alert-error')
+            return
+        }
+
+        const redeSocial = this.detectarRedeSocial(this.novoLink)
+        if (redeSocial) {
+            this.redeSocial = redeSocial
+            this.linkParaRedirecionar = this.novoLink
+
+            const dados = {
+                usuario_id: sessionStorage.getItem('user_id'),
+                redes: [{ url: this.novoLink }]
+            }
+
+            try {
+                const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', dados)
+                if (response.data.success) {
+                    // Garante que o ID do link é adicionado corretamente
+                    const novoLinkComId: Link = { url: this.novoLink, redeSocial, id: response.data.links[0].id }
+                    this.mostrarMensagemAlerta('fa-solid fa-check-circle', `Link de ${redeSocial} adicionado com sucesso!`, 'alert-sucesso')
+
+                    // Adiciona o link ao Vuex e salva no localStorage
+                    this.$store.commit('ADD_LINK', novoLinkComId)
+                    this.$store.dispatch('saveLinks')
+
+                    this.adicionandoLink = false
+                } else {
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
+                }
+            } catch (error) {
+                console.error('Erro ao adicionar link:', error)
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link.', 'alert-error')
+            }
+        } else {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Insira um link de perfil válido.', 'alert-error')
+        }
+    }
+
+    // Editar link
+    public async editarLink() {
+        // Verifica se linkId é válido
+        if (this.linkId === null) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro: ID do link não encontrado.', 'alert-error')
+            return
+        }
+
+        const dados = {
+            usuario_id: sessionStorage.getItem('user_id'),
+            redes: [{ url: this.novoLink, old_url: this.linkParaRedirecionar, id: this.linkId }] // Certifique-se de que o id é incluído
+        }
+
+        try {
+            const response = await axios.put('http://localhost/Projetos/bioohub/backend/api/editar_links.php', dados)
+            if (response.data.success) {
+                this.mostrarMensagemAlerta('fa-solid fa-check-circle', response.data.message, 'alert-sucesso')
+
+                // Atualiza o link no Vuex com o novo URL
+                const linkEditado: Link = { url: this.novoLink, redeSocial: this.redeSocial, id: this.linkId }
+                this.$store.commit('UPDATE_LINK', linkEditado) // Atualiza o link no Vuex
+
+                // Salva os links atualizados no localStorage
+                this.$store.dispatch('saveLinks')
+
+                this.editandoLink = false
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
+            }
+        } catch (error) {
+            console.error('Erro ao editar link:', error)
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao editar link.', 'alert-error')
+        }
+    }
+
+    // Remover link
+    public async deletarLink(id: number) {
+
+        const usuarioId = sessionStorage.getItem('user_id'); // Obter o usuário ID
+
+        // Verifica se o id está definido
+        if (id === undefined || id === null) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do link não definido.', 'alert-error')
+            return
+        }
+
+        const dados = {
+            usuario_id: usuarioId,
+            id: id // Certifique-se de que 'id' está sendo passado corretamente
+        };
+
+        try {
+
+            // Realizar a requisição DELETE
+            const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/deletar_links.php', { data: dados });
+
+
+            if (response.data.success) {
+                // Remove o link do Vuex
+                this.$store.commit('DELETE_LINK', id)
+                this.$store.dispatch('saveLinks')
+
+                // Mostrar mensagem de sucesso
+                this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link deletado com sucesso!', 'alert-sucesso');
+                this.redeSocial = ''; // Limpar o campo de rede social
+                this.linkParaRedirecionar = null; // Resetar o link para redirecionar
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+            }
+        } catch (error: any) {
+            console.error('Erro ao deletar link:', error);
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao deletar link.', 'alert-error');
+        }
+    }
+
+
+    // Detectar rede social
+    public detectarRedeSocial(url: string): string | null {
+        if (/https?:\/\/(www\.)?instagram\.com\/[^/]+/.test(url)) {
+            return 'instagram'
+        } else if (/https?:\/\/(www\.)?github\.com\/[^/]+/.test(url)) {
+            return 'github'
+        } else if (/https?:\/\/(www\.)?linkedin\.com\/in\/[^/]+/.test(url)) {
+            return 'linkedin'
+        } else {
+            return null
+        }
+    }
+
+    // Função para redirecionar para o link inserido
+    public redirecionarParaLink(link: Link) {
+        if (link && link.url) {
+            window.open(link.url, '_blank') // Abre o link em uma nova aba
+        } else {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link não encontrado.', 'alert-error')
+        }
+    }
+
+    // Cancelar edição do link
+    public cancelarEdicao() {
+        this.editandoLink = false // Sai do modo de edição
+        this.novoLink = '' // Limpa o campo de link
+        this.redeSocial = '' // Limpa a rede social
+    }
 
     // Mapeando ações do Vuex
     private logout!: () => Promise<void>
@@ -251,7 +496,7 @@ export default class PaginaUsuario extends Vue {
         console.log('User ID:', userId)
     }
 
-    //logout 
+    // Logout 
     public fazerLogout() {
         this.logout()
             .then(() => {
@@ -264,7 +509,7 @@ export default class PaginaUsuario extends Vue {
             })
     }
 
-    //carregar imagem
+    // Carregar imagem
     public carregarImagem(event: Event) {
         const file = (event.target as HTMLInputElement).files?.[0]
         if (file) {
@@ -276,29 +521,36 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    //atualizar usuario
+    // Atualizar usuário
     public atualizarUsuario(novoUsuario: string) {
         this.usuario = novoUsuario
-        sessionStorage.setItem('user_name', novoUsuario) // Atualiza o valor no sessionStorage também
+        sessionStorage.setItem('user_name', novoUsuario)
+        // Aqui você pode adicionar lógica para atualizar o nome do usuário no backend
     }
 
-    //atualizar usuario
+    // Atualizar email
     public atualizarEmail(novoEmail: string) {
         this.email = novoEmail
-        sessionStorage.setItem('user_email', novoEmail) // Atualiza o valor no sessionStorage também
+        sessionStorage.setItem('user_email', novoEmail)
+        // Aqui você pode adicionar lógica para atualizar o email do usuário no backend
     }
 
-    //mostrar mensagem alerta
+    // Mostrar mensagem de alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
+        this.mensagem_alerta = { icone, mensagem, status }
         setTimeout(() => {
-            this.mensagem_alerta = { icone, mensagem, status }
-            setTimeout(() => {
-                this.mensagem_alerta = null
-            }, 5000) // Remove a mensagem após 5 segundos
-        }, 0)
+            this.mensagem_alerta = null
+        }, 5000)
     }
-}
 
+    //caso precise limpar localStorage
+    /*clearLinks() {
+        localStorage.removeItem('links'); // Remove a chave 'links' do localStorage
+        this.$store.commit('SET_LINKS', []); // Atualiza o estado do Vuex
+        console.log('localStorage dos links foi limpo.');
+    } */
+
+}
 </script>
 
 <style lang="scss">
