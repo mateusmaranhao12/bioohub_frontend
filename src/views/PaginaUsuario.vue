@@ -287,6 +287,12 @@ export default class PaginaUsuario extends Vue {
     public redeSocial = ''
     public linkParaRedirecionar: string | null = null // Nova variável para o link a ser redirecionado
 
+    gerarId(): number {
+        // Acesse os links através do getter do Vuex
+        const links: Array<Link> = this.$store.getters.links; 
+        return links.length > 0 ? Math.max(...links.map(link => link.id)) + 1 : 1;
+    }
+
     // Iniciar edição do link
     public iniciarAdicaoLink(link: Link) {
         this.adicionandoLink = true
@@ -304,68 +310,86 @@ export default class PaginaUsuario extends Vue {
         this.redeSocial = link.redeSocial // Preenche a rede social
     }
 
-    // Carrega os links do localStorage
+    // No método created
     created() {
         this.$store.dispatch('loadLinks') // Carrega os links do Vuex
             .then(() => {
-                const links: Link[] = this.$store.getters.links; // Adicionando o tipo Link[]
-                console.log("Links carregados:", links);
+                const links: Link[] = this.$store.getters.links
+                const userId = sessionStorage.getItem('user_id') // ID do usuário autenticado
 
-                if (!links.length) {
-                    // Carregar links do localStorage se o Vuex estiver vazio
-                    const linksString = localStorage.getItem('links');
-                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]');
+                // Filtra os links para mostrar apenas os do usuário logado
+                const userLinks = links.filter(link => link.usuario_id === userId)
+                console.log("Links do usuário carregados:", userLinks)
 
-                    linksFromLocalStorage.forEach((link: Link) => {
-                        this.$store.commit('ADD_LINK', link); // Adiciona os links do localStorage ao Vuex
-                    });
+                // Adiciona links do localStorage se necessário
+                if (!userLinks.length) {
+                    const linksString = localStorage.getItem('links')
+                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]')
+                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId)
+
+                    userLinksFromLocalStorage.forEach((link: Link) => {
+                        this.$store.commit('ADD_LINK', link)
+                    })
                 }
             })
             .catch((error: any) => {
-                console.error('Erro ao carregar links:', error);
-            });
+                console.error('Erro ao carregar links:', error)
+            })
     }
 
     // Adicionar link
     public async adicionarLink() {
-        const regex = /^(ftp|http|https):\/\/[^ "]+$/
+        const regex = /^(ftp|http|https):\/\/[^ "]+$/;
 
         if (this.novoLink.trim() === '' || !regex.test(this.novoLink)) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Tente novamente.', 'alert-error')
-            return
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Tente novamente.', 'alert-error');
+            return;
         }
 
-        const redeSocial = this.detectarRedeSocial(this.novoLink)
+        const redeSocial = this.detectarRedeSocial(this.novoLink);
         if (redeSocial) {
-            this.redeSocial = redeSocial
-            this.linkParaRedirecionar = this.novoLink
+            this.redeSocial = redeSocial;
+            this.linkParaRedirecionar = this.novoLink;
+
+            const usuarioId = sessionStorage.getItem('user_id');
+            if (!usuarioId) {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado. Tente novamente.', 'alert-error');
+                return; // Encerra se não houver ID do usuário
+            }
 
             const dados = {
-                usuario_id: sessionStorage.getItem('user_id'),
+                usuario_id: usuarioId,
                 redes: [{ url: this.novoLink }]
-            }
+            };
 
             try {
-                const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', dados)
+                const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', dados);
                 if (response.data.success) {
-                    // Garante que o ID do link é adicionado corretamente
-                    const novoLinkComId: Link = { url: this.novoLink, redeSocial, id: response.data.links[0].id }
-                    this.mostrarMensagemAlerta('fa-solid fa-check-circle', `Link de ${redeSocial} adicionado com sucesso!`, 'alert-sucesso')
+                    const novoLinkComId: Link = {
+                        url: this.novoLink,
+                        redeSocial,
+                        id: response.data.links[0].id, // Use o ID retornado pelo backend, se aplicável
+                        usuario_id: usuarioId // Usar o ID validado
+                    };
 
-                    // Adiciona o link ao Vuex e salva no localStorage
-                    this.$store.commit('ADD_LINK', novoLinkComId)
-                    this.$store.dispatch('saveLinks')
+                    this.mostrarMensagemAlerta('fa-solid fa-check-circle', `Link de ${redeSocial} adicionado com sucesso!`, 'alert-sucesso');
 
-                    this.adicionandoLink = false
+                    // Gerar um novo ID se o backend não retornar um
+                    if (!novoLinkComId.id) {
+                        novoLinkComId.id = this.gerarId(); // Gerar ID se não foi retornado
+                    }
+
+                    this.$store.commit('ADD_LINK', novoLinkComId);
+                    this.$store.dispatch('saveLinks');
+
+                    this.adicionandoLink = false;
                 } else {
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
                 }
             } catch (error) {
-                console.error('Erro ao adicionar link:', error)
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link.', 'alert-error')
+                console.error('Erro ao adicionar link:', error);
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link.', 'alert-error');
             }
-        } else {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Insira um link de perfil válido.', 'alert-error')
         }
     }
 
@@ -373,46 +397,54 @@ export default class PaginaUsuario extends Vue {
     public async editarLink() {
         // Verifica se linkId é válido
         if (this.linkId === null) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro: ID do link não encontrado.', 'alert-error')
-            return
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro: ID do link não encontrado.', 'alert-error');
+            return;
+        }
+
+        const usuarioId = sessionStorage.getItem('user_id');
+        if (!usuarioId) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado. Tente novamente.', 'alert-error');
+            return; // Encerra se não houver ID do usuário
         }
 
         const dados = {
-            usuario_id: sessionStorage.getItem('user_id'),
-            redes: [{ url: this.novoLink, old_url: this.linkParaRedirecionar, id: this.linkId }] // Certifique-se de que o id é incluído
-        }
+            usuario_id: usuarioId,
+            redes: [{ url: this.novoLink, old_url: this.linkParaRedirecionar, id: this.linkId }]
+        };
 
         try {
-            const response = await axios.put('http://localhost/Projetos/bioohub/backend/api/editar_links.php', dados)
+            const response = await axios.put('http://localhost/Projetos/bioohub/backend/api/editar_links.php', dados);
             if (response.data.success) {
-                this.mostrarMensagemAlerta('fa-solid fa-check-circle', response.data.message, 'alert-sucesso')
+                this.mostrarMensagemAlerta('fa-solid fa-check-circle', response.data.message, 'alert-sucesso');
 
-                // Atualiza o link no Vuex com o novo URL
-                const linkEditado: Link = { url: this.novoLink, redeSocial: this.redeSocial, id: this.linkId }
-                this.$store.commit('UPDATE_LINK', linkEditado) // Atualiza o link no Vuex
+                const linkEditado: Link = {
+                    url: this.novoLink,
+                    redeSocial: this.redeSocial,
+                    id: this.linkId, // O ID permanece o mesmo
+                    usuario_id: usuarioId // Usar o ID validado
+                };
+                this.$store.commit('UPDATE_LINK', linkEditado);
 
-                // Salva os links atualizados no localStorage
-                this.$store.dispatch('saveLinks')
+                this.$store.dispatch('saveLinks');
 
-                this.editandoLink = false
+                this.editandoLink = false;
             } else {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
             }
         } catch (error) {
-            console.error('Erro ao editar link:', error)
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao editar link.', 'alert-error')
+            console.error('Erro ao editar link:', error);
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao editar link.', 'alert-error');
         }
     }
 
     // Remover link
     public async deletarLink(id: number) {
-
         const usuarioId = sessionStorage.getItem('user_id'); // Obter o usuário ID
 
         // Verifica se o id está definido
         if (id === undefined || id === null) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do link não definido.', 'alert-error')
-            return
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do link não definido.', 'alert-error');
+            return;
         }
 
         const dados = {
@@ -421,15 +453,13 @@ export default class PaginaUsuario extends Vue {
         };
 
         try {
-
             // Realizar a requisição DELETE
             const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/deletar_links.php', { data: dados });
 
-
             if (response.data.success) {
                 // Remove o link do Vuex
-                this.$store.commit('DELETE_LINK', id)
-                this.$store.dispatch('saveLinks')
+                this.$store.commit('DELETE_LINK', id);
+                this.$store.dispatch('saveLinks');
 
                 // Mostrar mensagem de sucesso
                 this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link deletado com sucesso!', 'alert-sucesso');
@@ -443,7 +473,6 @@ export default class PaginaUsuario extends Vue {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao deletar link.', 'alert-error');
         }
     }
-
 
     // Detectar rede social
     public detectarRedeSocial(url: string): string | null {

@@ -1,12 +1,18 @@
 import { createStore } from 'vuex'
 
 export default createStore({
+
   state: {
+
+    // Estado do usuário logado
     usuario: null as { email: string } | null,
-    links: [] as Array<{ id: number, url: string, redeSocial: string }> // Agora cada link possui um 'id'
+    // Lista de links
+    links: [] as Array<{ id: number, url: string, redeSocial: string, usuario_id: string }>
+
   },
 
   mutations: {
+
     // Define o usuário logado
     SET_USUARIO(state, usuario) {
       state.usuario = usuario
@@ -17,44 +23,45 @@ export default createStore({
       state.usuario = null
     },
 
-    // Define todos os links carregados
+    // Define todos os links no estado
     SET_LINKS(state, links) {
-      state.links = links // Atualiza os links no estado
+      state.links = links
     },
 
-    // Adiciona um novo link
+    // Adiciona um novo link à lista
     ADD_LINK(state, link) {
-      state.links.push(link) // Adiciona um link ao array de links
+      state.links.push(link)
     },
 
     // Atualiza um link existente
     UPDATE_LINK(state, linkAtualizado) {
       const index = state.links.findIndex(link => link.id === linkAtualizado.id)
       if (index !== -1) {
-        state.links.splice(index, 1, linkAtualizado) // Atualiza o link no estado
+        state.links.splice(index, 1, linkAtualizado)
       }
     },
 
-    // Remove um link
+    // Remove um link da lista
     DELETE_LINK(state, linkId) {
-      state.links = state.links.filter(link => link.id !== linkId) // Remove o link com base no 'id'
+      state.links = state.links.filter(link => link.id !== linkId)
     }
   },
 
   actions: {
-    // Ação de login: armazena o usuário no estado e no localStorage
+
+    // Ação de login
     login({ commit }, usuario) {
       commit('SET_USUARIO', usuario)
       localStorage.setItem('usuario', JSON.stringify(usuario))
     },
 
-    // Ação de logout: limpa o usuário no estado e remove do localStorage
+    // Ação de logout
     logout({ commit }) {
       commit('CLEAR_USUARIO')
       localStorage.removeItem('usuario')
     },
 
-    // Carrega o usuário do localStorage ao iniciar a aplicação
+    // Carrega o usuário do localStorage
     loadUsuario({ commit }) {
       const usuario = localStorage.getItem('usuario')
       if (usuario) {
@@ -62,43 +69,47 @@ export default createStore({
       }
     },
 
-    // Carrega os links do localStorage
-    loadLinks({ commit }) {
+    // Carrega os links do localStorage e filtra para o usuário logado
+    loadLinks({ commit, state }) {
       const links = localStorage.getItem('links')
       if (links) {
-        commit('SET_LINKS', JSON.parse(links)) // Carrega os links para o estado
+        const parsedLinks: Array<{ id: number, url: string, redeSocial: string, usuario_id: string }> = JSON.parse(links)
+        const filteredLinks = parsedLinks.filter(link => link.usuario_id === state.usuario?.email)
+        commit('SET_LINKS', filteredLinks)
       }
     },
 
     // Salva os links no localStorage
     saveLinks({ state }) {
-      localStorage.setItem('links', JSON.stringify(state.links)) // Persiste os links no localStorage
+      localStorage.setItem('links', JSON.stringify(state.links))
     },
 
-    // Adiciona um novo link e salva os links no localStorage
-    addLink({ commit, dispatch }, link) {
-      commit('ADD_LINK', link) // Adiciona o novo link no estado
-      dispatch('saveLinks') // Salva os links atualizados no localStorage
+    // Adiciona um novo link
+    addLink({ commit, dispatch, state }, link) {
+      // Gera um novo ID único para o link
+      const newId = state.links.length > 0 ? Math.max(...state.links.map(l => l.id)) + 1 : 1
+      link.usuario_id = state.usuario?.email // Define o usuário que está adicionando o link
+      link.id = newId // Atribui o novo ID ao link
+      commit('ADD_LINK', link)
+      dispatch('saveLinks')
     },
 
-    // Edita um link existente e salva os links no localStorage
+    // Atualiza um link existente
     updateLink({ commit, dispatch }, linkAtualizado) {
-      commit('UPDATE_LINK', linkAtualizado) // Atualiza o link no estado
-      dispatch('saveLinks') // Salva os links atualizados no localStorage
+      commit('UPDATE_LINK', linkAtualizado)
+      dispatch('saveLinks')
     },
 
-    // Deleta um link e salva os links no localStorage
+    // Deleta um link
     deleteLink({ commit, dispatch }, linkId) {
-      commit('DELETE_LINK', linkId) // Remove o link do estado
-      dispatch('saveLinks') // Salva os links atualizados no localStorage
+      commit('DELETE_LINK', linkId)
+      dispatch('saveLinks')
     }
+    
   },
 
   getters: {
-    // Retorna o usuário logado
     usuario: (state) => state.usuario,
-
-    // Retorna os links armazenados
     links: (state) => state.links
   },
 
