@@ -1,9 +1,12 @@
 <template>
     <div class="container redes-sociais">
         <div class="row">
+            <!-- Alerta de mensagens -->
             <div class="col-md-12 d-flex justify-content-center mt-2">
                 <Alerta :mensagem_alerta="mensagem_alerta" />
             </div>
+
+            <!-- Formulário de adição de redes sociais -->
             <div class="col-md-6 icones">
                 <h2>Agora, vamos adicionar suas contas de mídia social à sua página.</h2>
                 <div v-for="(rede, index) in redesSociais" :key="index" class="d-flex align-items-center mb-3">
@@ -16,12 +19,16 @@
                         <button @click.prevent="adicionarRedeSocial(rede)" class="btn btn-success">Adicionar</button>
                     </div>
                 </div>
+
+                <!-- Botões de pular ou continuar -->
                 <div class="d-flex mt-3">
-                    <button :disabled="!isAdded" type="button" @click="validarEContinuar"
+                    <button :disabled="!isValid" type="button" @click="validarEContinuar"
                         class="btn btn-dark flex-grow-1 me-1">Próximo</button>
                     <button @click="pularEtapaRedes" type="button" class="btn btn-light flex-grow-1">Pular</button>
                 </div>
             </div>
+
+            <!-- Visualização dos cards da página do usuário -->
             <div class="col-md-6">
                 <h2>Sua página</h2>
                 <div class="row">
@@ -31,12 +38,15 @@
                                 @mouseleave="rede.hover = false">
                                 <div class="card-body d-flex flex-column justify-content-between">
                                     <div class="content">
+                                        <!-- Ícone e nome do usuário -->
                                         <i :class="`fa-brands fa-${rede.nome.toLowerCase()}`"></i>
                                         <h6>@{{ rede.nomeUsuario }}</h6>
                                     </div>
                                     <div class="buttons">
+                                        <!-- Botão de seguir -->
                                         <button @click="irParaRedeSocial(rede.usuario)"
                                             class="btn btn-primary">Seguir</button>
+                                        <!-- Botão de remover aparece no hover -->
                                         <button v-if="rede.hover" @click="removerRedeSocial(index)"
                                             class="btn btn-danger btn-remove">
                                             <i class="fas fa-trash"></i>
@@ -54,10 +64,23 @@
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
-import { Prop } from 'vue-property-decorator'; // Adicione esta linha
+import { Prop } from 'vue-property-decorator';
 import Alerta from '@/components/Alerta.vue';
 import { Alert } from '@/interfaces/Alert';
 import axios from 'axios';
+import { Store } from 'vuex';
+
+// Definindo a interface para Redes Sociais
+interface RedeSocial {
+    nome: string;
+    icon: any; // Tipo do ícone pode ser ajustado conforme necessário
+    placeholder: string;
+    usuario: string;
+    nomeUsuario: string;
+    exibirCard: boolean;
+    hover: boolean;
+    url: string; // Adicionando a propriedade 'url'
+}
 
 @Options({
     components: {
@@ -67,10 +90,13 @@ import axios from 'axios';
 export default class RedesSociais extends Vue {
     @Prop({ required: true }) userId!: number;
 
+    $store!: Store<any>;
+
     mensagem_alerta: Alert | null = null;
     isAdded = false;
 
-    redesSociais = [
+    // Redes sociais disponíveis para o usuário cadastrar
+    redesSociais: RedeSocial[] = [ // Definindo o tipo para a lista
         {
             nome: 'Instagram',
             icon: require('@/assets/imgs/instagram.png'),
@@ -79,6 +105,7 @@ export default class RedesSociais extends Vue {
             nomeUsuario: '',
             exibirCard: false,
             hover: false,
+            url: '' // Inicializando a propriedade 'url'
         },
         {
             nome: 'GitHub',
@@ -88,6 +115,7 @@ export default class RedesSociais extends Vue {
             nomeUsuario: '',
             exibirCard: false,
             hover: false,
+            url: '' // Inicializando a propriedade 'url'
         },
         {
             nome: 'LinkedIn',
@@ -97,30 +125,40 @@ export default class RedesSociais extends Vue {
             nomeUsuario: '',
             exibirCard: false,
             hover: false,
+            url: '' // Inicializando a propriedade 'url'
         }
     ];
 
-    // Computed property to determine if the "Próximo" button should be enabled
+    // Computed property para habilitar o botão "Próximo"
     get isValid() {
-        return this.isAdded; // O botão "Próximo" depende da variável isAdded
+        return this.redesSociais.some(rede => rede.exibirCard);
     }
 
-    public adicionarRedeSocial(rede: { usuario: string, nome: string, exibirCard: boolean, nomeUsuario: string }) {
+    // Adiciona uma rede social e exibe o card
+    public adicionarRedeSocial(rede: RedeSocial) {
         if (rede.usuario) {
             const usuarioMatch = this.extractUsername(rede.nome, rede.usuario);
             if (usuarioMatch) {
                 rede.nomeUsuario = usuarioMatch;
                 rede.exibirCard = true;
+                rede.url = rede.usuario; // Armazenando o URL na propriedade 'url'
                 this.isAdded = true;
 
+                // Adiciona ao Vuex
+                this.$store.dispatch('addLink', {
+                    url: rede.usuario,
+                    redeSocial: rede.nome,
+                    usuario_id: this.userId
+                });
             } else {
-                this.mostrarMensagemAlerta('fa-solid fa-circle-info', `Por favor, insira um link válido para ${rede.nome}`, 'alert-aviso');
+                this.mostrarMensagemAlerta('fa-solid fa-circle-info', `Por favor, insira um link válido para ${rede.nome}.`, 'alert-aviso');
             }
         } else {
-            this.mostrarMensagemAlerta('fa-solid fa-circle-info', `Por favor, insira um link para ${rede.nome}`, 'alert-aviso');
+            this.mostrarMensagemAlerta('fa-solid fa-circle-info', `Por favor, insira um link para ${rede.nome}.`, 'alert-aviso');
         }
     }
 
+    // Extrai o nome de usuário da URL
     private extractUsername(nomeRede: string, url: string): string | null {
         let username: string | null = null;
 
@@ -148,18 +186,27 @@ export default class RedesSociais extends Vue {
         return username;
     }
 
+    // Abre o link da rede social em uma nova aba
     public irParaRedeSocial(link: string) {
         window.open(link, '_blank');
     }
 
+    // Remove o card da rede social
     public removerRedeSocial(index: number) {
-        this.redesSociais[index].exibirCard = false;
+        const rede = this.redesSociais[index];
+        this.$store.dispatch('deleteLinkByUrl', rede.url); // Remova pelo URL
+        rede.exibirCard = false;
+
+        // Atualiza o estado do botão "Próximo"
+        this.isAdded = this.redesSociais.some(r => r.exibirCard);
     }
 
+    // Pula a etapa de adicionar redes sociais
     public pularEtapaRedes() {
         this.$router.push({ name: 'pagina-usuario' });
     }
 
+    // Valida as redes sociais e cadastra no servidor
     public validarEContinuar() {
         this.cadastrarRedesSociais()
             .then(() => {
@@ -170,46 +217,72 @@ export default class RedesSociais extends Vue {
             });
     }
 
+    // Envia as redes sociais cadastradas para o backend
     public cadastrarRedesSociais(): Promise<void> {
         return new Promise((resolve, reject) => {
             const redes = this.redesSociais
                 .filter(rede => rede.exibirCard)
-                .map(rede => ({ url: rede.usuario })); // Altere para incluir apenas a URL
+                .map(rede => ({
+                    url: rede.usuario,
+                    redeSocial: rede.nome
+                }));
 
-            // Verifique se há redes para cadastrar
+            // Log para verificar dados antes de enviar
+            console.log('userId:', this.userId);
+            console.log('redes:', redes);
+
+            // Validar se as redes sociais foram adicionadas
             if (redes.length === 0) {
                 reject(new Error('Nenhuma rede social foi adicionada.'));
                 return;
             }
 
-            // Enviar usuario_id e as redes corretas
-            axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', { usuario_id: this.userId, redes })
+            // Verificação de dados completos
+            if (!this.userId || redes.some(rede => !rede.url || !rede.redeSocial)) {
+                reject(new Error('Dados incompletos.'));
+                return;
+            }
+
+            // Envio dos dados
+            axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', {
+                usuario_id: this.userId,
+                redes: redes
+            })
                 .then(response => {
                     if (response.data.success) {
                         resolve();
                     } else {
-                        reject(new Error('Cadastro falhou: ' + response.data.message));
+                        reject(new Error(response.data.message));
                     }
                 })
-                .catch(err => {
-                    console.error('Erro ao cadastrar redes sociais:', err); // Log do erro para depuração
-                    reject(err);
+                .catch((error) => {
+                    console.error('Erro ao enviar dados:', error);
+                    reject(new Error('Erro ao enviar dados.'));
                 });
         });
     }
 
-
-    private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
+    // Mostra mensagem de alerta
+    public mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
+        this.mensagem_alerta = { icone, mensagem, status };
         setTimeout(() => {
-            this.mensagem_alerta = { icone, mensagem, status };
-            setTimeout(() => {
-                this.mensagem_alerta = null;
-            }, 5000);
-        }, 0);
+            this.mensagem_alerta = null;
+        }, 5000);
     }
 }
 </script>
 
-<style lang="scss">
-@import '../scss/forms.scss';
+<style scoped>
+.redes-sociais {
+    margin-top: 50px;
+}
+
+.card {
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+.btn-remove {
+    margin-left: 10px;
+}
 </style>

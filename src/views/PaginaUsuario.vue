@@ -136,7 +136,7 @@
                             class="fa-solid fa-globe fa-2x"></i>
                         <p v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
                             class="mt-2">
-                            Adicionar link
+                            Adicionar rede social
                         </p>
 
                         <!-- Exibir input e botão somente após clicar no ícone "+" -->
@@ -289,7 +289,7 @@ export default class PaginaUsuario extends Vue {
 
     gerarId(): number {
         // Acesse os links através do getter do Vuex
-        const links: Array<Link> = this.$store.getters.links; 
+        const links: Array<Link> = this.$store.getters.links;
         return links.length > 0 ? Math.max(...links.map(link => link.id)) + 1 : 1;
     }
 
@@ -310,31 +310,41 @@ export default class PaginaUsuario extends Vue {
         this.redeSocial = link.redeSocial // Preenche a rede social
     }
 
-    // No método created
     created() {
         this.$store.dispatch('loadLinks') // Carrega os links do Vuex
             .then(() => {
-                const links: Link[] = this.$store.getters.links
-                const userId = sessionStorage.getItem('user_id') // ID do usuário autenticado
+                const links: Link[] = this.$store.getters.links;
+                const userId = sessionStorage.getItem('user_id'); // ID do usuário autenticado
 
                 // Filtra os links para mostrar apenas os do usuário logado
-                const userLinks = links.filter(link => link.usuario_id === userId)
-                console.log("Links do usuário carregados:", userLinks)
+                const userLinks = links.filter(link => link.usuario_id === userId);
+
+                // Exibe os links do usuário no console
+                if (userLinks.length > 0) {
+                    console.log("Links do usuário carregados:", userLinks);
+                } else {
+                    console.log("Nenhum link encontrado para o usuário com ID:", userId);
+                }
 
                 // Adiciona links do localStorage se necessário
                 if (!userLinks.length) {
-                    const linksString = localStorage.getItem('links')
-                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]')
-                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId)
+                    const linksString = localStorage.getItem(`links_${userId}`);
+                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]');
+                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId);
 
-                    userLinksFromLocalStorage.forEach((link: Link) => {
-                        this.$store.commit('ADD_LINK', link)
-                    })
+                    if (userLinksFromLocalStorage.length > 0) {
+                        userLinksFromLocalStorage.forEach((link: Link) => {
+                            this.$store.commit('ADD_LINK', link);
+                        });
+                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage);
+                    } else {
+                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId);
+                    }
                 }
             })
             .catch((error: any) => {
-                console.error('Erro ao carregar links:', error)
-            })
+                console.error('Erro ao carregar links:', error);
+            });
     }
 
     // Adicionar link
@@ -359,7 +369,7 @@ export default class PaginaUsuario extends Vue {
 
             const dados = {
                 usuario_id: usuarioId,
-                redes: [{ url: this.novoLink }]
+                redes: [{ url: this.novoLink }],
             };
 
             try {
@@ -368,16 +378,11 @@ export default class PaginaUsuario extends Vue {
                     const novoLinkComId: Link = {
                         url: this.novoLink,
                         redeSocial,
-                        id: response.data.links[0].id, // Use o ID retornado pelo backend, se aplicável
-                        usuario_id: usuarioId // Usar o ID validado
+                        id: response.data.links && response.data.links.length > 0 ? response.data.links[0].id : this.gerarId(), // Use o ID retornado pelo backend ou gera um novo
+                        usuario_id: usuarioId, // Usar o ID validado
                     };
 
                     this.mostrarMensagemAlerta('fa-solid fa-check-circle', `Link de ${redeSocial} adicionado com sucesso!`, 'alert-sucesso');
-
-                    // Gerar um novo ID se o backend não retornar um
-                    if (!novoLinkComId.id) {
-                        novoLinkComId.id = this.gerarId(); // Gerar ID se não foi retornado
-                    }
 
                     this.$store.commit('ADD_LINK', novoLinkComId);
                     this.$store.dispatch('saveLinks');
@@ -407,6 +412,13 @@ export default class PaginaUsuario extends Vue {
             return; // Encerra se não houver ID do usuário
         }
 
+        // Detecta a nova rede social com base no novo link
+        const novaRedeSocial = this.detectarRedeSocial(this.novoLink);
+        if (!novaRedeSocial) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Por favor, insira um link de rede social válido.', 'alert-error');
+            return;
+        }
+
         const dados = {
             usuario_id: usuarioId,
             redes: [{ url: this.novoLink, old_url: this.linkParaRedirecionar, id: this.linkId }]
@@ -419,7 +431,7 @@ export default class PaginaUsuario extends Vue {
 
                 const linkEditado: Link = {
                     url: this.novoLink,
-                    redeSocial: this.redeSocial,
+                    redeSocial: novaRedeSocial, // Atualiza a rede social detectada
                     id: this.linkId, // O ID permanece o mesmo
                     usuario_id: usuarioId // Usar o ID validado
                 };
@@ -457,8 +469,8 @@ export default class PaginaUsuario extends Vue {
             const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/deletar_links.php', { data: dados });
 
             if (response.data.success) {
-                // Remove o link do Vuex
-                this.$store.commit('DELETE_LINK', id);
+                // Remove o link do Vuex pelo ID
+                this.$store.commit('DELETE_LINK_BY_ID', id);
                 this.$store.dispatch('saveLinks');
 
                 // Mostrar mensagem de sucesso
@@ -483,7 +495,7 @@ export default class PaginaUsuario extends Vue {
         } else if (/https?:\/\/(www\.)?linkedin\.com\/in\/[^/]+/.test(url)) {
             return 'linkedin'
         } else {
-            return null
+            return 'globe'
         }
     }
 
