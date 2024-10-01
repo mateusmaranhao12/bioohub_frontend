@@ -46,7 +46,7 @@
         position: $relative;
         transition: .3s ease;
 
-        i,
+        .icone-upload,
         p {
             position: absolute;
             /* Para que fiquem dentro do círculo */
@@ -60,7 +60,7 @@
             text-align: $center;
         }
 
-        i {
+        .icone-upload {
             bottom: 35px;
             /* Ajuste para a posição do ícone */
             font-size: 24px;

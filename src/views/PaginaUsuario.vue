@@ -10,52 +10,57 @@
             <!-- Coluna Dados -->
             <div class="col-md-6 mt-5">
 
-                <!--Escolher imagem-->
+                <!-- Escolher imagem -->
                 <div
-                    class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center">
+                    class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center position-relative">
                     <input type="file" id="file-input" class="file-input" accept="image/*" @change="carregarImagem"
-                        style="display:none;">
+                        :disabled="imagemSelecionada" style="display:none;">
                     <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
                         <img v-if="selectedImage" :src="selectedImage" class="img-fluid rounded-circle"
                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         <img v-else :src="imagemUrl || '../default-image.png'" class="img-fluid rounded-circle"
                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                        <i v-if="!selectedImage" class="fa-solid fa-upload fa-2x mb-5"></i>
+                        <i v-if="!selectedImage" class="icone-upload fa-solid fa-upload fa-2x mb-5"></i>
                         <p v-if="!selectedImage" class="text-center mb-4">Adicionar foto</p>
                     </label>
 
-                    <div v-if="selectedImage" class="d-flex justify-content-center mt-3">
-                        <button class="btn btn-primary me-2" @click="$refs['file-input'].click()">Escolher outra
-                            imagem</button>
-                        <button class="btn btn-danger" @click="removerImagemPerfil">Remover imagem</button>
+                    <div v-if="selectedImage" class="position-absolute" style="top: 5px; right: 5px;">
+                        <button class="btn btn-primary btn-sm" @click="$refs['file-input'].click()">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm ms-2" @click="removerImagemPerfil">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </div>
                 </div>
 
                 <!-- Input para editar nome -->
                 <div class="animate__animated animate__zoomIn mt-4">
-                    <div v-if="editandoNome">
+                    <div v-if="editandoNome" class="d-flex align-items-center">
                         <input type="text" v-model="nome" class="form-control input-usuario" placeholder="Seu nome"
                             aria-label="Nome">
-                        <button class="btn btn-success mt-2" @click="salvarPerfil"><i class="fa fa-check"></i></button>
+                        <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
+                                class="fa fa-check"></i></button>
                     </div>
-                    <div v-else>
+                    <div v-else class="d-flex align-items-center">
                         <h4>{{ nome }}</h4>
-                        <button class="btn btn-secondary" @click="editarNome"><i class="fa fa-pencil"></i> Editar
-                            Nome</button>
+                        <button class="btn btn-dark btn-sm ms-2" @click="editarNome"><i
+                                class="fa fa-pencil"></i></button>
                     </div>
                 </div>
 
                 <!-- Input para editar bio -->
-                <div class="animate__animated animate__zoomIn  mt-2">
-                    <div v-if="editandoBio">
+                <div class="animate__animated animate__zoomIn mt-2">
+                    <div v-if="editandoBio" class="d-flex align-items-center">
                         <textarea v-model="bio" class="form-control input-bio" placeholder="Sua biografia..."
                             aria-label="Bio"></textarea>
-                        <button class="btn btn-success mt-2" @click="salvarPerfil"><i class="fa fa-check"></i></button>
+                        <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
+                                class="fa fa-check"></i></button>
                     </div>
-                    <div v-else>
+                    <div v-else class="d-flex align-items-center">
                         <p>{{ bio }}</p>
-                        <button class="btn btn-secondary" @click="editarBio"><i class="fa fa-pencil"></i> Editar
-                            Bio</button>
+                        <button class="btn btn-dark btn-sm ms-2" @click="editarBio"><i
+                                class="fa fa-pencil"></i></button>
                     </div>
                 </div>
 
@@ -313,6 +318,7 @@ export default class PaginaUsuario extends Vue {
     public editandoBio = false
     public bio = '' //biografia
     public nome = ''
+    public imagemSelecionada = false
 
     // Editar ou inserir links
     public linkId: number | null = null
@@ -601,21 +607,26 @@ export default class PaginaUsuario extends Vue {
             })
     }
 
-    // Carrega a imagem selecionada
+    // Método para carregar a imagem
     public carregarImagem(event: Event) {
         const input = event.target as HTMLInputElement;
-        if (input.files && input.files[0]) {
+        if (input.files && input.files.length > 0) {
+            const file = input.files[0];
             const reader = new FileReader();
-            reader.onload = (e: ProgressEvent<FileReader>) => {
-                if (e.target) {
-                    this.selectedImage = e.target.result as string;
-                }
+
+            // Converter a imagem para Base64
+            reader.onload = (e) => {
+                this.selectedImage = e.target?.result as string; // Atualiza o src da imagem
+                this.imagemSelecionada = true // Desabilita o input após seleção da imagem
+
+                this.salvarPerfil()
             };
-            reader.readAsDataURL(input.files[0]);
+
+            reader.readAsDataURL(file); // Lê o arquivo como URL
         }
     }
 
-    //salvar perfil
+    // Método para salvar perfil
     public salvarPerfil() {
         // Acessa o ID do usuário do Vuex ou sessionStorage
         const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id');
@@ -640,11 +651,15 @@ export default class PaginaUsuario extends Vue {
             perfil.descricao = this.bio;
         }
 
-        if (this.selectedImage) {
-            perfil.foto_perfil = this.selectedImage; // Imagem base64
+        if (this.selectedImage && /^data:image\/[a-zA-Z]+;base64,/.test(this.selectedImage)) {
+            perfil.foto_perfil = this.selectedImage; // Imagem em Base64
+        } else {
+            console.error("Imagem inválida ou não selecionada.");
+            return;
         }
 
-        console.log("Dados do perfil a serem salvos:", perfil); // Adicione este log
+
+        console.log("Dados do perfil a serem salvos:", perfil); // Log dos dados do perfil
 
         // Faz a requisição apenas se houver pelo menos um campo a ser salvo
         if (Object.keys(perfil).length > 1) {
@@ -659,17 +674,16 @@ export default class PaginaUsuario extends Vue {
 
                     // Atualizar o Vuex com os dados do perfil
                     this.$store.commit('UPDATE_PERFIL', perfil); // Supondo que você tenha uma mutação UPDATE_PERFIL no Vuex
-
                 })
                 .catch(error => {
-                    console.error('Erro ao salvar o perfil:', error.response.data); // Modificado para capturar o erro detalhado
+                    console.error('Erro ao salvar o perfil:', error.response.data); // Log do erro detalhado
                 });
         } else {
             console.warn('Nenhum dado para salvar.');
         }
     }
 
-    // Remove a imagem de perfil
+    // Método para remover a imagem de perfil
     public removerImagemPerfil() {
         this.selectedImage = null;
         this.imagemUrl = null;
