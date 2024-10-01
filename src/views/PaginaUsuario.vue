@@ -159,7 +159,7 @@
 
                             <button v-if="!adicionandoLink && !editandoLink" @click="redirecionarParaLink(link)"
                                 class="btn btn-secondary btn-sm mt-2">
-                                Seguir
+                                Ir para o link
                             </button>
                         </div>
 
@@ -453,6 +453,13 @@ export default class PaginaUsuario extends Vue {
             return // Encerra se não houver ID do usuário
         }
 
+        // Verifica se o novo link é válido
+        const regex = /^(ftp|http|https):\/\/[^ "]+$/
+        if (this.novoLink.trim() === '' || !regex.test(this.novoLink)) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Tente novamente.', 'alert-error')
+            return
+        }
+
         // Detecta a nova rede social com base no novo link
         const novaRedeSocial = this.detectarRedeSocial(this.novoLink)
         if (!novaRedeSocial) {
@@ -527,16 +534,68 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    // Detectar rede social
+    //detectar rede social inserida
     public detectarRedeSocial(url: string): string | null {
         if (/https?:\/\/(www\.)?instagram\.com\/[^/]+/.test(url)) {
-            return 'instagram'
+            return 'instagram';
         } else if (/https?:\/\/(www\.)?github\.com\/[^/]+/.test(url)) {
-            return 'github'
+            return 'github';
         } else if (/https?:\/\/(www\.)?linkedin\.com\/in\/[^/]+/.test(url)) {
-            return 'linkedin'
+            return 'linkedin';
+        } else if (/https?:\/\/(www\.)?whatsapp\.com\/[^/]+/.test(url) || /https?:\/\/wa\.me\/[^/]+/.test(url) || /https?:\/\/wa\.me\/\d+\?text=.*/.test(url)) {
+            return 'whatsapp'; // Adicionando suporte para wa.me
+        } else if (/https?:\/\/(www\.)?pix\.br\/[^/]+/.test(url)) {
+            return 'pix';
+        } else if (/https?:\/\/(www\.)?twitter\.com\/[^/]+/.test(url)) {
+            return 'twitter';
+        } else if (/https?:\/\/(www\.)?tiktok\.com\/[^/]+/.test(url)) {
+            return 'tiktok';
+        } else if (/https?:\/\/(open\.)?spotify\.com\/[^/]+/.test(url)) {
+            return 'spotify'; // Atualizado para reconhecer links do Spotify
+        } else if (/https?:\/\/(www\.)?youtube\.com\/channel\/[^/]+/.test(url) || /https?:\/\/(www\.)?youtube\.com\/[^/]+/.test(url)) {
+            return 'youtube';
+        } else if (/https?:\/\/(www\.)?vimeo\.com\/[^/]+/.test(url)) {
+            return 'vimeo';
+        } else if (/https?:\/\/(www\.)?substack\.com\/[^/]+/.test(url)) {
+            return 'substack';
+        } else if (/https?:\/\/(www\.)?medium\.com\/[^/]+/.test(url)) {
+            return 'medium';
+        } else if (/https?:\/\/(www\.)?music\.apple\.com\/[^/]+/.test(url)) {
+            return 'apple_music';
+        } else if (/https?:\/\/(www\.)?soundcloud\.com\/[^/]+/.test(url)) {
+            return 'soundcloud';
+        } else if (/https?:\/\/(www\.)?docs\.google\.com\/[^/]+/.test(url)) {
+            return 'google_docs';
+        } else if (/https?:\/\/(www\.)?notion\.so\/[^/]+/.test(url)) {
+            return 'notion';
+        } else if (/https?:\/\/(www\.)?calendly\.com\/[^/]+/.test(url)) {
+            return 'calendly';
+        } else if (/https?:\/\/(www\.)?producthunt\.com\/[^/]+/.test(url)) {
+            return 'product_hunt';
+        } else if (/https?:\/\/(www\.)?amazon\.com\/[^/]+/.test(url)) {
+            return 'amazon';
+        } else if (/https?:\/\/(www\.)?calendar\.google\.com\/[^/]+/.test(url)) {
+            return 'google_calendar';
+        } else if (/https?:\/\/(www\.)?patreon\.com\/[^/]+/.test(url)) {
+            return 'patreon';
+        } else if (/https?:\/\/(www\.)?twitch\.tv\/[^/]+/.test(url)) {
+            return 'twitch';
+        } else if (/https?:\/\/(www\.)?paypal\.com\/[^/]+/.test(url)) {
+            return 'paypal';
+        } else if (/https?:\/\/(www\.)?kickstarter\.com\/[^/]+/.test(url)) {
+            return 'kickstarter';
+        } else if (/https?:\/\/(www\.)?shopify\.com\/[^/]+/.test(url)) {
+            return 'shopify';
+        } else if (/https?:\/\/(www\.)?gumroad\.com\/[^/]+/.test(url)) {
+            return 'gumroad';
+        } else if (/https?:\/\/(www\.)?eventbrite\.com\/[^/]+/.test(url)) {
+            return 'eventbrite';
+        } else if (/https?:\/\/(www\.)?discord\.com\/[^/]+/.test(url)) {
+            return 'discord';
+        } else if (/https?:\/\/(www\.)?reddit\.com\/r\/[^/]+/.test(url)) {
+            return 'reddit';
         } else {
-            return 'globe'
+            return 'google'; // Retorna 'globe' se não for reconhecida
         }
     }
 
