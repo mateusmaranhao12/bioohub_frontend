@@ -25,9 +25,6 @@
                     </label>
 
                     <div v-if="selectedImage" class="position-absolute" style="top: 5px; right: 5px;">
-                        <button class="btn btn-primary btn-sm" @click="$refs['file-input'].click()">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </button>
                         <button class="btn btn-danger btn-sm ms-2" @click="removerImagemPerfil">
                             <i class="fa-solid fa-trash"></i>
                         </button>
@@ -36,31 +33,38 @@
 
                 <!-- Input para editar nome -->
                 <div class="animate__animated animate__zoomIn mt-4">
-                    <div v-if="editandoNome" class="d-flex align-items-center">
-                        <input type="text" v-model="nome" class="form-control input-usuario" placeholder="Seu nome"
-                            aria-label="Nome">
-                        <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
-                                class="fa fa-check"></i></button>
-                    </div>
-                    <div v-else class="d-flex align-items-center">
-                        <h4>{{ nome }}</h4>
-                        <button class="btn btn-dark btn-sm ms-2" @click="editarNome"><i
-                                class="fa fa-pencil"></i></button>
+                    <div v-if="!salvandoAlteracoes">
+                        <div v-if="editandoNome" class="d-flex align-items-center">
+                            <input type="text" v-model="nome" class="form-control input-usuario" placeholder="Seu nome"
+                                aria-label="Nome">
+                            <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
+                                    class="fa fa-check"></i></button>
+                        </div>
+                        <div v-else class="d-flex align-items-center">
+                            <h4>{{ nome }}</h4>
+                            <button class="btn btn-dark btn-sm ms-2" @click="editarNome"><i
+                                    class="fa fa-pencil"></i></button>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Input para editar bio -->
                 <div class="animate__animated animate__zoomIn mt-2">
-                    <div v-if="editandoBio" class="d-flex align-items-center">
-                        <textarea v-model="bio" class="form-control input-bio" placeholder="Sua biografia..."
-                            aria-label="Bio"></textarea>
-                        <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
-                                class="fa fa-check"></i></button>
+                    <div v-if="salvandoAlteracoes">
+                        <p class="text-start">Salvando alterações...</p> <!-- Mensagem durante o salvamento -->
                     </div>
-                    <div v-else class="d-flex align-items-center">
-                        <p>{{ bio }}</p>
-                        <button class="btn btn-dark btn-sm ms-2" @click="editarBio"><i
-                                class="fa fa-pencil"></i></button>
+                    <div v-else>
+                        <div v-if="editandoBio" class="d-flex align-items-center">
+                            <textarea v-model="bio" class="form-control input-bio" placeholder="Sua biografia..."
+                                aria-label="Bio"></textarea>
+                            <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
+                                    class="fa fa-check"></i></button>
+                        </div>
+                        <div v-else class="d-flex align-items-center">
+                            <p>{{ bio }}</p>
+                            <button class="btn btn-dark btn-sm ms-2" @click="editarBio"><i
+                                    class="fa fa-pencil"></i></button>
+                        </div>
                     </div>
                 </div>
 
@@ -170,7 +174,7 @@
                             class="fa-solid fa-globe fa-2x"></i>
                         <p v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
                             class="mt-2">
-                            Adicionar rede social
+                            Adicionar link
                         </p>
 
                         <!-- Exibir input e botão somente após clicar no ícone "+" -->
@@ -187,15 +191,6 @@
                                     style="color: white;"></i>
                             </button>
                         </div>
-                    </div>
-
-                    <div
-                        class="animate__animated animate__zoomIn card link-card card-horizontal d-flex flex-column align-items-center justify-content-center position-relative">
-                        <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
-                        </div>
-                        <i class="fa-brands fa-spotify fa-2x"></i>
-                        <p class="mt-2">Adicionar música</p>
                     </div>
 
                     <div
@@ -224,6 +219,7 @@
                         <i class="fa-solid fa-share-alt fa-2x"></i>
                         <p class="mt-2">Adicionar link</p>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -325,6 +321,7 @@ export default class PaginaUsuario extends Vue {
     public adicionandoLink = false
     public editandoLink = false
     public novoLink = ''
+    public salvandoAlteracoes = false
 
 
     // Inserir rede social (ex: instagram)
@@ -626,8 +623,10 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    // Método para salvar perfil
+    //salvar perfil
     public salvarPerfil() {
+        this.salvandoAlteracoes = true; // Ativar a propriedade ao iniciar o salvamento
+
         // Acessa o ID do usuário do Vuex ou sessionStorage
         const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id');
 
@@ -635,6 +634,7 @@ export default class PaginaUsuario extends Vue {
 
         if (!userId) {
             console.error("ID do usuário não encontrado."); // Log se o ID não estiver disponível
+            this.salvandoAlteracoes = false; // Desativar antes de retornar
             return; // Não prosseguir se o ID não estiver disponível
         }
 
@@ -653,11 +653,7 @@ export default class PaginaUsuario extends Vue {
 
         if (this.selectedImage && /^data:image\/[a-zA-Z]+;base64,/.test(this.selectedImage)) {
             perfil.foto_perfil = this.selectedImage; // Imagem em Base64
-        } else {
-            console.error("Imagem inválida ou não selecionada.");
-            return;
         }
-
 
         console.log("Dados do perfil a serem salvos:", perfil); // Log dos dados do perfil
 
@@ -677,16 +673,50 @@ export default class PaginaUsuario extends Vue {
                 })
                 .catch(error => {
                     console.error('Erro ao salvar o perfil:', error.response.data); // Log do erro detalhado
+                })
+                .finally(() => {
+                    this.salvandoAlteracoes = false; // Desativar ao finalizar a requisição
                 });
         } else {
             console.warn('Nenhum dado para salvar.');
+            this.salvandoAlteracoes = false; // Desativar se não houver dados
         }
     }
 
     // Método para remover a imagem de perfil
     public removerImagemPerfil() {
-        this.selectedImage = null;
-        this.imagemUrl = null;
+        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id');
+
+        if (!userId) {
+            console.error("ID do usuário não encontrado.");
+            return;
+        }
+
+        axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', {
+            usuario_id: userId,
+            acao: 'removerImagemPerfil',
+        })
+            .then(response => {
+                console.log('Imagem de perfil removida com sucesso:', response.data);
+
+                this.selectedImage = null;
+                this.imagemUrl = null;
+                this.imagemSelecionada = false; // Agora permite selecionar uma nova imagem
+
+                this.$store.commit('UPDATE_PERFIL', { usuario_id: userId, foto_perfil: null });
+
+                const perfilItem = localStorage.getItem(`perfil_${userId}`);
+                if (perfilItem) {
+                    const perfil = JSON.parse(perfilItem);
+                    if (perfil && perfil.foto_perfil) {
+                        perfil.foto_perfil = null;
+                        localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil));
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao remover a imagem de perfil:', error.response?.data || error.message);
+            });
     }
 
     // Alterna o estado de edição do nome
