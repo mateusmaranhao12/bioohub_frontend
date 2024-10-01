@@ -3,9 +3,10 @@ import { createStore } from 'vuex';
 export default createStore({
   state: {
     // Estado do usuário logado
-    usuario: null as { email: string } | null,
+    usuario: null as { id: string; email: string } | null, // Inclui o ID do usuário
     // Lista de links
-    links: [] as Array<{ id: number, url: string, redeSocial: string, usuario_id: string }>,
+    links: [] as Array<{ id: number; url: string; redeSocial: string; usuario_id: string }>,
+    perfil: {}
   },
 
   mutations: {
@@ -51,13 +52,18 @@ export default createStore({
     CLEAR_LINKS(state) {
       state.links = [];
     },
+
+    UPDATE_PERFIL(state, perfil) {
+      state.perfil = { ...state.perfil, ...perfil }; // Atualiza os dados do perfil
+    },
   },
 
   actions: {
     // Ação de login
+    // Ação de login no Vuex
     login({ commit, dispatch }, usuario) {
       commit('CLEAR_LINKS'); // Limpar links do usuário anterior
-      commit('SET_USUARIO', usuario);
+      commit('SET_USUARIO', usuario); // Define o usuário logado, certifique-se que 'usuario' contém o ID
       localStorage.setItem('usuario', JSON.stringify(usuario));
       dispatch('loadLinks'); // Carregar links do novo usuário autenticado
     },
@@ -79,7 +85,7 @@ export default createStore({
 
     // Salva os links no localStorage
     saveLinks({ state }) {
-      const userId = state.usuario?.email || sessionStorage.getItem('user_id'); // Utilize o ID correto aqui
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id'); // Utilize o ID correto aqui
       if (userId) {
         localStorage.setItem(`links_${userId}`, JSON.stringify(state.links));
       }
@@ -87,7 +93,7 @@ export default createStore({
 
     // Carrega os links do localStorage e filtra para o usuário logado
     loadLinks({ commit, state }) {
-      const userId = state.usuario?.email || sessionStorage.getItem('user_id'); // Utilize o ID correto aqui
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id'); // Utilize o ID correto aqui
       if (userId) {
         const links = localStorage.getItem(`links_${userId}`);
         if (links) {
@@ -100,7 +106,7 @@ export default createStore({
     addLink({ commit, dispatch, state }, link) {
       // Gera um novo ID único para o link
       const newId = state.links.length > 0 ? Math.max(...state.links.map(l => l.id)) + 1 : 1;
-      link.usuario_id = sessionStorage.getItem('user_id'); // Define o usuário que está adicionando o link
+      link.usuario_id = state.usuario?.id; // Define o usuário que está adicionando o link
       link.id = newId; // Atribui o novo ID ao link
       commit('ADD_LINK', link);
       dispatch('saveLinks');
@@ -114,14 +120,13 @@ export default createStore({
 
     // Deleta um link
     deleteLink({ commit }, linkId) {
-      commit('DELETE_LINK', linkId);
+      commit('DELETE_LINK_BY_ID', linkId);
     },
 
     // Deleta um link do estado (pelo URL) e não do banco de dados
     deleteLinkByUrl({ commit }, linkUrl) {
       commit('DELETE_LINK_BY_URL', linkUrl);
     },
-    
   },
 
   getters: {

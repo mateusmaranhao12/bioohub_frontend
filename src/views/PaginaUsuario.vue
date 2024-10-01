@@ -9,27 +9,56 @@
         <div class="row">
             <!-- Coluna Dados -->
             <div class="col-md-6 mt-5">
+
+                <!--Escolher imagem-->
                 <div
                     class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center">
                     <input type="file" id="file-input" class="file-input" accept="image/*" @change="carregarImagem"
                         style="display:none;">
                     <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
-                        <img id="avatar-preview" class="img-fluid rounded-circle"
-                            :src="selectedImage || '../default-image.png'"
+                        <img v-if="selectedImage" :src="selectedImage" class="img-fluid rounded-circle"
+                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                        <img v-else :src="imagemUrl || '../default-image.png'" class="img-fluid rounded-circle"
                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         <i v-if="!selectedImage" class="fa-solid fa-upload fa-2x mb-5"></i>
                         <p v-if="!selectedImage" class="text-center mb-4">Adicionar foto</p>
                     </label>
+
+                    <div v-if="selectedImage" class="d-flex justify-content-center mt-3">
+                        <button class="btn btn-primary me-2" @click="$refs['file-input'].click()">Escolher outra
+                            imagem</button>
+                        <button class="btn btn-danger" @click="removerImagemPerfil">Remover imagem</button>
+                    </div>
                 </div>
 
-                <div class="mt-4">
-                    <input type="text" class="animate__animated animate__zoomIn form-control input-usuario"
-                        placeholder="Seu nome" aria-label="Nome">
+                <!-- Input para editar nome -->
+                <div class="animate__animated animate__zoomIn mt-4">
+                    <div v-if="editandoNome">
+                        <input type="text" v-model="nome" class="form-control input-usuario" placeholder="Seu nome"
+                            aria-label="Nome">
+                        <button class="btn btn-success mt-2" @click="salvarPerfil"><i class="fa fa-check"></i></button>
+                    </div>
+                    <div v-else>
+                        <h4>{{ nome }}</h4>
+                        <button class="btn btn-secondary" @click="editarNome"><i class="fa fa-pencil"></i> Editar
+                            Nome</button>
+                    </div>
                 </div>
-                <div class="mt-2">
-                    <textarea type="text" class="animate__animated animate__zoomIn form-control input-bio"
-                        placeholder="Sua biografia..." aria-label="Bio"></textarea>
+
+                <!-- Input para editar bio -->
+                <div class="animate__animated animate__zoomIn  mt-2">
+                    <div v-if="editandoBio">
+                        <textarea v-model="bio" class="form-control input-bio" placeholder="Sua biografia..."
+                            aria-label="Bio"></textarea>
+                        <button class="btn btn-success mt-2" @click="salvarPerfil"><i class="fa fa-check"></i></button>
+                    </div>
+                    <div v-else>
+                        <p>{{ bio }}</p>
+                        <button class="btn btn-secondary" @click="editarBio"><i class="fa fa-pencil"></i> Editar
+                            Bio</button>
+                    </div>
                 </div>
+
                 <div class="animate__animated animate__zoomIn mt-5">
                     <h6>Nenhuma visualização hoje</h6>
                 </div>
@@ -271,11 +300,19 @@ import axios from 'axios'
 })
 
 export default class PaginaUsuario extends Vue {
-    usuario = '' // Armazenar nome do usuário
-    email = '' // Armazenar email do usuário
-    senha = '' // Pode ser utilizado futuramente
-    public selectedImage: string | null = null // Propriedade para armazenar a imagem selecionada
+
+    public usuario = '' // Armazenar nome do usuário
+    public email = '' // Armazenar email do usuário
+    public senha = '' // Pode ser utilizado futuramente
     public mensagem_alerta: Alert | null = null // Armazenar mensagem de alerta
+
+    //imagem, nome e descrição
+    public selectedImage: string | null = null
+    public imagemUrl: string | null = null
+    public editandoNome = false
+    public editandoBio = false
+    public bio = '' //biografia
+    public nome = ''
 
     // Editar ou inserir links
     public linkId: number | null = null
@@ -283,14 +320,15 @@ export default class PaginaUsuario extends Vue {
     public editandoLink = false
     public novoLink = ''
 
+
     // Inserir rede social (ex: instagram)
     public redeSocial = ''
     public linkParaRedirecionar: string | null = null // Nova variável para o link a ser redirecionado
 
     gerarId(): number {
         // Acesse os links através do getter do Vuex
-        const links: Array<Link> = this.$store.getters.links;
-        return links.length > 0 ? Math.max(...links.map(link => link.id)) + 1 : 1;
+        const links: Array<Link> = this.$store.getters.links
+        return links.length > 0 ? Math.max(...links.map(link => link.id)) + 1 : 1
     }
 
     // Iniciar edição do link
@@ -313,87 +351,87 @@ export default class PaginaUsuario extends Vue {
     created() {
         this.$store.dispatch('loadLinks') // Carrega os links do Vuex
             .then(() => {
-                const links: Link[] = this.$store.getters.links;
-                const userId = sessionStorage.getItem('user_id'); // ID do usuário autenticado
+                const links: Link[] = this.$store.getters.links
+                const userId = sessionStorage.getItem('user_id') // ID do usuário autenticado
 
                 // Filtra os links para mostrar apenas os do usuário logado
-                const userLinks = links.filter(link => link.usuario_id === userId);
+                const userLinks = links.filter(link => link.usuario_id === userId)
 
                 // Exibe os links do usuário no console
                 if (userLinks.length > 0) {
-                    console.log("Links do usuário carregados:", userLinks);
+                    console.log("Links do usuário carregados:", userLinks)
                 } else {
-                    console.log("Nenhum link encontrado para o usuário com ID:", userId);
+                    console.log("Nenhum link encontrado para o usuário com ID:", userId)
                 }
 
                 // Adiciona links do localStorage se necessário
                 if (!userLinks.length) {
-                    const linksString = localStorage.getItem(`links_${userId}`);
-                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]');
-                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId);
+                    const linksString = localStorage.getItem(`links_${userId}`)
+                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]')
+                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId)
 
                     if (userLinksFromLocalStorage.length > 0) {
                         userLinksFromLocalStorage.forEach((link: Link) => {
-                            this.$store.commit('ADD_LINK', link);
-                        });
-                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage);
+                            this.$store.commit('ADD_LINK', link)
+                        })
+                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage)
                     } else {
-                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId);
+                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId)
                     }
                 }
             })
             .catch((error: any) => {
-                console.error('Erro ao carregar links:', error);
-            });
+                console.error('Erro ao carregar links:', error)
+            })
     }
 
     // Adicionar link
     public async adicionarLink() {
-        const regex = /^(ftp|http|https):\/\/[^ "]+$/;
+        const regex = /^(ftp|http|https):\/\/[^ "]+$/
 
         if (this.novoLink.trim() === '' || !regex.test(this.novoLink)) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Tente novamente.', 'alert-error');
-            return;
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Tente novamente.', 'alert-error')
+            return
         }
 
-        const redeSocial = this.detectarRedeSocial(this.novoLink);
+        const redeSocial = this.detectarRedeSocial(this.novoLink)
         if (redeSocial) {
-            this.redeSocial = redeSocial;
-            this.linkParaRedirecionar = this.novoLink;
+            this.redeSocial = redeSocial
+            this.linkParaRedirecionar = this.novoLink
 
-            const usuarioId = sessionStorage.getItem('user_id');
+            const usuarioId = sessionStorage.getItem('user_id')
             if (!usuarioId) {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado. Tente novamente.', 'alert-error');
-                return; // Encerra se não houver ID do usuário
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado. Tente novamente.', 'alert-error')
+                return // Encerra se não houver ID do usuário
             }
 
             const dados = {
                 usuario_id: usuarioId,
                 redes: [{ url: this.novoLink }],
-            };
+            }
 
             try {
-                const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', dados);
+                const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', dados)
                 if (response.data.success) {
                     const novoLinkComId: Link = {
                         url: this.novoLink,
                         redeSocial,
                         id: response.data.links && response.data.links.length > 0 ? response.data.links[0].id : this.gerarId(), // Use o ID retornado pelo backend ou gera um novo
                         usuario_id: usuarioId, // Usar o ID validado
-                    };
+                    }
 
-                    this.mostrarMensagemAlerta('fa-solid fa-check-circle', `Link de ${redeSocial} adicionado com sucesso!`, 'alert-sucesso');
+                    this.mostrarMensagemAlerta('fa-solid fa-check-circle', `Link de ${redeSocial} adicionado com sucesso!`, 'alert-sucesso')
 
-                    this.$store.commit('ADD_LINK', novoLinkComId);
-                    this.$store.dispatch('saveLinks');
+                    this.$store.commit('ADD_LINK', novoLinkComId)
+                    this.$store.dispatch('saveLinks')
 
-                    this.adicionandoLink = false;
+                    this.adicionandoLink = false
                 } else {
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
                 }
             } catch (error) {
-                console.error('Erro ao adicionar link:', error);
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link.', 'alert-error');
+                console.error('Erro ao adicionar link:', error)
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link.', 'alert-error')
             }
         }
     }
@@ -402,87 +440,87 @@ export default class PaginaUsuario extends Vue {
     public async editarLink() {
         // Verifica se linkId é válido
         if (this.linkId === null) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro: ID do link não encontrado.', 'alert-error');
-            return;
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro: ID do link não encontrado.', 'alert-error')
+            return
         }
 
-        const usuarioId = sessionStorage.getItem('user_id');
+        const usuarioId = sessionStorage.getItem('user_id')
         if (!usuarioId) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado. Tente novamente.', 'alert-error');
-            return; // Encerra se não houver ID do usuário
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado. Tente novamente.', 'alert-error')
+            return // Encerra se não houver ID do usuário
         }
 
         // Detecta a nova rede social com base no novo link
-        const novaRedeSocial = this.detectarRedeSocial(this.novoLink);
+        const novaRedeSocial = this.detectarRedeSocial(this.novoLink)
         if (!novaRedeSocial) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Por favor, insira um link de rede social válido.', 'alert-error');
-            return;
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Por favor, insira um link de rede social válido.', 'alert-error')
+            return
         }
 
         const dados = {
             usuario_id: usuarioId,
             redes: [{ url: this.novoLink, old_url: this.linkParaRedirecionar, id: this.linkId }]
-        };
+        }
 
         try {
-            const response = await axios.put('http://localhost/Projetos/bioohub/backend/api/editar_links.php', dados);
+            const response = await axios.put('http://localhost/Projetos/bioohub/backend/api/editar_links.php', dados)
             if (response.data.success) {
-                this.mostrarMensagemAlerta('fa-solid fa-check-circle', response.data.message, 'alert-sucesso');
+                this.mostrarMensagemAlerta('fa-solid fa-check-circle', response.data.message, 'alert-sucesso')
 
                 const linkEditado: Link = {
                     url: this.novoLink,
                     redeSocial: novaRedeSocial, // Atualiza a rede social detectada
                     id: this.linkId, // O ID permanece o mesmo
                     usuario_id: usuarioId // Usar o ID validado
-                };
-                this.$store.commit('UPDATE_LINK', linkEditado);
+                }
+                this.$store.commit('UPDATE_LINK', linkEditado)
 
-                this.$store.dispatch('saveLinks');
+                this.$store.dispatch('saveLinks')
 
-                this.editandoLink = false;
+                this.editandoLink = false
             } else {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
             }
         } catch (error) {
-            console.error('Erro ao editar link:', error);
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao editar link.', 'alert-error');
+            console.error('Erro ao editar link:', error)
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao editar link.', 'alert-error')
         }
     }
 
     // Remover link
     public async deletarLink(id: number) {
-        const usuarioId = sessionStorage.getItem('user_id'); // Obter o usuário ID
+        const usuarioId = sessionStorage.getItem('user_id') // Obter o usuário ID
 
         // Verifica se o id está definido
         if (id === undefined || id === null) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do link não definido.', 'alert-error');
-            return;
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do link não definido.', 'alert-error')
+            return
         }
 
         const dados = {
             usuario_id: usuarioId,
             id: id // Certifique-se de que 'id' está sendo passado corretamente
-        };
+        }
 
         try {
             // Realizar a requisição DELETE
-            const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/deletar_links.php', { data: dados });
+            const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/deletar_links.php', { data: dados })
 
             if (response.data.success) {
                 // Remove o link do Vuex pelo ID
-                this.$store.commit('DELETE_LINK_BY_ID', id);
-                this.$store.dispatch('saveLinks');
+                this.$store.commit('DELETE_LINK_BY_ID', id)
+                this.$store.dispatch('saveLinks')
 
                 // Mostrar mensagem de sucesso
-                this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link deletado com sucesso!', 'alert-sucesso');
-                this.redeSocial = ''; // Limpar o campo de rede social
-                this.linkParaRedirecionar = null; // Resetar o link para redirecionar
+                this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link deletado com sucesso!', 'alert-sucesso')
+                this.redeSocial = '' // Limpar o campo de rede social
+                this.linkParaRedirecionar = null // Resetar o link para redirecionar
             } else {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
             }
         } catch (error: any) {
-            console.error('Erro ao deletar link:', error);
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao deletar link.', 'alert-error');
+            console.error('Erro ao deletar link:', error)
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao deletar link.', 'alert-error')
         }
     }
 
@@ -521,21 +559,34 @@ export default class PaginaUsuario extends Vue {
 
     mounted() {
         // Recupera a mensagem do sessionStorage
-        const mensagem = sessionStorage.getItem('mensagem_alerta')
+        const mensagem = sessionStorage.getItem('mensagem_alerta');
         if (mensagem) {
-            const alertData = JSON.parse(mensagem)
-            this.mensagem_alerta = alertData // Define a mensagem de alerta
-            sessionStorage.removeItem('mensagem_alerta') // Remove a mensagem após exibi-la
+            const alertData = JSON.parse(mensagem);
+            this.mensagem_alerta = alertData; // Define a mensagem de alerta
+            sessionStorage.removeItem('mensagem_alerta'); // Remove a mensagem após exibi-la
 
-            this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status)
+            this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status);
         }
 
         // Recupera o usuário, email e ID do sessionStorage
-        this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || ''
-        this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || ''
-        const userId = sessionStorage.getItem('user_id')
-        console.log('User ID:', userId)
+        this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || '';
+        this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || '';
+        const userId = sessionStorage.getItem('user_id');
+        console.log('User ID:', userId);
+
+        // Carregar os dados do perfil do localStorage
+        const perfilData = localStorage.getItem(`perfil_${userId}`);
+        if (perfilData) {
+            const perfil = JSON.parse(perfilData);
+            this.nome = perfil.nome || '';
+            this.bio = perfil.descricao || '';
+            this.selectedImage = perfil.foto_perfil || null;
+
+            // Atualiza o Vuex com os dados do perfil carregados
+            this.$store.commit('UPDATE_PERFIL', perfil);
+        }
     }
+
 
     // Logout 
     public fazerLogout() {
@@ -550,16 +601,88 @@ export default class PaginaUsuario extends Vue {
             })
     }
 
-    // Carregar imagem
+    // Carrega a imagem selecionada
     public carregarImagem(event: Event) {
-        const file = (event.target as HTMLInputElement).files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onload = () => {
-                this.selectedImage = reader.result as string
-            }
-            reader.readAsDataURL(file)
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e: ProgressEvent<FileReader>) => {
+                if (e.target) {
+                    this.selectedImage = e.target.result as string;
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    //salvar perfil
+    public salvarPerfil() {
+        // Acessa o ID do usuário do Vuex ou sessionStorage
+        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id');
+
+        console.log("ID do usuário:", userId); // Verifica se o ID está correto
+
+        if (!userId) {
+            console.error("ID do usuário não encontrado."); // Log se o ID não estiver disponível
+            return; // Não prosseguir se o ID não estiver disponível
+        }
+
+        const perfil: any = {
+            usuario_id: userId, // ID do usuário vindo do Vuex ou sessionStorage
+        };
+
+        // Adiciona os campos somente se não estiverem vazios
+        if (this.nome) {
+            perfil.nome = this.nome;
+        }
+
+        if (this.bio) {
+            perfil.descricao = this.bio;
+        }
+
+        if (this.selectedImage) {
+            perfil.foto_perfil = this.selectedImage; // Imagem base64
+        }
+
+        console.log("Dados do perfil a serem salvos:", perfil); // Adicione este log
+
+        // Faz a requisição apenas se houver pelo menos um campo a ser salvo
+        if (Object.keys(perfil).length > 1) {
+            axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', perfil)
+                .then(response => {
+                    this.editandoNome = false;
+                    this.editandoBio = false;
+                    console.log('Perfil salvo com sucesso:', response.data);
+
+                    // Persistir os dados no localStorage
+                    localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil));
+
+                    // Atualizar o Vuex com os dados do perfil
+                    this.$store.commit('UPDATE_PERFIL', perfil); // Supondo que você tenha uma mutação UPDATE_PERFIL no Vuex
+
+                })
+                .catch(error => {
+                    console.error('Erro ao salvar o perfil:', error.response.data); // Modificado para capturar o erro detalhado
+                });
+        } else {
+            console.warn('Nenhum dado para salvar.');
+        }
+    }
+
+    // Remove a imagem de perfil
+    public removerImagemPerfil() {
+        this.selectedImage = null;
+        this.imagemUrl = null;
+    }
+
+    // Alterna o estado de edição do nome
+    public editarNome() {
+        this.editandoNome = true;
+    }
+
+    // Alterna o estado de edição da bio
+    public editarBio() {
+        this.editandoBio = true;
     }
 
     // Atualizar usuário
@@ -586,9 +709,9 @@ export default class PaginaUsuario extends Vue {
 
     //caso precise limpar localStorage
     /*clearLinks() {
-        localStorage.removeItem('links'); // Remove a chave 'links' do localStorage
-        this.$store.commit('SET_LINKS', []); // Atualiza o estado do Vuex
-        console.log('localStorage dos links foi limpo.');
+        localStorage.removeItem('links') // Remove a chave 'links' do localStorage
+        this.$store.commit('SET_LINKS', []) // Atualiza o estado do Vuex
+        console.log('localStorage dos links foi limpo.')
     } */
 
 }
