@@ -854,27 +854,36 @@ export default class PaginaUsuario extends Vue {
 
     //carregar imagem
     public carregarImagem(event: Event): void {
-        const input = event.target as HTMLInputElement
-        const userId = sessionStorage.getItem('user_id') // ID do usuário autenticado
+        const input = event.target as HTMLInputElement;
+        const userId = sessionStorage.getItem('user_id'); // ID do usuário autenticado
 
         if (input.files && input.files[0] && userId) {
-            const formData = new FormData()
-            formData.append('imagem', input.files[0])
-            formData.append('usuario_id', userId)
+            const file = input.files[0];
+            const tiposPermitidos = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp']; // Lista de tipos permitidos
+
+            // Verifica se o arquivo tem um tipo válido
+            if (!tiposPermitidos.includes(file.type)) {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Informe um arquivo válido: PNG, JPG ou SVG', 'alert-error');
+                return; // Cancela o carregamento
+            }
+
+            const formData = new FormData();
+            formData.append('imagem', file);
+            formData.append('usuario_id', userId);
 
             // Pré-visualização da imagem
-            const reader = new FileReader()
+            const reader = new FileReader();
             reader.onload = (e: any) => {
-                this.imagemUrl = e.target.result // Carrega a URL da imagem para exibição
-                this.imagemSelecionada = true    // Indica que a imagem foi selecionada
+                this.imagemUrl = e.target.result; // Carrega a URL da imagem para exibição
+                this.imagemSelecionada = true;    // Indica que a imagem foi selecionada
 
                 // Armazena a imagem no localStorage para persistência
-                this.$store.dispatch('saveImagem', this.imagemUrl)
-            }
-            reader.readAsDataURL(input.files[0])
+                this.$store.dispatch('saveImagem', this.imagemUrl);
+            };
+            reader.readAsDataURL(file);
 
-            //ativa o spinner enquanto nao envia para o banco de dados
-            this.loading = true
+            // Ativa o spinner enquanto o arquivo está sendo enviado para o servidor
+            this.loading = true;
 
             // Upload para o backend
             axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', formData, {
@@ -883,16 +892,16 @@ export default class PaginaUsuario extends Vue {
                 },
             })
                 .then(response => {
-                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
                 })
                 .catch(error => {
                     this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error');
-                    console.log(error)
+                    console.log(error);
                 })
                 .finally(() => {
-                    //termina o carregamento
-                    this.loading = false
-                })
+                    // Finaliza o carregamento (spinner)
+                    this.loading = false;
+                });
         }
     }
 
