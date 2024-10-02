@@ -11,10 +11,11 @@
             <div class="col-md-6 mt-5">
 
                 <!-- Escolher imagem -->
-                <div
-                    class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center position-relative">
-                    <input type="file" id="file-input" class="file-input" accept="image/*" @change="carregarImagem"
-                        :disabled="imagemSelecionada" style="display:none;">
+                <div class="animate__animated animate__zoomIn avatar-circle 
+                    d-flex flex-column justify-content-center align-items-center p
+                    osition-relative">
+                    <input type="file" id="file-input" class="file-input" accept="image/*"
+                        @change="carregarImagemPerfil" :disabled="imagemPerfilSelecionada" style="display:none;">
                     <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
                         <img v-if="selectedImage" :src="selectedImage" class="img-fluid rounded-circle"
                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
@@ -125,20 +126,46 @@
 
             </div>
 
-            <!-- Coluna Links -->
+            <!-- Coluna de links, imagens, videos, etc -->
             <div class="col-md-6 mt-5 mb-5">
                 <div class="d-flex flex-wrap gap-3 justify-content-between">
-                    <div
-                        class="animate__animated animate__zoomIn card link-card card-small d-flex flex-column align-items-center justify-content-center position-relative">
-                        <div class="plus-icon position-absolute">
+
+                    <!--Inserir imagens-->
+                    <div class="animate__animated animate__zoomIn card link-card 
+                        card-imagem d-flex flex-column align-items-center justify-content-center 
+                        position-relative" style="overflow: hidden;">
+
+                        <!-- Input de arquivo oculto -->
+                        <input type="file" ref="fileInput" @change="carregarImagem" style="display:none;"
+                            accept="image/*">
+
+                        <!-- Ícone de + e trash -->
+                        <div v-if="!imagemSelecionada" class="plus-icon position-absolute" @click="abrirSeletorImagem"
+                            style="cursor: pointer;">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
-                        <i class="fa-solid fa-mountain fa-2x"></i>
-                        <p class="mt-2">Adicionar imagem</p>
+
+                        <div v-if="imagemSelecionada" class="plus-icon position-absolute" @click="removerImagem"
+                            style="cursor: pointer;">
+                            <i class="fa-solid fa-trash"></i>
+                        </div>
+
+                        <!-- Imagem exibida (se disponível) -->
+                        <div v-if="imagemSelecionada" class="w-100 h-100">
+                            <img :src="imagemUrl || undefined" class="img-fluid w-100 h-100"
+                                style="object-fit: cover;" />
+                        </div>
+
+                        <!-- Ícone e texto padrão quando não há imagem -->
+                        <div v-else>
+                            <i class="fa-solid fa-mountain fa-2x"></i>
+                            <p class="mt-2">Adicionar imagem</p>
+                        </div>
                     </div>
 
-                    <div
-                        class="animate__animated animate__zoomIn card link-card card-vertical d-flex flex-column align-items-center justify-content-center position-relative">
+                    <!--Inserir links-->
+                    <div class="animate__animated animate__zoomIn card link-card card-redes-sociais 
+                        d-flex flex-column align-items-center justify-content-center position-relative">
                         <!-- Exibir links se houver algum adicionado -->
                         <div v-for="link in $store.getters.links" :key="link.id"
                             class="mt-3 d-flex flex-column align-items-center position-relative">
@@ -193,8 +220,9 @@
                         </div>
                     </div>
 
-                    <div
-                        class="animate__animated animate__zoomIn card link-card card-large-square d-flex flex-column align-items-center justify-content-center position-relative">
+                    <!--Inserir videos-->
+                    <div class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column 
+                        align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
@@ -202,8 +230,9 @@
                         <p class="mt-2">Adicionar vídeo</p>
                     </div>
 
+                    <!--Inserir localizacao-->
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-vertical2 d-flex flex-column align-items-center justify-content-center position-relative">
+                        class="animate__animated animate__zoomIn card link-card card-maps d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
@@ -211,8 +240,9 @@
                         <p class="mt-2">Adicionar localização</p>
                     </div>
 
+                    <!--Inserir qualquer link-->
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-small2 d-flex flex-column align-items-center justify-content-center position-relative">
+                        class="animate__animated animate__zoomIn card link-card card-links-livres d-flex flex-column align-items-center justify-content-center position-relative">
                         <div class="plus-icon position-absolute">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
@@ -314,7 +344,7 @@ export default class PaginaUsuario extends Vue {
     public editandoBio = false
     public bio = '' //biografia
     public nome = ''
-    public imagemSelecionada = false
+    public imagemPerfilSelecionada = false
 
     // Editar ou inserir links
     public linkId: number | null = null
@@ -323,10 +353,12 @@ export default class PaginaUsuario extends Vue {
     public novoLink = ''
     public salvandoAlteracoes = false
 
-
     // Inserir rede social (ex: instagram)
     public redeSocial = ''
     public linkParaRedirecionar: string | null = null // Nova variável para o link a ser redirecionado
+
+    //Link de imagem
+    public imagemSelecionada = false
 
     gerarId(): number {
         // Acesse os links através do getter do Vuex
@@ -382,6 +414,9 @@ export default class PaginaUsuario extends Vue {
                         console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId)
                     }
                 }
+
+                // Carrega a imagem do usuário ao iniciar
+                this.carregarImagemExistente(userId)
             })
             .catch((error: any) => {
                 console.error('Erro ao carregar links:', error)
@@ -534,7 +569,7 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    //detectar rede social inserida
+    //detectar rede social
     public detectarRedeSocial(url: string): string | null {
         if (/https?:\/\/(www\.)?instagram\.com\/[^/]+/.test(url)) {
             return 'instagram';
@@ -663,8 +698,8 @@ export default class PaginaUsuario extends Vue {
             })
     }
 
-    // Método para carregar a imagem
-    public carregarImagem(event: Event) {
+    // Método para carregar a imagem de perfil
+    public carregarImagemPerfil(event: Event) {
         const input = event.target as HTMLInputElement;
         if (input.files && input.files.length > 0) {
             const file = input.files[0];
@@ -673,7 +708,7 @@ export default class PaginaUsuario extends Vue {
             // Converter a imagem para Base64
             reader.onload = (e) => {
                 this.selectedImage = e.target?.result as string; // Atualiza o src da imagem
-                this.imagemSelecionada = true // Desabilita o input após seleção da imagem
+                this.imagemPerfilSelecionada = true // Desabilita o input após seleção da imagem
 
                 this.salvarPerfil()
             };
@@ -760,7 +795,7 @@ export default class PaginaUsuario extends Vue {
 
                 this.selectedImage = null;
                 this.imagemUrl = null;
-                this.imagemSelecionada = false; // Agora permite selecionar uma nova imagem
+                this.imagemPerfilSelecionada = false; // Agora permite selecionar uma nova imagem
 
                 this.$store.commit('UPDATE_PERFIL', { usuario_id: userId, foto_perfil: null });
 
@@ -800,6 +835,115 @@ export default class PaginaUsuario extends Vue {
         this.email = novoEmail
         sessionStorage.setItem('user_email', novoEmail)
         // Aqui você pode adicionar lógica para atualizar o email do usuário no backend
+    }
+
+    // Função para abrir o seletor de arquivo
+    public abrirSeletorImagem(): void {
+        const inputFile = this.$refs.fileInput as HTMLInputElement
+        inputFile.click()
+    }
+
+    //carregar imagem
+    public carregarImagem(event: Event): void {
+        const input = event.target as HTMLInputElement
+        const userId = sessionStorage.getItem('user_id') // ID do usuário autenticado
+
+        if (input.files && input.files[0] && userId) {
+            const formData = new FormData()
+            formData.append('imagem', input.files[0])
+            formData.append('usuario_id', userId)
+
+            // Pré-visualização da imagem
+            const reader = new FileReader()
+            reader.onload = (e: any) => {
+                this.imagemUrl = e.target.result // Carrega a URL da imagem para exibição
+                this.imagemSelecionada = true    // Indica que a imagem foi selecionada
+
+                // Armazena a imagem no localStorage para persistência
+                this.$store.dispatch('saveImagem', this.imagemUrl)
+            }
+            reader.readAsDataURL(input.files[0])
+
+            // Upload para o backend
+            axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            })
+                .then(response => {
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
+                })
+                .catch(error => {
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error');
+                    console.log(error)
+                })
+        }
+    }
+
+    //remover imagem
+    public removerImagem(): void {
+        const userId = sessionStorage.getItem('user_id')
+
+        if (userId) {
+            axios.delete('http://localhost/Projetos/bioohub/backend/api/imagens.php', {
+                data: { usuario_id: userId }
+            })
+                .then(response => {
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
+                    this.imagemSelecionada = false
+                    this.imagemUrl = null
+
+                    // Remove a imagem do localStorage
+                    localStorage.removeItem(`imagem_${userId}`)
+                })
+                .catch(error => {
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error')
+                    console.log(error)
+                })
+        } else {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do usuario nao encontrado', 'alert-error')
+        }
+    }
+
+    //carregar imagem existente
+    public carregarImagemExistente(userId: string | null): void {
+        if (userId) {
+            // Tenta carregar a imagem da API
+            axios.get(`http://localhost/Projetos/bioohub/backend/api/imagens.php?usuario_id=${userId}`)
+                .then(response => {
+                    if (response.data.imagem) {
+                        this.imagemUrl = response.data.imagem // Define a URL da imagem retornada do backend
+                        this.imagemSelecionada = true
+
+                        // Armazena no localStorage para persistir após F5
+                        if (userId && this.imagemUrl) { // Certifica-se de que userId não é null
+                            localStorage.setItem(`imagem_${userId}`, this.imagemUrl)
+                            console.log('Imagem carregada do backend e armazenada no localStorage')
+                        }
+
+                    } else {
+                        // Se não houver imagem no backend, tenta carregar do localStorage
+                        const imagemLocalStorage = localStorage.getItem(`imagem_${userId}`)
+                        if (imagemLocalStorage) {
+                            this.imagemUrl = imagemLocalStorage
+                            this.imagemSelecionada = true
+                            console.log('Imagem carregada do localStorage')
+                        } else {
+                            console.log('Nenhuma imagem encontrada no backend ou localStorage')
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar a imagem do backend:', error)
+                    // Carregar do localStorage se houver erro no backend
+                    const imagemLocalStorage = localStorage.getItem(`imagem_${userId}`)
+                    if (imagemLocalStorage) {
+                        this.imagemUrl = imagemLocalStorage
+                        this.imagemSelecionada = true
+                        console.log('Imagem carregada do localStorage após falha no backend')
+                    }
+                })
+        }
     }
 
     // Mostrar mensagem de alerta

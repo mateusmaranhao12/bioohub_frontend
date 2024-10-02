@@ -6,7 +6,8 @@ export default createStore({
     usuario: null as { id: string; email: string } | null, // Inclui o ID do usuário
     // Lista de links
     links: [] as Array<{ id: number; url: string; redeSocial: string; usuario_id: string }>,
-    perfil: {}
+    perfil: {},
+    imagemUrl: null as string | null
   },
 
   mutations: {
@@ -56,11 +57,21 @@ export default createStore({
     UPDATE_PERFIL(state, perfil) {
       state.perfil = { ...state.perfil, ...perfil }; // Atualiza os dados do perfil
     },
+
+    // Define a URL da imagem
+    SET_IMAGEM_URL(state, imagemUrl) {
+      state.imagemUrl = imagemUrl
+    },
+
+    // Limpa a imagem ao fazer logout
+    CLEAR_IMAGEM_URL(state) {
+      state.imagemUrl = null
+    },
   },
 
   actions: {
+
     // Ação de login
-    // Ação de login no Vuex
     login({ commit, dispatch }, usuario) {
       commit('CLEAR_LINKS'); // Limpar links do usuário anterior
       commit('SET_USUARIO', usuario); // Define o usuário logado, certifique-se que 'usuario' contém o ID
@@ -72,6 +83,7 @@ export default createStore({
     logout({ commit }) {
       commit('CLEAR_USUARIO');
       commit('CLEAR_LINKS'); // Limpar links ao fazer logout
+      commit('CLEAR_IMAGEM_URL');
       localStorage.removeItem('usuario');
     },
 
@@ -127,11 +139,32 @@ export default createStore({
     deleteLinkByUrl({ commit }, linkUrl) {
       commit('DELETE_LINK_BY_URL', linkUrl);
     },
+
+    // Ação para salvar a imagem no localStorage e Vuex
+    saveImagem({ commit, state }, imagemUrl) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId && imagemUrl) {
+        localStorage.setItem(`imagem_${userId}`, imagemUrl); // Salva a imagem no localStorage
+        commit('SET_IMAGEM_URL', imagemUrl); // Armazena no estado do Vuex
+      }
+    },
+
+    // Carrega a imagem do localStorage
+    loadImagem({ commit, state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        const imagemUrl = localStorage.getItem(`imagem_${userId}`);
+        if (imagemUrl) {
+          commit('SET_IMAGEM_URL', imagemUrl);
+        }
+      }
+    },
   },
 
   getters: {
     usuario: state => state.usuario,
     links: state => state.links,
+    imagemUrl: state => state.imagemUrl
   },
 
   modules: {},
