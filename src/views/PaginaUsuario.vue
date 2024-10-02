@@ -140,14 +140,20 @@
                             accept="image/*">
 
                         <!-- Ícone de + e trash -->
-                        <div v-if="!imagemSelecionada" class="plus-icon position-absolute" @click="abrirSeletorImagem"
-                            style="cursor: pointer;">
+                        <div v-if="!imagemSelecionada && !loading" class="plus-icon position-absolute"
+                            @click="abrirSeletorImagem" style="cursor: pointer;">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
 
-                        <div v-if="imagemSelecionada" class="plus-icon position-absolute" @click="removerImagem"
-                            style="cursor: pointer;">
+                        <div v-if="imagemSelecionada && !loading" class="plus-icon position-absolute"
+                            @click="removerImagem" style="cursor: pointer;">
                             <i class="fa-solid fa-trash"></i>
+                        </div>
+
+                        <!-- Spinner de carregando durante o upload -->
+                        <div v-if="loading"
+                            class="position-absolute d-flex align-items-center justify-content-center w-100 h-100">
+                            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
                         </div>
 
                         <!-- Imagem exibida (se disponível) -->
@@ -359,6 +365,9 @@ export default class PaginaUsuario extends Vue {
 
     //Link de imagem
     public imagemSelecionada = false
+
+    //spinner de loading
+    public loading = false
 
     gerarId(): number {
         // Acesse os links através do getter do Vuex
@@ -864,6 +873,9 @@ export default class PaginaUsuario extends Vue {
             }
             reader.readAsDataURL(input.files[0])
 
+            //ativa o spinner enquanto nao envia para o banco de dados
+            this.loading = true
+
             // Upload para o backend
             axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', formData, {
                 headers: {
@@ -876,6 +888,10 @@ export default class PaginaUsuario extends Vue {
                 .catch(error => {
                     this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error');
                     console.log(error)
+                })
+                .finally(() => {
+                    //termina o carregamento
+                    this.loading = false
                 })
         }
     }
