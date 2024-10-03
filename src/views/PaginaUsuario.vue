@@ -19,7 +19,7 @@
                     <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
                         <img v-if="selectedImage" :src="selectedImage" class="img-fluid rounded-circle"
                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                        <img v-else :src="imagemUrl || '../default-image.png'" class="img-fluid rounded-circle"
+                        <img v-else :src="imagemPerfilUrl || '../default-image.png'" class="img-fluid rounded-circle"
                             style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                         <i v-if="!selectedImage" class="icone-upload fa-solid fa-upload fa-2x mb-5"></i>
                         <p v-if="!selectedImage" class="text-center mb-4">Adicionar foto</p>
@@ -345,7 +345,7 @@ export default class PaginaUsuario extends Vue {
 
     //imagem, nome e descrição
     public selectedImage: string | null = null
-    public imagemUrl: string | null = null
+    public imagemPerfilUrl: string | null = null
     public editandoNome = false
     public editandoBio = false
     public bio = '' //biografia
@@ -365,6 +365,7 @@ export default class PaginaUsuario extends Vue {
 
     //Link de imagem
     public imagemSelecionada = false
+    public imagemUrl: string | null = null
 
     //spinner de loading
     public loading = false
@@ -803,7 +804,7 @@ export default class PaginaUsuario extends Vue {
                 console.log('Imagem de perfil removida com sucesso:', response.data);
 
                 this.selectedImage = null;
-                this.imagemUrl = null;
+                this.imagemPerfilUrl = null;
                 this.imagemPerfilSelecionada = false; // Agora permite selecionar uma nova imagem
 
                 this.$store.commit('UPDATE_PERFIL', { usuario_id: userId, foto_perfil: null });

@@ -7,6 +7,7 @@ export default createStore({
     // Lista de links
     links: [] as Array<{ id: number; url: string; redeSocial: string; usuario_id: string }>,
     perfil: {},
+    imagemPerfilUrl: null as string | null,
     imagemUrl: null as string | null
   },
 
@@ -67,6 +68,16 @@ export default createStore({
     CLEAR_IMAGEM_URL(state) {
       state.imagemUrl = null
     },
+
+    // Define a URL da imagem de perfil
+    SET_IMAGEM_PERFIL_URL(state, imagemUrl) {
+      state.imagemUrl = imagemUrl
+    },
+
+    // Limpa a imagem de perfil ao fazer logout
+    CLEAR_IMAGEM_PERFIL_URL(state) {
+      state.imagemUrl = null
+    },
   },
 
   actions: {
@@ -84,6 +95,7 @@ export default createStore({
       commit('CLEAR_USUARIO');
       commit('CLEAR_LINKS'); // Limpar links ao fazer logout
       commit('CLEAR_IMAGEM_URL');
+      commit('CLEAR_IMAGEM_PERFIL_URL');
       localStorage.removeItem('usuario');
     },
 
@@ -156,6 +168,26 @@ export default createStore({
         const imagemUrl = localStorage.getItem(`imagem_${userId}`);
         if (imagemUrl) {
           commit('SET_IMAGEM_URL', imagemUrl);
+        }
+      }
+    },
+
+    // Ação para salvar a imagem de perfil no localStorage e Vuex
+    saveImagemPerfil({ commit, state }, imagemPerfilUrl) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId && imagemPerfilUrl) {
+        localStorage.setItem(`imagem_${userId}`, imagemPerfilUrl); // Salva a imagem no localStorage
+        commit('SET_IMAGEM_PERFIL_URL', imagemPerfilUrl); // Armazena no estado do Vuex
+      }
+    },
+
+    // Carrega a imagem de perfil do localStorage
+    loadImagemPerfil({ commit, state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        const imagemPerfilUrl = localStorage.getItem(`imagem_${userId}`);
+        if (imagemPerfilUrl) {
+          commit('SET_IMAGEM_PERFIL_URL', imagemPerfilUrl);
         }
       }
     },
