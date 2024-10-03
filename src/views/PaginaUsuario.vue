@@ -227,13 +227,37 @@
                     </div>
 
                     <!--Inserir videos-->
-                    <div class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column 
-                        align-items-center justify-content-center position-relative">
-                        <div class="plus-icon position-absolute">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
+                    <div
+                        class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center position-relative">
+                        <!-- Ícone de adicionar vídeo (fa-plus) -->
+                        <div class="plus-icon position-absolute" v-if="!mostrar_input_video">
+                            <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputVideo"></i>
                         </div>
-                        <i class="fa-solid fa-video fa-2x"></i>
-                        <p class="mt-2">Adicionar vídeo</p>
+
+                        <!--Icone de remover video-->
+                        <div class="plus-icon position-absolute" v-if="videoUrlIframe && mostrar_video_youtube">
+                            <i class="fa-solid fa-trash" @click="removerVideo"></i>
+                        </div>
+
+                        <i v-if="!mostrar_input_video && !mostrar_video_youtube" class="fa-solid fa-video fa-2x"></i>
+                        <p v-if="!mostrar_input_video && !mostrar_video_youtube" class="mt-2">Adicionar vídeo</p>
+
+                        <!-- Input para o link do YouTube e botão para confirmar -->
+                        <div v-if="mostrar_input_video && !mostrar_video_youtube" class="mt-3">
+                            <input v-model="videoUrlInput" class="form-control" type="text"
+                                placeholder="Insira o link do vídeo do YouTube" />
+
+                            <!-- Botão success com ícone fa-check -->
+                            <button class="btn btn-success mt-3" @click="mostrarVideo">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                        </div>
+
+                        <!-- Iframe para exibir o vídeo, será exibido abaixo do card -->
+                        <div v-if="videoUrlIframe && mostrar_video_youtube">
+                            <iframe :src="videoUrlIframe" width="300px" height="360px" frameborder="0"
+                                allowfullscreen></iframe>
+                        </div>
                     </div>
 
                     <!--Inserir localizacao-->
@@ -370,6 +394,12 @@ export default class PaginaUsuario extends Vue {
     //spinner de loading
     public loading = false
 
+    //Link de video
+    public videoUrlInput = ''
+    public videoUrlIframe: string | null = null
+    public mostrar_input_video = false
+    public mostrar_video_youtube = false
+
     gerarId(): number {
         // Acesse os links através do getter do Vuex
         const links: Array<Link> = this.$store.getters.links
@@ -396,41 +426,41 @@ export default class PaginaUsuario extends Vue {
     created() {
         this.$store.dispatch('loadLinks') // Carrega os links do Vuex
             .then(() => {
-                const links: Link[] = this.$store.getters.links
-                const userId = sessionStorage.getItem('user_id') // ID do usuário autenticado
+                const links: Link[] = this.$store.getters.links;
+                const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id; // ID do usuário autenticado
 
                 // Filtra os links para mostrar apenas os do usuário logado
-                const userLinks = links.filter(link => link.usuario_id === userId)
+                const userLinks = links.filter(link => link.usuario_id === userId);
 
-                // Exibe os links do usuário no console
                 if (userLinks.length > 0) {
-                    console.log("Links do usuário carregados:", userLinks)
+                    console.log("Links do usuário carregados:", userLinks);
                 } else {
-                    console.log("Nenhum link encontrado para o usuário com ID:", userId)
+                    console.log("Nenhum link encontrado para o usuário com ID:", userId);
                 }
 
                 // Adiciona links do localStorage se necessário
                 if (!userLinks.length) {
-                    const linksString = localStorage.getItem(`links_${userId}`)
-                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]')
-                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId)
+                    const linksString = localStorage.getItem(`links_${userId}`);
+                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]');
+                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId);
 
                     if (userLinksFromLocalStorage.length > 0) {
                         userLinksFromLocalStorage.forEach((link: Link) => {
-                            this.$store.commit('ADD_LINK', link)
-                        })
-                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage)
+                            this.$store.commit('ADD_LINK', link);
+                        });
+                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage);
                     } else {
-                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId)
+                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId);
                     }
                 }
 
-                // Carrega a imagem do usuário ao iniciar
-                this.carregarImagemExistente(userId)
+                // Carrega a imagem do usuário e o vídeo existente
+                this.carregarImagemExistente(userId);
+                this.carregarVideoExistente(userId);  // Agora passando o userId aqui
             })
             .catch((error: any) => {
-                console.error('Erro ao carregar links:', error)
-            })
+                console.error('Erro ao carregar links:', error);
+            });
     }
 
     // Adicionar link
@@ -694,7 +724,6 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-
     // Logout 
     public fazerLogout() {
         this.logout()
@@ -856,7 +885,7 @@ export default class PaginaUsuario extends Vue {
     //carregar imagem
     public carregarImagem(event: Event): void {
         const input = event.target as HTMLInputElement;
-        const userId = sessionStorage.getItem('user_id'); // ID do usuário autenticado
+        const userId = sessionStorage.getItem('user_id');
 
         if (input.files && input.files[0] && userId) {
             const file = input.files[0];
@@ -970,6 +999,128 @@ export default class PaginaUsuario extends Vue {
                     }
                 })
         }
+    }
+
+    // Função para mostrar o vídeo no iframe
+    public mostrarVideo() {
+        const videoId = this.extrairIdDoYoutube(this.videoUrlInput);
+        const userId = sessionStorage.getItem('user_id')
+
+        if (videoId && userId) {
+            this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+            this.mostrar_video_youtube = true;
+
+            // Verificando o conteúdo antes de enviar
+            console.log("Enviando requisição com os seguintes dados:", {
+                usuario_id: userId,
+                video_url: this.videoUrlInput
+            });
+
+            // Requisição para adicionar o vídeo no banco de dados
+            axios.post('http://localhost/Projetos/bioohub/backend/api/videos.php', {
+                usuario_id: userId,
+                video_url: this.videoUrlInput
+            })
+                .then(response => {
+                    console.log("Resposta recebida do servidor:", response.data);
+                    if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
+                        // Exibindo alerta de erro se a resposta indicar erro
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
+                    } else {
+                        // Atualizando o Vuex com o URL do vídeo
+                        this.$store.commit('SET_VIDEO_URL', this.videoUrlInput);
+
+                        //salvar video no localStorage
+                        const userId = sessionStorage.getItem('user_id');
+                        localStorage.setItem(`videoUrl_${userId}`, this.videoUrlInput);
+
+                        // Exibindo alerta de sucesso
+                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao adicionar o vídeo:", error);
+                    // Exibindo alerta de erro genérico em caso de falha na requisição
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar o vídeo. Tente novamente mais tarde.', 'alert-error');
+                });
+        } else {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Por favor, insira um link de vídeo do YouTube válido.', 'alert-error');
+        }
+    }
+
+    //remover video do youtube
+    public removerVideo() {
+        console.log('Removendo vídeo...');
+
+        const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id
+
+        // Requisição para remover o vídeo do banco de dados
+        axios.delete('http://localhost/Projetos/bioohub/backend/api/videos.php', {
+            data: {
+                usuario_id: userId
+            }
+        })
+            .then(response => {
+                if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
+                    // Exibindo alerta de erro se a resposta indicar erro
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
+                } else {
+                    // Limpando o estado do vídeo no Vuex
+                    this.$store.commit('CLEAR_VIDEO_URL')
+
+                    //limpando inputs e link do youtube apos sucesso
+                    this.videoUrlIframe = null
+                    this.mostrar_video_youtube = false
+                    this.mostrar_input_video = false
+
+                    // Exibindo alerta de sucesso
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+                }
+            })
+            .catch(error => {
+                console.error("Erro ao remover o vídeo:", error);
+                // Exibindo alerta de erro genérico em caso de falha na requisição
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o vídeo. Tente novamente mais tarde.', 'alert-error');
+            });
+    }
+
+    // Carregar vídeo do YouTube existente
+    public carregarVideoExistente(userId: string) {
+        // Primeiro tenta pegar do Vuex
+        const videoUrl = this.$store.state.videoUrl;
+
+        if (videoUrl) {
+            // Se houver um vídeo URL no Vuex, exibe no iframe
+            const videoId = this.extrairIdDoYoutube(videoUrl);
+            if (videoId) {
+                this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+                this.mostrar_video_youtube = true;
+                console.log(`Vídeo carregado para o usuário com ID: ${userId}`);
+            }
+        } else {
+            // Se não tiver no Vuex, tenta pegar do localStorage
+            const videoUrlFromLocalStorage = localStorage.getItem(`videoUrl_${userId}`);
+            if (videoUrlFromLocalStorage) {
+                const videoId = this.extrairIdDoYoutube(videoUrlFromLocalStorage);
+                if (videoId) {
+                    this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+                    this.mostrar_video_youtube = true;
+                    console.log(`Vídeo carregado do localStorage para o usuário com ID: ${userId}`);
+                }
+            }
+        }
+    }
+
+    // Função para extrair o ID do vídeo do link do YouTube
+    public extrairIdDoYoutube(url: string): string | null {
+        const regExp = /^.*(youtu.be\/|v\/|\/u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
+        const match = url.match(regExp)
+        return (match && match[2].length === 11) ? match[2] : null
+    }
+
+    //mostrar input de inserir video do youtube
+    public mostrarInputVideo() {
+        this.mostrar_input_video = true
     }
 
     // Mostrar mensagem de alerta

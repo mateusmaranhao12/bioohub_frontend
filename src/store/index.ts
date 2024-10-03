@@ -8,7 +8,8 @@ export default createStore({
     links: [] as Array<{ id: number; url: string; redeSocial: string; usuario_id: string }>,
     perfil: {},
     imagemPerfilUrl: null as string | null,
-    imagemUrl: null as string | null
+    imagemUrl: null as string | null,
+    videoUrl: null as string | null
   },
 
   mutations: {
@@ -59,6 +60,16 @@ export default createStore({
       state.perfil = { ...state.perfil, ...perfil }; // Atualiza os dados do perfil
     },
 
+    // Define a URL da imagem de perfil
+    SET_IMAGEM_PERFIL_URL(state, imagemUrl) {
+      state.imagemUrl = imagemUrl
+    },
+
+    // Limpa a imagem de perfil ao fazer logout
+    CLEAR_IMAGEM_PERFIL_URL(state) {
+      state.imagemUrl = null
+    },
+
     // Define a URL da imagem
     SET_IMAGEM_URL(state, imagemUrl) {
       state.imagemUrl = imagemUrl
@@ -69,15 +80,16 @@ export default createStore({
       state.imagemUrl = null
     },
 
-    // Define a URL da imagem de perfil
-    SET_IMAGEM_PERFIL_URL(state, imagemUrl) {
-      state.imagemUrl = imagemUrl
+    // Define a URL do video
+    SET_VIDEO_URL(state, videoUrl) {
+      state.videoUrl = videoUrl
     },
 
-    // Limpa a imagem de perfil ao fazer logout
-    CLEAR_IMAGEM_PERFIL_URL(state) {
-      state.imagemUrl = null
+    // Limpa o video ao fazer logout
+    CLEAR_VIDEO_URL(state) {
+      state.videoUrl = null
     },
+
   },
 
   actions: {
@@ -93,9 +105,10 @@ export default createStore({
     // Ação de logout
     logout({ commit }) {
       commit('CLEAR_USUARIO');
-      commit('CLEAR_LINKS'); // Limpar links ao fazer logout
+      commit('CLEAR_LINKS');
       commit('CLEAR_IMAGEM_URL');
       commit('CLEAR_IMAGEM_PERFIL_URL');
+      commit('CLEAR_VIDEO_URL');
       localStorage.removeItem('usuario');
     },
 
@@ -104,6 +117,26 @@ export default createStore({
       const usuario = localStorage.getItem('usuario');
       if (usuario) {
         commit('SET_USUARIO', JSON.parse(usuario));
+      }
+    },
+
+    // Ação para salvar a imagem de perfil no localStorage e Vuex
+    saveImagemPerfil({ commit, state }, imagemPerfilUrl) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId && imagemPerfilUrl) {
+        localStorage.setItem(`imagem_${userId}`, imagemPerfilUrl); // Salva a imagem no localStorage
+        commit('SET_IMAGEM_PERFIL_URL', imagemPerfilUrl); // Armazena no estado do Vuex
+      }
+    },
+
+    // Carrega a imagem de perfil do localStorage
+    loadImagemPerfil({ commit, state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        const imagemPerfilUrl = localStorage.getItem(`imagem_${userId}`);
+        if (imagemPerfilUrl) {
+          commit('SET_IMAGEM_PERFIL_URL', imagemPerfilUrl);
+        }
       }
     },
 
@@ -172,22 +205,22 @@ export default createStore({
       }
     },
 
-    // Ação para salvar a imagem de perfil no localStorage e Vuex
-    saveImagemPerfil({ commit, state }, imagemPerfilUrl) {
+    // Ação para salvar o video no localStorage e Vuex
+    saveVideo({ commit, state }, videoUrl) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
-      if (userId && imagemPerfilUrl) {
-        localStorage.setItem(`imagem_${userId}`, imagemPerfilUrl); // Salva a imagem no localStorage
-        commit('SET_IMAGEM_PERFIL_URL', imagemPerfilUrl); // Armazena no estado do Vuex
+      if (userId && videoUrl) {
+        localStorage.setItem(`video_${userId}`, videoUrl); // Salva o video no localStorage
+        commit('SET_VIDEO_URL', videoUrl); // Armazena no estado do Vuex
       }
     },
 
-    // Carrega a imagem de perfil do localStorage
-    loadImagemPerfil({ commit, state }) {
+    // Carrega o video do localStorage
+    loadVideo({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
-        const imagemPerfilUrl = localStorage.getItem(`imagem_${userId}`);
-        if (imagemPerfilUrl) {
-          commit('SET_IMAGEM_PERFIL_URL', imagemPerfilUrl);
+        const videoUrl = localStorage.getItem(`video_${userId}`);
+        if (videoUrl) {
+          commit('SET_VIDEO_URL', videoUrl);
         }
       }
     },
@@ -196,7 +229,8 @@ export default createStore({
   getters: {
     usuario: state => state.usuario,
     links: state => state.links,
-    imagemUrl: state => state.imagemUrl
+    imagemUrl: state => state.imagemUrl,
+    videoUrl: state => state.videoUrl
   },
 
   modules: {},
