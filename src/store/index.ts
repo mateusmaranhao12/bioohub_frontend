@@ -9,7 +9,8 @@ export default createStore({
     perfil: {},
     imagemPerfilUrl: null as string | null,
     imagemUrl: null as string | null,
-    videoUrl: null as string | null
+    videoUrl: null as string | null,
+    mapaUrl: null as string | null
   },
 
   mutations: {
@@ -90,6 +91,16 @@ export default createStore({
       state.videoUrl = null
     },
 
+    // Define a URL do mapa
+    SET_MAPA_URL(state, mapaUrl) {
+      state.mapaUrl = mapaUrl
+    },
+
+    // Limpa o mapa ao fazer logout
+    CLEAR_MAPA_URL(state) {
+      state.mapaUrl = null
+    },
+
   },
 
   actions: {
@@ -109,6 +120,7 @@ export default createStore({
       commit('CLEAR_IMAGEM_URL');
       commit('CLEAR_IMAGEM_PERFIL_URL');
       commit('CLEAR_VIDEO_URL');
+      commit('CLEAR_MAPA_URL')
       localStorage.removeItem('usuario');
     },
 
@@ -224,13 +236,34 @@ export default createStore({
         }
       }
     },
+
+    // Ação para salvar o mapa no localStorage e Vuex
+    saveMapa({ commit, state }, mapaUrl) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId && mapaUrl) {
+        localStorage.setItem(`mapa_${userId}`, mapaUrl); // Salva o video no localStorage
+        commit('SET_MAPA_URL', mapaUrl); // Armazena no estado do Vuex
+      }
+    },
+
+    // Carrega o mapa do localStorage
+    loadMapa({ commit, state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        const mapaUrl = localStorage.getItem(`mapa_${userId}`);
+        if (mapaUrl) {
+          commit('SET_MAPA_URL', mapaUrl);
+        }
+      }
+    }
   },
 
   getters: {
     usuario: state => state.usuario,
     links: state => state.links,
     imagemUrl: state => state.imagemUrl,
-    videoUrl: state => state.videoUrl
+    videoUrl: state => state.videoUrl,
+    mapaUrl: state => state.mapaUrl
   },
 
   modules: {},

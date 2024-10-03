@@ -147,7 +147,8 @@
         }
 
         &.card-imagem,
-        &.card-video {
+        &.card-video,
+        &.card-maps {
             .fa-trash {
                 background-color: red;
                 color: $white;
@@ -159,9 +160,27 @@
             
         }
 
-        &.card-video {
+        &.card-video, &.card-maps {
             .fa-check {
                 color: $white;
+            }
+        }
+
+        &.card-maps {
+            .fa-location-dot {
+                color: $white;
+            }
+
+            .btn-map {
+                background-color: rgb(182, 0, 0);
+                color: $white;
+                font-weight: $bold;
+                transition: .2s ease;
+
+                &:hover {
+                    background-color: rgb(129, 0, 0);
+                    color: $white;
+                }
             }
         }
 
@@ -213,6 +232,12 @@
 
             i {
                 color: #be0000;
+            }
+
+            iframe {
+                width: 220px;
+                height: 230px;
+                border-radius: 8px;
             }
         }
 
