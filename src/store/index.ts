@@ -6,6 +6,7 @@ export default createStore({
     usuario: null as { id: string; email: string } | null, // Inclui o ID do usuário
     // Lista de links
     links: [] as Array<{ id: number; url: string; redeSocial: string; usuario_id: string }>,
+    linksAleatorios: [] as Array<{ id: number; url: string; usuario_id: string }>,
     perfil: {},
     imagemPerfilUrl: null as string | null,
     imagemUrl: null as string | null,
@@ -101,6 +102,34 @@ export default createStore({
       state.mapaUrl = null
     },
 
+    // Define todos os links aleatórios no estado
+    SET_LINKS_ALEATORIOS(state, linksAleatorios) {
+      state.linksAleatorios = linksAleatorios;
+    },
+
+    // Adiciona um novo link aleatório à lista
+    ADD_LINK_ALEATORIO(state, linkAleatorio) {
+      state.linksAleatorios.push(linkAleatorio);
+    },
+
+    // Atualiza um link aleatório existente
+    UPDATE_LINK_ALEATORIO(state, linkAtualizado) {
+      const index = state.linksAleatorios.findIndex(link => link.id === linkAtualizado.id);
+      if (index !== -1) {
+        state.linksAleatorios.splice(index, 1, linkAtualizado);
+      }
+    },
+
+    // Remove um link aleatório da lista pelo ID
+    DELETE_LINK_ALEATORIO(state, linkId) {
+      state.linksAleatorios = state.linksAleatorios.filter(link => link.id !== linkId);
+    },
+
+    // Limpa os links aleatórios ao fazer logout
+    CLEAR_LINKS_ALEATORIOS(state) {
+      state.linksAleatorios = [];
+    },
+
   },
 
   actions: {
@@ -115,13 +144,14 @@ export default createStore({
 
     // Ação de logout
     logout({ commit }) {
-      commit('CLEAR_USUARIO');
-      commit('CLEAR_LINKS');
-      commit('CLEAR_IMAGEM_URL');
-      commit('CLEAR_IMAGEM_PERFIL_URL');
-      commit('CLEAR_VIDEO_URL');
+      commit('CLEAR_USUARIO')
+      commit('CLEAR_LINKS')
+      commit('CLEAR_IMAGEM_URL')
+      commit('CLEAR_IMAGEM_PERFIL_URL')
+      commit('CLEAR_VIDEO_URL')
       commit('CLEAR_MAPA_URL')
-      localStorage.removeItem('usuario');
+      commit('CLEAR_LINKS_ALEATORIOS')
+      localStorage.removeItem('usuario')
     },
 
     // Carrega o usuário do localStorage
@@ -255,7 +285,46 @@ export default createStore({
           commit('SET_MAPA_URL', mapaUrl);
         }
       }
-    }
+    },
+
+     // Carrega os links aleatórios do localStorage
+     loadLinksAleatorios({ commit, state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        const linksAleatorios = localStorage.getItem(`links_aleatorios_${userId}`);
+        if (linksAleatorios) {
+          commit('SET_LINKS_ALEATORIOS', JSON.parse(linksAleatorios));
+        }
+      }
+    },
+
+    // Adiciona um novo link aleatório
+    addLinkAleatorio({ commit, dispatch, state }, linkAleatorio) {
+      const newId = state.linksAleatorios.length > 0 ? Math.max(...state.linksAleatorios.map(l => l.id)) + 1 : 1;
+      linkAleatorio.usuario_id = state.usuario?.id; // Define o usuário que está adicionando o link
+      linkAleatorio.id = newId; // Atribui o novo ID ao link aleatório
+      commit('ADD_LINK_ALEATORIO', linkAleatorio);
+      dispatch('saveLinksAleatorios');
+    },
+
+    // Atualiza um link aleatório existente
+    updateLinkAleatorio({ commit, dispatch }, linkAtualizado) {
+      commit('UPDATE_LINK_ALEATORIO', linkAtualizado);
+      dispatch('saveLinksAleatorios');
+    },
+
+    // Deleta um link aleatório
+    deleteLinkAleatorio({ commit }, linkId) {
+      commit('DELETE_LINK_ALEATORIO', linkId);
+    },
+
+    // Salva os links aleatórios no localStorage
+    saveLinksAleatorios({ state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        localStorage.setItem(`links_aleatorios_${userId}`, JSON.stringify(state.linksAleatorios));
+      }
+    },
   },
 
   getters: {
@@ -263,6 +332,7 @@ export default createStore({
     links: state => state.links,
     imagemUrl: state => state.imagemUrl,
     videoUrl: state => state.videoUrl,
+    linksAleatorios: state => state.linksAleatorios,
     mapaUrl: state => state.mapaUrl
   },
 

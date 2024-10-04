@@ -296,11 +296,56 @@
                     <!--Inserir qualquer link-->
                     <div
                         class="animate__animated animate__zoomIn card link-card card-links-livres d-flex flex-column align-items-center justify-content-center position-relative">
-                        <div class="plus-icon position-absolute">
+                        <div v-for="linkAleatorio in $store.getters.linksAleatorios" :key="linkAleatorio.id"
+                            class="mt-3 d-flex flex-column align-items-center position-relative">
+                            <i v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
+                                class="fa-solid fa-link fa-2x"></i>
+
+                            <!-- Deletar link -->
+                            <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
+                                @click="deletarLinkAleatorio(linkAleatorio.id)" class="delete-icon"
+                                style="position: absolute; top: -10px; right: -15px;">
+                                <i class="fa-solid fa-trash"></i>
+                            </div>
+
+                            <!-- Editar link -->
+                            <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
+                                @click="iniciarEdicaoLinkAleatorio(linkAleatorio)" class="edit-icon"
+                                style="position: absolute; top: 30px; right: -15px;">
+                                <i class="fa-solid fa-pencil-alt"></i>
+                            </div>
+
+                            <button v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
+                                @click="redirecionarParaLinkAleatorio(linkAleatorio)"
+                                class="btn btn-secondary btn-sm mt-2">
+                                Ir para o link
+                            </button>
+                        </div>
+
+                        <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
+                            @click="iniciarAdicaoLinkAleatorio" class="plus-icon position-absolute"
+                            style="top: 10px; right: 10px;">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
                         </div>
-                        <i class="fa-solid fa-share-alt fa-2x"></i>
-                        <p class="mt-2">Adicionar link</p>
+
+                        <i v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
+                            class="fa-solid fa-globe fa-2x"></i>
+                        <p v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
+                            class="mt-2">Adicionar link</p>
+
+                        <div v-if="adicionandoLinkAleatorio || editandoLinkAleatorio"
+                            class="w-100 d-flex flex-column align-items-center">
+                            <i v-if="editandoLinkAleatorio" @click="cancelarEdicaoLinkAleatorio"
+                                class="mb-3 fa-solid fa-arrow-left" style="cursor: pointer;"></i>
+                            <input v-model="novoLinkAleatorio" type="text" class="form-control mt-2"
+                                placeholder="Insira o link" />
+
+                            <button @click="editandoLinkAleatorio ? editarLinkAleatorio() : adicionarLinkAleatorio()"
+                                :class="editandoLinkAleatorio ? 'btn btn-success mt-2 btn-sm' : 'btn btn-primary mt-2 btn-sm'">
+                                <i :class="editandoLinkAleatorio ? 'fa-solid fa-check' : 'fa-solid fa-plus'"
+                                    style="color: white;"></i>
+                            </button>
+                        </div>
                     </div>
 
                 </div>
@@ -429,6 +474,12 @@ export default class PaginaUsuario extends Vue {
     public localizacaoInput = ''
     public googleMapsUrl = ''
 
+    //links aleatorios
+    private adicionandoLinkAleatorio = false
+    private editandoLinkAleatorio = false
+    private novoLinkAleatorio = ''
+    private linkIdAleatorio: number | null = null
+
     gerarId(): number {
         // Acesse os links através do getter do Vuex
         const links: Array<Link> = this.$store.getters.links
@@ -455,41 +506,65 @@ export default class PaginaUsuario extends Vue {
     created() {
         this.$store.dispatch('loadLinks') // Carrega os links do Vuex
             .then(() => {
-                const links: Link[] = this.$store.getters.links;
-                const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id; // ID do usuário autenticado
+                const links: Link[] = this.$store.getters.links
+                const linksAleatorios: Link[] = this.$store.getters.linksAleatorios // Obtém os links aleatórios
+                const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id // ID do usuário autenticado
 
                 // Filtra os links para mostrar apenas os do usuário logado
-                const userLinks = links.filter(link => link.usuario_id === userId);
+                const userLinks = links.filter(link => link.usuario_id === userId)
+                const userLinksAleatorios = linksAleatorios.filter(link => link.usuario_id === userId) // Filtra links aleatórios
 
                 if (userLinks.length > 0) {
-                    console.log("Links do usuário carregados:", userLinks);
+                    console.log("Links do usuário carregados:", userLinks)
                 } else {
-                    console.log("Nenhum link encontrado para o usuário com ID:", userId);
+                    console.log("Nenhum link encontrado para o usuário com ID:", userId)
+                }
+
+                if (userLinksAleatorios.length > 0) {
+                    console.log("Links aleatórios do usuário carregados:", userLinksAleatorios)
+                } else {
+                    console.log("Nenhum link aleatório encontrado para o usuário com ID:", userId)
                 }
 
                 // Adiciona links do localStorage se necessário
                 if (!userLinks.length) {
-                    const linksString = localStorage.getItem(`links_${userId}`);
-                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]');
-                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId);
+                    const linksString = localStorage.getItem(`links_${userId}`)
+                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]')
+                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId)
 
                     if (userLinksFromLocalStorage.length > 0) {
                         userLinksFromLocalStorage.forEach((link: Link) => {
-                            this.$store.commit('ADD_LINK', link);
-                        });
-                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage);
+                            this.$store.commit('ADD_LINK', link)
+                        })
+                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage)
                     } else {
-                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId);
+                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId)
+                    }
+                }
+
+                // Adiciona links aleatórios do localStorage se necessário
+                if (!userLinksAleatorios.length) {
+                    const linksAleatoriosString = localStorage.getItem(`links_aleatorios_${userId}`)
+                    const linksAleatoriosFromLocalStorage = JSON.parse(linksAleatoriosString ? linksAleatoriosString : '[]')
+                    const userLinksAleatoriosFromLocalStorage: Link[] = linksAleatoriosFromLocalStorage.filter((link: Link) => link.usuario_id === userId)
+
+                    if (userLinksAleatoriosFromLocalStorage.length > 0) {
+                        userLinksAleatoriosFromLocalStorage.forEach((link: Link) => {
+                            this.$store.commit('ADD_LINK_ALEATORIO', link); // Certifique-se de ter essa mutação
+                        });
+                        console.log("Links aleatórios adicionados do localStorage:", userLinksAleatoriosFromLocalStorage)
+                    } else {
+                        console.log("Nenhum link aleatório encontrado no localStorage para o usuário com ID:", userId)
                     }
                 }
 
                 // Carrega a imagem do usuário e o vídeo existente
-                this.carregarImagemExistente(userId);
-                this.carregarVideoExistente(userId);
+                this.carregarImagemExistente(userId)
+                this.carregarVideoExistente(userId)
                 this.carregarMapaExistente(userId)
             })
             .catch((error: any) => {
-                console.error('Erro ao carregar links:', error);
+                console.error('Erro ao carregar links:', error)
             });
     }
 
@@ -642,65 +717,65 @@ export default class PaginaUsuario extends Vue {
     //detectar rede social
     public detectarRedeSocial(url: string): string | null {
         if (/https?:\/\/(www\.)?instagram\.com\/[^/]+/.test(url)) {
-            return 'instagram';
+            return 'instagram'
         } else if (/https?:\/\/(www\.)?github\.com\/[^/]+/.test(url)) {
-            return 'github';
+            return 'github'
         } else if (/https?:\/\/(www\.)?linkedin\.com\/in\/[^/]+/.test(url)) {
-            return 'linkedin';
+            return 'linkedin'
         } else if (/https?:\/\/(www\.)?whatsapp\.com\/[^/]+/.test(url) || /https?:\/\/wa\.me\/[^/]+/.test(url) || /https?:\/\/wa\.me\/\d+\?text=.*/.test(url)) {
-            return 'whatsapp'; // Adicionando suporte para wa.me
+            return 'whatsapp' // Adicionando suporte para wa.me
         } else if (/https?:\/\/(www\.)?pix\.br\/[^/]+/.test(url)) {
-            return 'pix';
+            return 'pix'
         } else if (/https?:\/\/(www\.)?twitter\.com\/[^/]+/.test(url)) {
-            return 'twitter';
+            return 'twitter'
         } else if (/https?:\/\/(www\.)?tiktok\.com\/[^/]+/.test(url)) {
-            return 'tiktok';
+            return 'tiktok'
         } else if (/https?:\/\/(open\.)?spotify\.com\/[^/]+/.test(url)) {
-            return 'spotify'; // Atualizado para reconhecer links do Spotify
+            return 'spotify' // Atualizado para reconhecer links do Spotify
         } else if (/https?:\/\/(www\.)?youtube\.com\/channel\/[^/]+/.test(url) || /https?:\/\/(www\.)?youtube\.com\/[^/]+/.test(url)) {
-            return 'youtube';
+            return 'youtube'
         } else if (/https?:\/\/(www\.)?vimeo\.com\/[^/]+/.test(url)) {
-            return 'vimeo';
+            return 'vimeo'
         } else if (/https?:\/\/(www\.)?substack\.com\/[^/]+/.test(url)) {
-            return 'substack';
+            return 'substack'
         } else if (/https?:\/\/(www\.)?medium\.com\/[^/]+/.test(url)) {
-            return 'medium';
+            return 'medium'
         } else if (/https?:\/\/(www\.)?music\.apple\.com\/[^/]+/.test(url)) {
-            return 'apple_music';
+            return 'apple_music'
         } else if (/https?:\/\/(www\.)?soundcloud\.com\/[^/]+/.test(url)) {
-            return 'soundcloud';
+            return 'soundcloud'
         } else if (/https?:\/\/(www\.)?docs\.google\.com\/[^/]+/.test(url)) {
-            return 'google_docs';
+            return 'google_docs'
         } else if (/https?:\/\/(www\.)?notion\.so\/[^/]+/.test(url)) {
-            return 'notion';
+            return 'notion'
         } else if (/https?:\/\/(www\.)?calendly\.com\/[^/]+/.test(url)) {
-            return 'calendly';
+            return 'calendly'
         } else if (/https?:\/\/(www\.)?producthunt\.com\/[^/]+/.test(url)) {
-            return 'product_hunt';
+            return 'product_hunt'
         } else if (/https?:\/\/(www\.)?amazon\.com\/[^/]+/.test(url)) {
-            return 'amazon';
+            return 'amazon'
         } else if (/https?:\/\/(www\.)?calendar\.google\.com\/[^/]+/.test(url)) {
-            return 'google_calendar';
+            return 'google_calendar'
         } else if (/https?:\/\/(www\.)?patreon\.com\/[^/]+/.test(url)) {
-            return 'patreon';
+            return 'patreon'
         } else if (/https?:\/\/(www\.)?twitch\.tv\/[^/]+/.test(url)) {
-            return 'twitch';
+            return 'twitch'
         } else if (/https?:\/\/(www\.)?paypal\.com\/[^/]+/.test(url)) {
-            return 'paypal';
+            return 'paypal'
         } else if (/https?:\/\/(www\.)?kickstarter\.com\/[^/]+/.test(url)) {
-            return 'kickstarter';
+            return 'kickstarter'
         } else if (/https?:\/\/(www\.)?shopify\.com\/[^/]+/.test(url)) {
-            return 'shopify';
+            return 'shopify'
         } else if (/https?:\/\/(www\.)?gumroad\.com\/[^/]+/.test(url)) {
-            return 'gumroad';
+            return 'gumroad'
         } else if (/https?:\/\/(www\.)?eventbrite\.com\/[^/]+/.test(url)) {
-            return 'eventbrite';
+            return 'eventbrite'
         } else if (/https?:\/\/(www\.)?discord\.com\/[^/]+/.test(url)) {
-            return 'discord';
+            return 'discord'
         } else if (/https?:\/\/(www\.)?reddit\.com\/r\/[^/]+/.test(url)) {
-            return 'reddit';
+            return 'reddit'
         } else {
-            return 'google'; // Retorna 'globe' se não for reconhecida
+            return 'google' // Retorna 'globe' se não for reconhecida
         }
     }
 
@@ -726,31 +801,31 @@ export default class PaginaUsuario extends Vue {
 
     mounted() {
         // Recupera a mensagem do sessionStorage
-        const mensagem = sessionStorage.getItem('mensagem_alerta');
+        const mensagem = sessionStorage.getItem('mensagem_alerta')
         if (mensagem) {
-            const alertData = JSON.parse(mensagem);
-            this.mensagem_alerta = alertData; // Define a mensagem de alerta
-            sessionStorage.removeItem('mensagem_alerta'); // Remove a mensagem após exibi-la
+            const alertData = JSON.parse(mensagem)
+            this.mensagem_alerta = alertData // Define a mensagem de alerta
+            sessionStorage.removeItem('mensagem_alerta') // Remove a mensagem após exibi-la
 
-            this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status);
+            this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status)
         }
 
         // Recupera o usuário, email e ID do sessionStorage
-        this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || '';
-        this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || '';
-        const userId = sessionStorage.getItem('user_id');
-        console.log('User ID:', userId);
+        this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || ''
+        this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || ''
+        const userId = sessionStorage.getItem('user_id')
+        console.log('User ID:', userId)
 
         // Carregar os dados do perfil do localStorage
-        const perfilData = localStorage.getItem(`perfil_${userId}`);
+        const perfilData = localStorage.getItem(`perfil_${userId}`)
         if (perfilData) {
-            const perfil = JSON.parse(perfilData);
-            this.nome = perfil.nome || '';
-            this.bio = perfil.descricao || '';
-            this.selectedImage = perfil.foto_perfil || null;
+            const perfil = JSON.parse(perfilData)
+            this.nome = perfil.nome || ''
+            this.bio = perfil.descricao || ''
+            this.selectedImage = perfil.foto_perfil || null
 
             // Atualiza o Vuex com os dados do perfil carregados
-            this.$store.commit('UPDATE_PERFIL', perfil);
+            this.$store.commit('UPDATE_PERFIL', perfil)
         }
     }
 
@@ -769,90 +844,90 @@ export default class PaginaUsuario extends Vue {
 
     // Método para carregar a imagem de perfil
     public carregarImagemPerfil(event: Event) {
-        const input = event.target as HTMLInputElement;
+        const input = event.target as HTMLInputElement
         if (input.files && input.files.length > 0) {
-            const file = input.files[0];
-            const reader = new FileReader();
+            const file = input.files[0]
+            const reader = new FileReader()
 
             // Converter a imagem para Base64
             reader.onload = (e) => {
-                this.selectedImage = e.target?.result as string; // Atualiza o src da imagem
+                this.selectedImage = e.target?.result as string // Atualiza o src da imagem
                 this.imagemPerfilSelecionada = true // Desabilita o input após seleção da imagem
 
                 this.salvarPerfil()
-            };
+            }
 
-            reader.readAsDataURL(file); // Lê o arquivo como URL
+            reader.readAsDataURL(file) // Lê o arquivo como URL
         }
     }
 
     //salvar perfil
     public salvarPerfil() {
-        this.salvandoAlteracoes = true; // Ativar a propriedade ao iniciar o salvamento
+        this.salvandoAlteracoes = true // Ativar a propriedade ao iniciar o salvamento
 
         // Acessa o ID do usuário do Vuex ou sessionStorage
-        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id');
+        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id')
 
-        console.log("ID do usuário:", userId); // Verifica se o ID está correto
+        console.log("ID do usuário:", userId) // Verifica se o ID está correto
 
         if (!userId) {
-            console.error("ID do usuário não encontrado."); // Log se o ID não estiver disponível
-            this.salvandoAlteracoes = false; // Desativar antes de retornar
-            return; // Não prosseguir se o ID não estiver disponível
+            console.error("ID do usuário não encontrado.") // Log se o ID não estiver disponível
+            this.salvandoAlteracoes = false // Desativar antes de retornar
+            return // Não prosseguir se o ID não estiver disponível
         }
 
         const perfil: any = {
             usuario_id: userId, // ID do usuário vindo do Vuex ou sessionStorage
-        };
+        }
 
         // Adiciona os campos somente se não estiverem vazios
         if (this.nome) {
-            perfil.nome = this.nome;
+            perfil.nome = this.nome
         }
 
         if (this.bio) {
-            perfil.descricao = this.bio;
+            perfil.descricao = this.bio
         }
 
-        if (this.selectedImage && /^data:image\/[a-zA-Z]+;base64,/.test(this.selectedImage)) {
-            perfil.foto_perfil = this.selectedImage; // Imagem em Base64
+        if (this.selectedImage && /^data:image\/[a-zA-Z]+base64,/.test(this.selectedImage)) {
+            perfil.foto_perfil = this.selectedImage // Imagem em Base64
         }
 
-        console.log("Dados do perfil a serem salvos:", perfil); // Log dos dados do perfil
+        console.log("Dados do perfil a serem salvos:", perfil) // Log dos dados do perfil
 
         // Faz a requisição apenas se houver pelo menos um campo a ser salvo
         if (Object.keys(perfil).length > 1) {
             axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', perfil)
                 .then(response => {
-                    this.editandoNome = false;
-                    this.editandoBio = false;
-                    console.log('Perfil salvo com sucesso:', response.data);
+                    this.editandoNome = false
+                    this.editandoBio = false
+                    console.log('Perfil salvo com sucesso:', response.data)
 
                     // Persistir os dados no localStorage
-                    localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil));
+                    localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil))
 
                     // Atualizar o Vuex com os dados do perfil
-                    this.$store.commit('UPDATE_PERFIL', perfil); // Supondo que você tenha uma mutação UPDATE_PERFIL no Vuex
+                    this.$store.commit('UPDATE_PERFIL', perfil) // Supondo que você tenha uma mutação UPDATE_PERFIL no Vuex
                 })
                 .catch(error => {
-                    console.error('Erro ao salvar o perfil:', error.response.data); // Log do erro detalhado
+                    console.error('Erro ao salvar o perfil:', error.response.data) // Log do erro detalhado
                 })
                 .finally(() => {
-                    this.salvandoAlteracoes = false; // Desativar ao finalizar a requisição
-                });
+                    this.salvandoAlteracoes = false // Desativar ao finalizar a requisição
+                })
         } else {
-            console.warn('Nenhum dado para salvar.');
-            this.salvandoAlteracoes = false; // Desativar se não houver dados
+            console.warn('Nenhum dado para salvar.')
+            this.salvandoAlteracoes = false // Desativar se não houver dados
         }
     }
 
     // Método para remover a imagem de perfil
     public removerImagemPerfil() {
-        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id');
+        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id')
 
         if (!userId) {
-            console.error("ID do usuário não encontrado.");
-            return;
+            console.error("ID do usuário não encontrado.")
+            return
         }
 
         axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', {
@@ -860,36 +935,36 @@ export default class PaginaUsuario extends Vue {
             acao: 'removerImagemPerfil',
         })
             .then(response => {
-                console.log('Imagem de perfil removida com sucesso:', response.data);
+                console.log('Imagem de perfil removida com sucesso:', response.data)
 
-                this.selectedImage = null;
-                this.imagemPerfilUrl = null;
-                this.imagemPerfilSelecionada = false; // Agora permite selecionar uma nova imagem
+                this.selectedImage = null
+                this.imagemPerfilUrl = null
+                this.imagemPerfilSelecionada = false // Agora permite selecionar uma nova imagem
 
-                this.$store.commit('UPDATE_PERFIL', { usuario_id: userId, foto_perfil: null });
+                this.$store.commit('UPDATE_PERFIL', { usuario_id: userId, foto_perfil: null })
 
-                const perfilItem = localStorage.getItem(`perfil_${userId}`);
+                const perfilItem = localStorage.getItem(`perfil_${userId}`)
                 if (perfilItem) {
-                    const perfil = JSON.parse(perfilItem);
+                    const perfil = JSON.parse(perfilItem)
                     if (perfil && perfil.foto_perfil) {
-                        perfil.foto_perfil = null;
-                        localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil));
+                        perfil.foto_perfil = null
+                        localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil))
                     }
                 }
             })
             .catch(error => {
-                console.error('Erro ao remover a imagem de perfil:', error.response?.data || error.message);
-            });
+                console.error('Erro ao remover a imagem de perfil:', error.response?.data || error.message)
+            })
     }
 
     // Alterna o estado de edição do nome
     public editarNome() {
-        this.editandoNome = true;
+        this.editandoNome = true
     }
 
     // Alterna o estado de edição da bio
     public editarBio() {
-        this.editandoBio = true;
+        this.editandoBio = true
     }
 
     // Atualizar usuário
@@ -914,36 +989,36 @@ export default class PaginaUsuario extends Vue {
 
     //carregar imagem
     public carregarImagem(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        const userId = sessionStorage.getItem('user_id');
+        const input = event.target as HTMLInputElement
+        const userId = sessionStorage.getItem('user_id')
 
         if (input.files && input.files[0] && userId) {
-            const file = input.files[0];
-            const tiposPermitidos = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp']; // Lista de tipos permitidos
+            const file = input.files[0]
+            const tiposPermitidos = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'] // Lista de tipos permitidos
 
             // Verifica se o arquivo tem um tipo válido
             if (!tiposPermitidos.includes(file.type)) {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Informe um arquivo válido: PNG, JPG ou SVG', 'alert-error');
-                return; // Cancela o carregamento
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Informe um arquivo válido: PNG, JPG ou SVG', 'alert-error')
+                return // Cancela o carregamento
             }
 
-            const formData = new FormData();
-            formData.append('imagem', file);
-            formData.append('usuario_id', userId);
+            const formData = new FormData()
+            formData.append('imagem', file)
+            formData.append('usuario_id', userId)
 
             // Pré-visualização da imagem
-            const reader = new FileReader();
+            const reader = new FileReader()
             reader.onload = (e: any) => {
-                this.imagemUrl = e.target.result; // Carrega a URL da imagem para exibição
-                this.imagemSelecionada = true;    // Indica que a imagem foi selecionada
+                this.imagemUrl = e.target.result // Carrega a URL da imagem para exibição
+                this.imagemSelecionada = true    // Indica que a imagem foi selecionada
 
                 // Armazena a imagem no localStorage para persistência
-                this.$store.dispatch('saveImagem', this.imagemUrl);
-            };
-            reader.readAsDataURL(file);
+                this.$store.dispatch('saveImagem', this.imagemUrl)
+            }
+            reader.readAsDataURL(file)
 
             // Ativa o spinner enquanto o arquivo está sendo enviado para o servidor
-            this.loading = true;
+            this.loading = true
 
             // Upload para o backend
             axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', formData, {
@@ -952,16 +1027,16 @@ export default class PaginaUsuario extends Vue {
                 },
             })
                 .then(response => {
-                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
                 })
                 .catch(error => {
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error');
-                    console.log(error);
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error')
+                    console.log(error)
                 })
                 .finally(() => {
                     // Finaliza o carregamento (spinner)
-                    this.loading = false;
-                });
+                    this.loading = false
+                })
         }
     }
 
@@ -1033,18 +1108,18 @@ export default class PaginaUsuario extends Vue {
 
     // Função para mostrar o vídeo no iframe
     public mostrarVideo() {
-        const videoId = this.extrairIdDoYoutube(this.videoUrlInput);
+        const videoId = this.extrairIdDoYoutube(this.videoUrlInput)
         const userId = sessionStorage.getItem('user_id')
 
         if (videoId && userId) {
-            this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
-            this.mostrar_video_youtube = true;
+            this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`
+            this.mostrar_video_youtube = true
 
             // Verificando o conteúdo antes de enviar
             console.log("Enviando requisição com os seguintes dados:", {
                 usuario_id: userId,
                 video_url: this.videoUrlInput
-            });
+            })
 
             // Requisição para adicionar o vídeo no banco de dados
             axios.post('http://localhost/Projetos/bioohub/backend/api/videos.php', {
@@ -1052,35 +1127,35 @@ export default class PaginaUsuario extends Vue {
                 video_url: this.videoUrlInput
             })
                 .then(response => {
-                    console.log("Resposta recebida do servidor:", response.data);
+                    console.log("Resposta recebida do servidor:", response.data)
                     if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
                         // Exibindo alerta de erro se a resposta indicar erro
-                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error')
                     } else {
                         // Atualizando o Vuex com o URL do vídeo
-                        this.$store.commit('SET_VIDEO_URL', this.videoUrlInput);
+                        this.$store.commit('SET_VIDEO_URL', this.videoUrlInput)
 
                         //salvar video no localStorage
-                        const userId = sessionStorage.getItem('user_id');
-                        localStorage.setItem(`videoUrl_${userId}`, this.videoUrlInput);
+                        const userId = sessionStorage.getItem('user_id')
+                        localStorage.setItem(`videoUrl_${userId}`, this.videoUrlInput)
 
                         // Exibindo alerta de sucesso
-                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
                     }
                 })
                 .catch(error => {
-                    console.error("Erro ao adicionar o vídeo:", error);
+                    console.error("Erro ao adicionar o vídeo:", error)
                     // Exibindo alerta de erro genérico em caso de falha na requisição
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar o vídeo. Tente novamente mais tarde.', 'alert-error');
-                });
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar o vídeo. Tente novamente mais tarde.', 'alert-error')
+                })
         } else {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Por favor, insira um link de vídeo do YouTube válido.', 'alert-error');
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Por favor, insira um link de vídeo do YouTube válido.', 'alert-error')
         }
     }
 
     //remover video do youtube
     public removerVideo() {
-        console.log('Removendo vídeo...');
+        console.log('Removendo vídeo...')
 
         const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id
 
@@ -1093,7 +1168,7 @@ export default class PaginaUsuario extends Vue {
             .then(response => {
                 if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
                     // Exibindo alerta de erro se a resposta indicar erro
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error')
                 } else {
                     // Limpando o estado do vídeo no Vuex
                     this.$store.commit('CLEAR_VIDEO_URL')
@@ -1104,38 +1179,38 @@ export default class PaginaUsuario extends Vue {
                     this.mostrar_input_video = false
 
                     // Exibindo alerta de sucesso
-                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
                 }
             })
             .catch(error => {
-                console.error("Erro ao remover o vídeo:", error);
+                console.error("Erro ao remover o vídeo:", error)
                 // Exibindo alerta de erro genérico em caso de falha na requisição
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o vídeo. Tente novamente mais tarde.', 'alert-error');
-            });
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o vídeo. Tente novamente mais tarde.', 'alert-error')
+            })
     }
 
     // Carregar vídeo do YouTube existente
     public carregarVideoExistente(userId: string) {
         // Primeiro tenta pegar do Vuex
-        const videoUrl = this.$store.state.videoUrl;
+        const videoUrl = this.$store.state.videoUrl
 
         if (videoUrl) {
             // Se houver um vídeo URL no Vuex, exibe no iframe
-            const videoId = this.extrairIdDoYoutube(videoUrl);
+            const videoId = this.extrairIdDoYoutube(videoUrl)
             if (videoId) {
-                this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
-                this.mostrar_video_youtube = true;
-                console.log(`Vídeo carregado para o usuário com ID: ${userId}`);
+                this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`
+                this.mostrar_video_youtube = true
+                console.log(`Vídeo carregado para o usuário com ID: ${userId}`)
             }
         } else {
             // Se não tiver no Vuex, tenta pegar do localStorage
-            const videoUrlFromLocalStorage = localStorage.getItem(`videoUrl_${userId}`);
+            const videoUrlFromLocalStorage = localStorage.getItem(`videoUrl_${userId}`)
             if (videoUrlFromLocalStorage) {
-                const videoId = this.extrairIdDoYoutube(videoUrlFromLocalStorage);
+                const videoId = this.extrairIdDoYoutube(videoUrlFromLocalStorage)
                 if (videoId) {
-                    this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
-                    this.mostrar_video_youtube = true;
-                    console.log(`Vídeo carregado do localStorage para o usuário com ID: ${userId}`);
+                    this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`
+                    this.mostrar_video_youtube = true
+                    console.log(`Vídeo carregado do localStorage para o usuário com ID: ${userId}`)
                 }
             }
         }
@@ -1158,56 +1233,56 @@ export default class PaginaUsuario extends Vue {
         // Verifica se o input não está vazio
         if (this.localizacaoInput) {
             // Usa o link fornecido no input e apenas armazena o valor
-            this.googleMapsUrl = this.localizacaoInput;
+            this.googleMapsUrl = this.localizacaoInput
 
             // Marca que o mapa foi configurado, mas ainda não abriu
-            this.mostrar_maps = true;
-            console.log(`URL do Google Maps armazenada: ${this.googleMapsUrl}`);
+            this.mostrar_maps = true
+            console.log(`URL do Google Maps armazenada: ${this.googleMapsUrl}`)
 
             // Envia o URL do Google Maps para o servidor
-            const userId = sessionStorage.getItem('user_id');
+            const userId = sessionStorage.getItem('user_id')
             if (userId) {
                 axios.post('http://localhost/Projetos/bioohub/backend/api/maps.php', {
                     usuario_id: userId,
                     mapa_url: this.googleMapsUrl
                 })
                     .then(response => {
-                        console.log("Resposta recebida do servidor:", response.data);
+                        console.log("Resposta recebida do servidor:", response.data)
                         if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
                             // Exibindo alerta de erro se a resposta indicar erro
-                            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
+                            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error')
                         } else {
                             // Exibindo alerta de sucesso
-                            this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+                            this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
 
                             // Salva o mapa no localStorage
-                            localStorage.setItem(`mapa_${userId}`, this.googleMapsUrl);
+                            localStorage.setItem(`mapa_${userId}`, this.googleMapsUrl)
 
                             // Atualiza o Vuex com a URL do mapa
-                            this.$store.commit('SET_MAPA_URL', this.googleMapsUrl);
+                            this.$store.commit('SET_MAPA_URL', this.googleMapsUrl)
                         }
                     })
                     .catch(error => {
-                        console.error("Erro ao salvar o mapa:", error);
+                        console.error("Erro ao salvar o mapa:", error)
                         // Exibindo alerta de erro genérico em caso de falha na requisição
-                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar o mapa. Tente novamente mais tarde.', 'alert-error');
-                    });
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar o mapa. Tente novamente mais tarde.', 'alert-error')
+                    })
             }
         } else {
             // Exibe uma mensagem de erro caso o input esteja vazio
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, insira uma URL válida de localização.', 'alert-error');
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, insira uma URL válida de localização.', 'alert-error')
         }
     }
 
     //remover o mapa
     public removerMaps() {
-        this.mostrar_maps = false;
-        this.localizacaoInput = '';
-        this.googleMapsUrl = '';
-        this.mostrar_input_maps = false;
-        console.log('Mapa do Google Maps removido');
+        this.mostrar_maps = false
+        this.localizacaoInput = ''
+        this.googleMapsUrl = ''
+        this.mostrar_input_maps = false
+        console.log('Mapa do Google Maps removido')
 
-        const userId = sessionStorage.getItem('user_id');
+        const userId = sessionStorage.getItem('user_id')
         if (userId) {
             // Requisição para remover o mapa do banco de dados
             axios.delete('http://localhost/Projetos/bioohub/backend/api/maps.php', {
@@ -1216,26 +1291,26 @@ export default class PaginaUsuario extends Vue {
                 }
             })
                 .then(response => {
-                    console.log("Resposta recebida do servidor:", response.data);
+                    console.log("Resposta recebida do servidor:", response.data)
                     if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
                         // Exibindo alerta de erro se a resposta indicar erro
-                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error')
                     } else {
                         // Exibindo alerta de sucesso
-                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
 
                         // Limpa o mapa no localStorage
-                        localStorage.removeItem(`mapa_${userId}`);
+                        localStorage.removeItem(`mapa_${userId}`)
 
                         // Limpa o Vuex
-                        this.$store.commit('CLEAR_MAPA_URL');
+                        this.$store.commit('CLEAR_MAPA_URL')
                     }
                 })
                 .catch(error => {
-                    console.error("Erro ao remover o mapa:", error);
+                    console.error("Erro ao remover o mapa:", error)
                     // Exibindo alerta de erro genérico em caso de falha na requisição
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o mapa. Tente novamente mais tarde.', 'alert-error');
-                });
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o mapa. Tente novamente mais tarde.', 'alert-error')
+                })
         }
     }
 
@@ -1244,39 +1319,172 @@ export default class PaginaUsuario extends Vue {
         // Verifica se o URL está armazenado
         if (this.googleMapsUrl) {
             // Abre o mapa do Google Maps em uma nova aba
-            window.open(this.googleMapsUrl, '_blank');
-            console.log(`Mapa do Google Maps aberto em uma nova aba: ${this.googleMapsUrl}`);
+            window.open(this.googleMapsUrl, '_blank')
+            console.log(`Mapa do Google Maps aberto em uma nova aba: ${this.googleMapsUrl}`)
         } else {
             // Exibe uma mensagem de erro caso o URL não tenha sido salvo
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, configure uma localização primeiro.', 'alert-error');
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, configure uma localização primeiro.', 'alert-error')
         }
     }
 
     //carregar mapa existente
     public carregarMapaExistente(userId: string) {
         // Primeiro tenta pegar o mapa do Vuex
-        const mapaUrl = this.$store.state.mapaUrl;
+        const mapaUrl = this.$store.state.mapaUrl
 
         if (mapaUrl) {
             // Se houver uma URL do mapa no Vuex, exibe o mapa
-            this.googleMapsUrl = mapaUrl;
-            this.mostrar_maps = true;
-            console.log(`Mapa carregado para o usuário com ID: ${userId}`);
+            this.googleMapsUrl = mapaUrl
+            this.mostrar_maps = true
+            console.log(`Mapa carregado para o usuário com ID: ${userId}`)
         } else {
             // Se não tiver no Vuex, tenta pegar do localStorage
-            const mapaUrlFromLocalStorage = localStorage.getItem(`mapa_${userId}`);
+            const mapaUrlFromLocalStorage = localStorage.getItem(`mapa_${userId}`)
             if (mapaUrlFromLocalStorage) {
                 // Se encontrar uma URL no localStorage, exibe o mapa
-                this.googleMapsUrl = mapaUrlFromLocalStorage;
-                this.mostrar_maps = true;
-                console.log(`Mapa carregado do localStorage para o usuário com ID: ${userId}`);
+                this.googleMapsUrl = mapaUrlFromLocalStorage
+                this.mostrar_maps = true
+                console.log(`Mapa carregado do localStorage para o usuário com ID: ${userId}`)
             }
         }
     }
 
     // Função para mostrar o input de inserir o mapa
     public mostrarInputMaps() {
-        this.mostrar_input_maps = true;
+        this.mostrar_input_maps = true
+    }
+
+    // Iniciar adição de link aleatorio
+    public iniciarAdicaoLinkAleatorio() {
+        this.adicionandoLinkAleatorio = true
+        this.novoLinkAleatorio = ''
+    }
+
+    // Iniciar edição do link aleatorio
+    public iniciarEdicaoLinkAleatorio(linkAleatorio: any) {
+        this.editandoLinkAleatorio = true
+        this.novoLinkAleatorio = linkAleatorio.url // Preenche o campo com o link atual
+        this.linkIdAleatorio = linkAleatorio.id // Armazena o ID do link que está sendo editado
+    }
+
+    // Adicionar link aleatorio
+    public async adicionarLinkAleatorio() {
+        const regex = /^(ftp|http|https):\/\/[^ "]+$/
+        if (this.novoLinkAleatorio.trim() === '' || !regex.test(this.novoLinkAleatorio)) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido, tente novamente', 'alert-error')
+            return
+        }
+
+        const dados = {
+            url: this.novoLinkAleatorio,
+            usuario_id: sessionStorage.getItem('user_id')
+        }
+
+        console.log('Adicionando link:', dados)
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links_aleatorios.php', dados)
+            if (response.data.success) {
+                const novoLinkComId = {
+                    url: this.novoLinkAleatorio,
+                    id: response.data.link.id, // Supondo que o ID é retornado
+                    usuario_id: dados.usuario_id
+                }
+
+                this.$store.commit('ADD_LINK_ALEATORIO', novoLinkComId)
+                this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link adicionado com sucesso!', 'alert-sucesso') // Alerta de sucesso
+                this.adicionandoLinkAleatorio = false
+
+                // Salva os links no localStorage
+                this.salvarLinksAleatoriosNoLocalStorage(dados.usuario_id)
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
+            }
+        } catch (error) {
+            console.error('Erro ao adicionar link:', error)
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link', 'alert-error')
+        }
+    }
+
+    //salvar links aleatorios no localStorage
+    private salvarLinksAleatoriosNoLocalStorage(usuarioId: string | null) {
+        if (usuarioId) {
+            const linksAleatorios = this.$store.getters.linksAleatorios // Obtém os links aleatórios do Vuex
+            console.log('Links a serem salvos no LocalStorage:', JSON.parse(JSON.stringify(linksAleatorios))) // Converte para JSON para visualização
+            localStorage.setItem(`links_aleatorios_${usuarioId}`, JSON.stringify(linksAleatorios)) // Salva no localStorage
+        } else {
+            console.error('Usuário ID é null.')
+        }
+    }
+
+
+    // Editar link aleatorio
+    public async editarLinkAleatorio() {
+        const dados = {
+            id: this.linkIdAleatorio,
+            url: this.novoLinkAleatorio,
+            usuario_id: sessionStorage.getItem('user_id')
+        }
+
+        try {
+            const response = await axios.put('http://localhost/Projetos/bioohub/backend/api/editar_links_aleatorios.php', dados)
+            if (response.data.success) {
+                const linkEditado = {
+                    url: this.novoLinkAleatorio,
+                    id: this.linkIdAleatorio,
+                    usuario_id: dados.usuario_id
+                }
+
+                this.$store.commit('UPDATE_LINK_ALEATORIO', linkEditado)
+                this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link atualizado com sucesso!', 'alert-sucesso') // Alerta de sucesso
+                this.editandoLinkAleatorio = false
+
+                // Salva os links no localStorage
+                this.salvarLinksAleatoriosNoLocalStorage(dados.usuario_id)
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
+            }
+        } catch (error) {
+            console.error('Erro ao editar link:', error)
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao editar link.', 'alert-error')
+        }
+    }
+
+    // Deletar link aleatorio
+    public async deletarLinkAleatorio(id: number) {
+        const dados = {
+            id: id,
+            usuario_id: sessionStorage.getItem('user_id')
+        }
+
+        try {
+            const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/deletar_links_aleatorios.php', { data: dados })
+            if (response.data.success) {
+                this.$store.commit('DELETE_LINK_ALEATORIO', id)
+                this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link removido com sucesso!', 'alert-sucesso') // Alerta de sucesso
+
+                // Salva os links no localStorage
+                this.salvarLinksAleatoriosNoLocalStorage(dados.usuario_id)
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
+            }
+        } catch (error) {
+            console.error('Erro ao deletar link:', error)
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover link', 'alert-error')
+        }
+    }
+
+    public redirecionarParaLinkAleatorio(link: Link) {
+        if (link && link.url) {
+            window.open(link.url, '_blank') // Abre o link em uma nova aba
+        } else {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link não encontrado.', 'alert-error')
+        }
+    }
+
+    public cancelarEdicaoLinkAleatorio() {
+        this.editandoLinkAleatorio = false
+        this.novoLinkAleatorio = ''
     }
 
     // Mostrar mensagem de alerta
@@ -1289,15 +1497,15 @@ export default class PaginaUsuario extends Vue {
 
     //caso precise limpar localStorage
     /*clearMapa() {
-        const userId = sessionStorage.getItem('user_id'); // Pega o ID do usuário atual
+        const userId = sessionStorage.getItem('user_id') // Pega o ID do usuário atual
         if (userId) {
             // Limpa o mapa no localStorage
-            localStorage.removeItem(`mapa_${userId}`);
+            localStorage.removeItem(`mapa_${userId}`)
 
             // Limpa o mapa no Vuex
-            this.$store.commit('CLEAR_MAPA_URL');
+            this.$store.commit('CLEAR_MAPA_URL')
 
-            console.log('localStorage do mapa foi limpo.');
+            console.log('localStorage do mapa foi limpo.')
         }
     } */
 
