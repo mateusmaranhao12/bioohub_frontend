@@ -23,28 +23,24 @@
             <div class="col-md-6 mt-5">
                 <div class="d-flex flex-wrap gap-3 justify-content-between">
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-small d-flex flex-column align-items-center justify-content-center position-relative">
+                        class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative">
                         <i class="fa-solid fa-mountain fa-2x"></i>
                     </div>
 
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-vertical d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-redes-sociais d-flex flex-column align-items-center justify-content-center">
                         <i class="fa-solid fa-globe fa-2x"></i>
                     </div>
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-horizontal d-flex flex-column align-items-center justify-content-center">
-                        <i class="fa-brands fa-spotify fa-2x"></i>
-                    </div>
-                    <div
-                        class="animate__animated animate__zoomIn card link-card card-large-square d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center">
                         <i class="fa-solid fa-video fa-2x"></i>
                     </div>
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-vertical2 d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-maps d-flex flex-column align-items-center justify-content-center">
                         <i class="fa-solid fa-location-dot fa-2x"></i>
                     </div>
                     <div
-                        class="animate__animated animate__zoomIn card link-card card-small2 d-flex flex-column align-items-center justify-content-center">
+                        class="animate__animated animate__zoomIn card link-card card-links-livres d-flex flex-column align-items-center justify-content-center">
                         <i class="fa-solid fa-share-alt fa-2x"></i>
                     </div>
                 </div>
