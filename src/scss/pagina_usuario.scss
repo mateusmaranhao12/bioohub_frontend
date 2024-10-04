@@ -157,10 +157,11 @@
                 z-index: 10;
             }
 
-            
+
         }
 
-        &.card-video, &.card-maps {
+        &.card-video,
+        &.card-maps {
             .fa-check {
                 color: $white;
             }
@@ -255,7 +256,7 @@
                 height: 360px;
                 border-radius: 8px;
             }
-        
+
         }
 
         p {
@@ -263,6 +264,24 @@
             font-size: 14px;
             font-weight: $bold;
         }
+
+        .input-card {
+            bottom: 10px;
+            left: 10px;
+            width: 80%;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-link {
+            position: absolute; /* Para manter o input na posição desejada */
+            background-color: rgba(255, 255, 255, 0.8); /* Fundo semitransparente */
+            z-index: 10; /* Coloque o input acima de outros elementos, se necessário */
+        }
+        
     }
 
     .btn-logout {

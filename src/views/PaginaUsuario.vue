@@ -167,14 +167,29 @@
                             <i class="fa-solid fa-mountain fa-2x"></i>
                             <p class="mt-2">Adicionar imagem</p>
                         </div>
+
+                        <div v-if="imagemSelecionada && !loading">
+                            <input type="text" class="form-control position-absolute input-card"
+                                placeholder="Descrição da Imagem" />
+                        </div>
+
                     </div>
 
                     <!--Inserir links-->
                     <div class="animate__animated animate__zoomIn card link-card card-redes-sociais 
-                        d-flex flex-column align-items-center justify-content-center position-relative">
+                        d-flex flex-column align-items-center justify-content-center position-relative"
+                        style="overflow: hidden;">
+
                         <!-- Exibir links se houver algum adicionado -->
                         <div v-for="link in $store.getters.links" :key="link.id"
                             class="mt-3 d-flex flex-column align-items-center position-relative">
+
+                            <!-- Input para descrição acima do ícone da rede social -->
+                            <input v-if="!adicionandoLink && !editandoLink" type="text"
+                                class="form-control position-absolute input-link" style="top: -50px; width: 100%;"
+                                placeholder="Descrição da rede social" />
+
+
                             <i v-if="!adicionandoLink && !editandoLink"
                                 :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
 
@@ -301,6 +316,11 @@
                             class="mt-3 d-flex flex-column align-items-center position-relative">
                             <i v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
                                 class="fa-solid fa-link fa-2x"></i>
+
+                            <!-- Input para descrição acima do ícone da rede social -->
+                            <input v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio" type="text"
+                                class="form-control position-absolute input-link" style="top: -50px; width: 100%;"
+                                placeholder="Descrição da rede social" />
 
                             <!-- Deletar link -->
                             <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
