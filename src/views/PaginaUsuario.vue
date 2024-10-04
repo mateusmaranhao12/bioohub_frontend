@@ -489,12 +489,11 @@ export default class PaginaUsuario extends Vue {
     }
 
     // Iniciar edição do link
-    public iniciarAdicaoLink(link: Link) {
+    public iniciarAdicaoLink() {
         this.adicionandoLink = true
         this.novoLink = ''
         this.redeSocial = ''
         this.linkParaRedirecionar = ''
-        this.linkParaRedirecionar = link.url
     }
 
     // Iniciar edição do link
