@@ -130,6 +130,34 @@
             <div class="col-md-6 mt-5 mb-5">
                 <div class="d-flex flex-wrap gap-3 justify-content-between">
 
+                    <!--Inserir nota-->
+                    <div class="animate__animated animate__zoomIn">
+                        <!-- Textarea para adicionar ou editar nota -->
+                        <textarea v-if="!notaSalva || editandoNota" placeholder="Adicione uma nota aqui"
+                            class="form-control text-area" rows="3" :style="textareaStyle" v-model="nota"
+                            @input="botaoSalvarNota = true">
+    </textarea>
+
+                        <!-- Exibir a nota salva -->
+                        <p v-if="notaSalva && !editandoNota" class="nota-display">
+                            {{ notaSalva }}
+                            <span @click="editarNota" class="icon-editar-nota"
+                                style="cursor: pointer; margin-left: 10px;">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </span>
+                            <span @click="removerNota" class="icon-remover-nota"
+                                style="cursor: pointer; margin-left: 5px;">
+                                <i class="fa-solid fa-trash"></i>
+                            </span>
+                        </p>
+
+                        <!-- Botão para salvar nota ou salvar alterações -->
+                        <button v-if="botaoSalvarNota" @click="editandoNota ? salvarEdicaoNota() : salvarNota()"
+                            class="btn btn-success mt-2">
+                            <i class="fa-solid fa-check"></i> {{ editandoNota ? 'Salvar alterações' : 'Salvar nota' }}
+                        </button>
+                    </div>
+
                     <!--Inserir imagens-->
                     <div class="animate__animated animate__zoomIn card link-card 
                         card-imagem d-flex flex-column align-items-center justify-content-center 
@@ -175,7 +203,7 @@
 
                     </div>
 
-                    <!--Inserir links-->
+                    <!--Inserir redes sociais-->
                     <div class="animate__animated animate__zoomIn card link-card card-redes-sociais 
                         d-flex flex-column align-items-center justify-content-center position-relative"
                         style="overflow: hidden;">
@@ -274,7 +302,6 @@
                                 allowfullscreen></iframe>
                         </div>
                     </div>
-
 
                     <!--Inserir localizacao-->
                     <div
@@ -501,6 +528,12 @@ export default class PaginaUsuario extends Vue {
     private editandoLinkAleatorio = false
     private novoLinkAleatorio = ''
     private linkIdAleatorio: number | null = null
+
+    //nota (textarea)
+    public nota = '' // Nota a ser adicionada / editada
+    public notaSalva: string | null = null
+    public editandoNota = false
+    public botaoSalvarNota = false
 
     gerarId(): number {
         // Acesse os links através do getter do Vuex
@@ -1396,8 +1429,7 @@ export default class PaginaUsuario extends Vue {
         this.linkIdAleatorio = linkAleatorio.id // Armazena o ID do link que está sendo editado
     }
 
-    // Adicionar link aleatorio
-    public async adicionarLinkAleatorio() {
+    public async adicionarLinkAleatorio() { // Adicionar link aleatorio
         const regex = /^(ftp|http|https):\/\/[^ "]+$/
         if (this.novoLinkAleatorio.trim() === '' || !regex.test(this.novoLinkAleatorio)) {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido, tente novamente', 'alert-error')
@@ -1446,8 +1478,6 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-
-    // Editar link aleatorio
     public async editarLinkAleatorio() {
         const dados = {
             id: this.linkIdAleatorio,
@@ -1515,6 +1545,46 @@ export default class PaginaUsuario extends Vue {
         this.editandoLinkAleatorio = false
         this.novoLinkAleatorio = ''
     }
+
+    // Estilo para o textarea
+    get textareaStyle() {
+        return {
+            border: '2px dotted #CCC',
+            borderRadius: '5px',
+            padding: '10px',
+            width: '400px'
+        };
+    }
+
+    // Função para salvar a nota
+    public salvarNota() {
+        this.notaSalva = this.nota; // Salva a nota digitada
+        this.nota = ''; // Limpa o textarea
+        this.botaoSalvarNota = false; // Esconde o botão de salvar
+    }
+
+    // Função para editar a nota
+    public editarNota() {
+        this.nota = this.notaSalva as string; // Coloca a nota salva no textarea
+        this.editandoNota = true; // Ativa o modo de edição
+        this.botaoSalvarNota = true; // Exibe o botão de salvar alterações
+    }
+
+    // Função para remover a nota
+    public removerNota() {
+        this.notaSalva = ''; // Limpa a nota salva
+        this.nota = ''; // Limpa o textarea
+        this.botaoSalvarNota = false; // Esconde o botão de salvar
+    }
+
+    // Função para salvar a edição da nota
+    public salvarEdicaoNota() {
+        this.notaSalva = this.nota; // Atualiza a nota salva com a edição
+        this.nota = ''; // Limpa o textarea
+        this.botaoSalvarNota = false; // Esconde o botão de salvar
+        this.editandoNota = false; // Sai do modo de edição
+    }
+
 
     // Mostrar mensagem de alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {

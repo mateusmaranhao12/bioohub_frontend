@@ -284,6 +284,18 @@
         
     }
 
+    .icon-editar-nota {
+        background: none;
+        color: blue;
+        padding: 10px;
+    }
+
+    .icon-remover-nota {
+        background: none;
+        color: rgb(175, 0, 0);
+        padding: 10px;
+    }
+
     .btn-logout {
         position: $absolute;
         top: 20px;
