@@ -234,9 +234,9 @@
                             <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputVideo"></i>
                         </div>
 
-                        <!--Icone de remover video-->
+                        <!-- Ícone de remover vídeo -->
                         <div class="plus-icon position-absolute" v-if="videoUrlIframe && mostrar_video_youtube">
-                            <i class="fa-solid fa-trash" @click="removerVideo"></i>
+                            <i class="fa-solid fa-trash" @click="() => removerVideo(videoId)"></i>
                         </div>
 
                         <i v-if="!mostrar_input_video && !mostrar_video_youtube" class="fa-solid fa-video fa-2x"></i>
@@ -259,6 +259,7 @@
                                 allowfullscreen></iframe>
                         </div>
                     </div>
+
 
                     <!--Inserir localizacao-->
                     <div
@@ -390,7 +391,7 @@
             </div>
         </div>
 
-        <!--<button class="btn btn-light" @click="clearMapa">Limpar Links</button>-->
+        <!--<button class="btn btn-light" @click="clearVideo">Limpar Links</button>-->
 
         <Footer class="animate__animated animate__zoomIn" />
 
@@ -467,6 +468,7 @@ export default class PaginaUsuario extends Vue {
     public videoUrlIframe: string | null = null
     public mostrar_input_video = false
     public mostrar_video_youtube = false
+    public videoId = ''
 
     //link de maps
     public mostrar_maps = false
@@ -1154,64 +1156,72 @@ export default class PaginaUsuario extends Vue {
     }
 
     //remover video do youtube
-    public removerVideo() {
-        console.log('Removendo vídeo...')
+    public removerVideo(videoId: string) {
+        console.log('Removendo vídeo...');
 
-        const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id
+        const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id;
 
         // Requisição para remover o vídeo do banco de dados
         axios.delete('http://localhost/Projetos/bioohub/backend/api/videos.php', {
             data: {
-                usuario_id: userId
+                usuario_id: userId,
+                video_id: videoId // Enviando o ID do vídeo a ser removido
             }
         })
             .then(response => {
                 if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
                     // Exibindo alerta de erro se a resposta indicar erro
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error')
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
                 } else {
                     // Limpando o estado do vídeo no Vuex
-                    this.$store.commit('CLEAR_VIDEO_URL')
+                    this.$store.commit('CLEAR_VIDEO_URL');
 
-                    //limpando inputs e link do youtube apos sucesso
-                    this.videoUrlIframe = null
-                    this.mostrar_video_youtube = false
-                    this.mostrar_input_video = false
+                    // Remove o vídeo do localStorage
+                    localStorage.removeItem(`videoUrl_${userId}`); // Usando a chave correta
+
+                    // Limpando inputs e link do youtube após sucesso
+                    this.videoUrlIframe = null;
+                    this.mostrar_video_youtube = false;
+                    this.mostrar_input_video = false;
 
                     // Exibindo alerta de sucesso
-                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
                 }
             })
             .catch(error => {
-                console.error("Erro ao remover o vídeo:", error)
+                console.error("Erro ao remover o vídeo:", error);
                 // Exibindo alerta de erro genérico em caso de falha na requisição
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o vídeo. Tente novamente mais tarde.', 'alert-error')
-            })
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o vídeo. Tente novamente mais tarde.', 'alert-error');
+            });
     }
 
     // Carregar vídeo do YouTube existente
     public carregarVideoExistente(userId: string) {
         // Primeiro tenta pegar do Vuex
-        const videoUrl = this.$store.state.videoUrl
+        const videoUrl = this.$store.state.videoUrl;
 
         if (videoUrl) {
             // Se houver um vídeo URL no Vuex, exibe no iframe
-            const videoId = this.extrairIdDoYoutube(videoUrl)
+            const videoId = this.extrairIdDoYoutube(videoUrl);
             if (videoId) {
-                this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`
-                this.mostrar_video_youtube = true
-                console.log(`Vídeo carregado para o usuário com ID: ${userId}`)
+                this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+                this.mostrar_video_youtube = true;
+                console.log(`Vídeo carregado para o usuário com ID: ${userId}`);
             }
         } else {
             // Se não tiver no Vuex, tenta pegar do localStorage
-            const videoUrlFromLocalStorage = localStorage.getItem(`videoUrl_${userId}`)
+            const videoUrlFromLocalStorage = localStorage.getItem(`videoUrl_${userId}`);
             if (videoUrlFromLocalStorage) {
-                const videoId = this.extrairIdDoYoutube(videoUrlFromLocalStorage)
+                const videoId = this.extrairIdDoYoutube(videoUrlFromLocalStorage);
                 if (videoId) {
-                    this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`
-                    this.mostrar_video_youtube = true
-                    console.log(`Vídeo carregado do localStorage para o usuário com ID: ${userId}`)
+                    this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+                    this.mostrar_video_youtube = true;
+                    console.log(`Vídeo carregado do localStorage para o usuário com ID: ${userId}`);
                 }
+            } else {
+                // Se não houver vídeo no Vuex nem no localStorage, certifique-se de que não está mostrando vídeo
+                this.videoUrlIframe = null;
+                this.mostrar_video_youtube = false;
             }
         }
     }
@@ -1496,19 +1506,18 @@ export default class PaginaUsuario extends Vue {
     }
 
     //caso precise limpar localStorage
-    /*clearMapa() {
-        const userId = sessionStorage.getItem('user_id') // Pega o ID do usuário atual
+    /*clearVideo() {
+        const userId = sessionStorage.getItem('user_id'); // Pega o ID do usuário atual
         if (userId) {
-            // Limpa o mapa no localStorage
-            localStorage.removeItem(`mapa_${userId}`)
+            // Limpa o vídeo no localStorage
+            localStorage.removeItem(`video_${userId}`); // Ajuste a chave conforme necessário
 
-            // Limpa o mapa no Vuex
-            this.$store.commit('CLEAR_MAPA_URL')
+            // Limpa o vídeo no Vuex
+            this.$store.commit('CLEAR_VIDEO_URL');
 
-            console.log('localStorage do mapa foi limpo.')
+            console.log('localStorage do vídeo foi limpo.');
         }
-    } */
-
+    }*/
 
 }
 </script>

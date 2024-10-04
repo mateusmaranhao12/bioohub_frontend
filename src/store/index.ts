@@ -11,6 +11,7 @@ export default createStore({
     imagemPerfilUrl: null as string | null,
     imagemUrl: null as string | null,
     videoUrl: null as string | null,
+    videoId: null as string | null,
     mapaUrl: null as string | null
   },
 
@@ -90,6 +91,7 @@ export default createStore({
     // Limpa o video ao fazer logout
     CLEAR_VIDEO_URL(state) {
       state.videoUrl = null
+      state.videoId = null
     },
 
     // Define a URL do mapa
