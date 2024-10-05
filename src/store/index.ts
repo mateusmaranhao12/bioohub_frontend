@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { createStore } from 'vuex';
 
 export default createStore({
@@ -13,7 +14,8 @@ export default createStore({
     videoUrl: null as string | null,
     videoId: null as string | null,
     mapaUrl: null as string | null,
-    nota: [] as Array<{ id: number; nota: string; usuario_id: string }>
+    nota: [] as Array<{ id: number; nota: string; usuario_id: string }>,
+    imagens: [] as Array<{ id: number; texto: string | null; usuario_id: string }>
   },
 
   mutations: {
@@ -159,6 +161,22 @@ export default createStore({
     // Limpa as notas ao fazer logout
     CLEAR_NOTA(state) {
       state.nota = [];
+    },
+
+    // Mutação para atualizar o texto da imagem
+    UPDATE_TEXTO_IMAGEM(state, { texto, id }) {
+      const imagem = state.imagens.find(img => img.id === id);
+      if (imagem) {
+        imagem.texto = texto; // Atualiza o texto da imagem no estado
+      }
+    },
+
+    // Mutação para deletar o texto da imagem
+    DELETE_TEXTO_IMAGEM(state, id) {
+      const imagem = state.imagens.find(img => img.id === id);
+      if (imagem) {
+        imagem.texto = null; // Remove o texto da imagem no estado
+      }
     },
 
   },
@@ -396,6 +414,17 @@ export default createStore({
       if (userId) {
         localStorage.setItem(`nota_${userId}`, JSON.stringify(state.nota));
       }
+    },
+
+    // Atualiza o texto de uma imagem
+    async atualizarTextoImagem({ commit, state }, { texto, id }) {
+      commit('UPDATE_TEXTO_IMAGEM', { texto, id }); // Atualiza o texto no Vuex
+    },
+
+    // Deleta o texto de uma imagem
+    async deletarTextoImagem({ commit }, id) {
+      commit('DELETE_TEXTO_IMAGEM', id); // Deleta o texto no Vuex
+      // Aqui você pode fazer a requisição para o servidor, se necessário
     },
   },
 
