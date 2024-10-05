@@ -136,16 +136,16 @@
                         <textarea v-if="!notaSalva || editandoNota" placeholder="Adicione uma nota aqui"
                             class="form-control text-area" rows="3" :style="textareaStyle" v-model="nota"
                             @input="botaoSalvarNota = true">
-    </textarea>
+                        </textarea>
 
                         <!-- Exibir a nota salva -->
                         <p v-if="notaSalva && !editandoNota" class="nota-display">
-                            {{ notaSalva }}
+                            {{ notaSalva.nota }}
                             <span @click="editarNota" class="icon-editar-nota"
                                 style="cursor: pointer; margin-left: 10px;">
                                 <i class="fa-solid fa-pen-to-square"></i>
                             </span>
-                            <span @click="removerNota" class="icon-remover-nota"
+                            <span @click="removerNota(notaSalva.id)" class="icon-remover-nota"
                                 style="cursor: pointer; margin-left: 5px;">
                                 <i class="fa-solid fa-trash"></i>
                             </span>
@@ -438,7 +438,7 @@
             </div>
         </div>
 
-        <!--<button class="btn btn-light" @click="clearVideo">Limpar Links</button>-->
+        <!--<button class="btn btn-light" @click="clearNotas">Limpar Links</button>-->
 
         <Footer class="animate__animated animate__zoomIn" />
 
@@ -459,6 +459,7 @@ import AlterarUsuario from '@/components/AlterarUsuario.vue'
 import { Alert } from '@/interfaces/Alert'
 import { mapActions } from 'vuex'
 import { Link } from '@/interfaces/Link'
+import { Nota } from '@/interfaces/Nota'
 import axios from 'axios'
 
 @Options({
@@ -531,7 +532,7 @@ export default class PaginaUsuario extends Vue {
 
     //nota (textarea)
     public nota = '' // Nota a ser adicionada / editada
-    public notaSalva: string | null = null
+    public notaSalva: Nota | null = null
     public editandoNota = false
     public botaoSalvarNota = false
 
@@ -560,67 +561,102 @@ export default class PaginaUsuario extends Vue {
     created() {
         this.$store.dispatch('loadLinks') // Carrega os links do Vuex
             .then(() => {
-                const links: Link[] = this.$store.getters.links
-                const linksAleatorios: Link[] = this.$store.getters.linksAleatorios // Obtém os links aleatórios
-                const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id // ID do usuário autenticado
+                const links: Link[] = this.$store.getters.links;
+                const linksAleatorios: Link[] = this.$store.getters.linksAleatorios; // Obtém os links aleatórios
+                const nota: Nota[] = this.$store.getters.nota;
+                const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id; // ID do usuário autenticado
 
                 // Filtra os links para mostrar apenas os do usuário logado
-                const userLinks = links.filter(link => link.usuario_id === userId)
-                const userLinksAleatorios = linksAleatorios.filter(link => link.usuario_id === userId) // Filtra links aleatórios
+                const userLinks = links.filter(link => link.usuario_id === userId);
+                const userLinksAleatorios = linksAleatorios.filter(link => link.usuario_id === userId); // Filtra links aleatórios
+                const userNota = nota.filter(nota => nota.usuario_id === userId);
 
                 if (userLinks.length > 0) {
-                    console.log("Links do usuário carregados:", userLinks)
+                    console.log("Links do usuário carregados:", userLinks);
                 } else {
-                    console.log("Nenhum link encontrado para o usuário com ID:", userId)
+                    console.log("Nenhum link encontrado para o usuário com ID:", userId);
                 }
 
                 if (userLinksAleatorios.length > 0) {
-                    console.log("Links aleatórios do usuário carregados:", userLinksAleatorios)
+                    console.log("Links aleatórios do usuário carregados:", userLinksAleatorios);
                 } else {
-                    console.log("Nenhum link aleatório encontrado para o usuário com ID:", userId)
+                    console.log("Nenhum link aleatório encontrado para o usuário com ID:", userId);
+                }
+
+                if (userNota.length > 0) {
+                    console.log("Notas do usuário carregados:", userNota);
+                } else {
+                    console.log("Nenhuma nota encontrada para o usuário com ID:", userId);
                 }
 
                 // Adiciona links do localStorage se necessário
                 if (!userLinks.length) {
-                    const linksString = localStorage.getItem(`links_${userId}`)
-                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]')
-                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId)
+                    const linksString = localStorage.getItem(`links_${userId}`);
+                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]');
+                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId);
 
                     if (userLinksFromLocalStorage.length > 0) {
                         userLinksFromLocalStorage.forEach((link: Link) => {
-                            this.$store.commit('ADD_LINK', link)
-                        })
-                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage)
+                            this.$store.commit('ADD_LINK', link);
+                        });
+                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage);
                     } else {
-                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId)
+                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId);
                     }
                 }
 
                 // Adiciona links aleatórios do localStorage se necessário
                 if (!userLinksAleatorios.length) {
-                    const linksAleatoriosString = localStorage.getItem(`links_aleatorios_${userId}`)
-                    const linksAleatoriosFromLocalStorage = JSON.parse(linksAleatoriosString ? linksAleatoriosString : '[]')
-                    const userLinksAleatoriosFromLocalStorage: Link[] = linksAleatoriosFromLocalStorage.filter((link: Link) => link.usuario_id === userId)
+                    const linksAleatoriosString = localStorage.getItem(`links_aleatorios_${userId}`);
+                    const linksAleatoriosFromLocalStorage = JSON.parse(linksAleatoriosString ? linksAleatoriosString : '[]');
+                    const userLinksAleatoriosFromLocalStorage: Link[] = linksAleatoriosFromLocalStorage.filter((link: Link) => link.usuario_id === userId);
 
                     if (userLinksAleatoriosFromLocalStorage.length > 0) {
                         userLinksAleatoriosFromLocalStorage.forEach((link: Link) => {
                             this.$store.commit('ADD_LINK_ALEATORIO', link); // Certifique-se de ter essa mutação
                         });
-                        console.log("Links aleatórios adicionados do localStorage:", userLinksAleatoriosFromLocalStorage)
+                        console.log("Links aleatórios adicionados do localStorage:", userLinksAleatoriosFromLocalStorage);
                     } else {
-                        console.log("Nenhum link aleatório encontrado no localStorage para o usuário com ID:", userId)
+                        console.log("Nenhum link aleatório encontrado no localStorage para o usuário com ID:", userId);
                     }
                 }
 
+                // Adiciona notas do localStorage se necessário
+                if (!userNota.length) {
+                    const notasString = localStorage.getItem(`nota_${userId}`);
+                    const notasFromLocalStorage = JSON.parse(notasString ? notasString : '[]');
+                    const userNotasFromLocalStorage: Nota[] = notasFromLocalStorage.filter((nota: Nota) => nota.usuario_id === userId);
+
+                    if (userNotasFromLocalStorage.length > 0) {
+                        userNotasFromLocalStorage.forEach((nota: Nota) => {
+                            this.$store.commit('ADD_NOTA', nota); // Certifique-se de ter essa mutação
+                        });
+                        console.log('Notas adicionadas do localStorage:', userNotasFromLocalStorage);
+                    } else {
+                        console.log('Nenhuma nota encontrada no localStorage para o usuário com ID:', userId);
+                    }
+                }
+
+                // Aqui, pegue a nota mais recente ou a nota que deseja exibir
+                const notaSalva = this.$store.getters.nota.find((n: Nota) => n.usuario_id === userId);
+                if (notaSalva) {
+                    this.notaSalva = notaSalva; // Atribua a nota carregada à variável notaSalva
+                    this.nota = notaSalva.nota; // Supondo que a propriedade com o texto da nota seja `nota`
+                }
+
+                // Chama a função para carregar notas existentes
+                this.carregarNotasExistentes(userId); // Chama a função para carregar notas
+
                 // Carrega a imagem do usuário e o vídeo existente
-                this.carregarImagemExistente(userId)
-                this.carregarVideoExistente(userId)
-                this.carregarMapaExistente(userId)
+                this.carregarImagemExistente(userId);
+                this.carregarVideoExistente(userId);
+                this.carregarMapaExistente(userId);
             })
             .catch((error: any) => {
-                console.error('Erro ao carregar links:', error)
+                console.error('Erro ao carregar links:', error);
             });
     }
+
 
     // Adicionar link
     public async adicionarLink() {
@@ -908,6 +944,8 @@ export default class PaginaUsuario extends Vue {
                 this.selectedImage = e.target?.result as string // Atualiza o src da imagem
                 this.imagemPerfilSelecionada = true // Desabilita o input após seleção da imagem
 
+                console.log("Imagem selecionada:", this.selectedImage);
+
                 this.salvarPerfil()
             }
 
@@ -917,61 +955,64 @@ export default class PaginaUsuario extends Vue {
 
     //salvar perfil
     public salvarPerfil() {
-        this.salvandoAlteracoes = true // Ativar a propriedade ao iniciar o salvamento
+        this.salvandoAlteracoes = true; // Ativar a propriedade ao iniciar o salvamento
 
         // Acessa o ID do usuário do Vuex ou sessionStorage
-        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id')
+        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id');
 
-        console.log("ID do usuário:", userId) // Verifica se o ID está correto
+        console.log("ID do usuário:", userId); // Verifica se o ID está correto
 
         if (!userId) {
-            console.error("ID do usuário não encontrado.") // Log se o ID não estiver disponível
-            this.salvandoAlteracoes = false // Desativar antes de retornar
-            return // Não prosseguir se o ID não estiver disponível
+            console.error("ID do usuário não encontrado."); // Log se o ID não estiver disponível
+            this.salvandoAlteracoes = false; // Desativar antes de retornar
+            return; // Não prosseguir se o ID não estiver disponível
         }
 
         const perfil: any = {
             usuario_id: userId, // ID do usuário vindo do Vuex ou sessionStorage
-        }
+        };
 
         // Adiciona os campos somente se não estiverem vazios
         if (this.nome) {
-            perfil.nome = this.nome
+            perfil.nome = this.nome;
         }
 
         if (this.bio) {
-            perfil.descricao = this.bio
+            perfil.descricao = this.bio;
         }
 
-        if (this.selectedImage && /^data:image\/[a-zA-Z]+base64,/.test(this.selectedImage)) {
-            perfil.foto_perfil = this.selectedImage // Imagem em Base64
+        // Adiciona a imagem se ela for válida
+        if (this.selectedImage && /^data:image\/[a-zA-Z]+;base64,/.test(this.selectedImage)) {
+            perfil.foto_perfil = this.selectedImage; // Imagem em Base64
+        } else {
+            console.warn('Imagem não está em formato Base64 ou não foi selecionada.');
         }
 
-        console.log("Dados do perfil a serem salvos:", perfil) // Log dos dados do perfil
+        console.log("Dados do perfil a serem salvos:", perfil); // Log dos dados do perfil
 
         // Faz a requisição apenas se houver pelo menos um campo a ser salvo
         if (Object.keys(perfil).length > 1) {
             axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', perfil)
                 .then(response => {
-                    this.editandoNome = false
-                    this.editandoBio = false
-                    console.log('Perfil salvo com sucesso:', response.data)
+                    this.editandoNome = false;
+                    this.editandoBio = false;
+                    console.log('Perfil salvo com sucesso:', response.data);
 
                     // Persistir os dados no localStorage
-                    localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil))
+                    localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil));
 
                     // Atualizar o Vuex com os dados do perfil
-                    this.$store.commit('UPDATE_PERFIL', perfil) // Supondo que você tenha uma mutação UPDATE_PERFIL no Vuex
+                    this.$store.commit('UPDATE_PERFIL', perfil); // Supondo que você tenha uma mutação UPDATE_PERFIL no Vuex
                 })
                 .catch(error => {
-                    console.error('Erro ao salvar o perfil:', error.response.data) // Log do erro detalhado
+                    console.error('Erro ao salvar o perfil:', error.response.data); // Log do erro detalhado
                 })
                 .finally(() => {
-                    this.salvandoAlteracoes = false // Desativar ao finalizar a requisição
-                })
+                    this.salvandoAlteracoes = false; // Desativar ao finalizar a requisição
+                });
         } else {
-            console.warn('Nenhum dado para salvar.')
-            this.salvandoAlteracoes = false // Desativar se não houver dados
+            console.warn('Nenhum dado para salvar.');
+            this.salvandoAlteracoes = false; // Desativar se não houver dados
         }
     }
 
@@ -1478,6 +1519,7 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+    //editar link aleatorio
     public async editarLinkAleatorio() {
         const dados = {
             id: this.linkIdAleatorio,
@@ -1533,6 +1575,7 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+    //redirecionar para link aleatorio
     public redirecionarParaLinkAleatorio(link: Link) {
         if (link && link.url) {
             window.open(link.url, '_blank') // Abre o link em uma nova aba
@@ -1541,6 +1584,7 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+    //cancelar edicao link aleatorio
     public cancelarEdicaoLinkAleatorio() {
         this.editandoLinkAleatorio = false
         this.novoLinkAleatorio = ''
@@ -1556,33 +1600,153 @@ export default class PaginaUsuario extends Vue {
         };
     }
 
-    // Função para salvar a nota
-    public salvarNota() {
-        this.notaSalva = this.nota; // Salva a nota digitada
-        this.nota = ''; // Limpa o textarea
-        this.botaoSalvarNota = false; // Esconde o botão de salvar
+    // Salvar nota
+    public async salvarNota() {
+        const userId = sessionStorage.getItem('user_id');
+
+        const notaObj = {
+            usuario_id: userId,
+            nota: this.nota
+        };
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_nota.php', notaObj);
+            console.log('Resposta do servidor:', response.data);
+
+            if (response.data.success) {
+                const novaNota: Nota = {
+                    id: Number(response.data.nota.id),
+                    usuario_id: userId!,
+                    nota: this.nota
+                };
+
+                this.$store.commit('ADD_NOTA', novaNota);
+                this.atualizarNotasLocalStorage(userId); // Atualiza localStorage imediatamente
+
+                // Atualiza a interface
+                this.notaSalva = novaNota;
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Nota adicionada com sucesso!', 'alert-sucesso');
+                this.nota = '';
+                this.botaoSalvarNota = false;
+                this.editandoNota = false;
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+            }
+        } catch (error) {
+            console.error('Erro ao salvar nota:', error);
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar a nota', 'alert-error');
+        }
     }
 
-    // Função para editar a nota
-    public editarNota() {
-        this.nota = this.notaSalva as string; // Coloca a nota salva no textarea
-        this.editandoNota = true; // Ativa o modo de edição
-        this.botaoSalvarNota = true; // Exibe o botão de salvar alterações
+    // Editar nota
+    public async editarNota() {
+        if (this.notaSalva) {
+            this.nota = this.notaSalva.nota;
+            this.editandoNota = true;
+            this.botaoSalvarNota = true;
+        } else {
+            console.error('Nota não definida para edição.');
+        }
     }
 
-    // Função para remover a nota
-    public removerNota() {
-        this.notaSalva = ''; // Limpa a nota salva
-        this.nota = ''; // Limpa o textarea
-        this.botaoSalvarNota = false; // Esconde o botão de salvar
+
+    // Remover a nota
+    public async removerNota(id: number) {
+        if (!id) {
+            console.error('ID da nota não definido para remoção.');
+            return;
+        }
+
+        const usuarioId = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/remover_nota.php', {
+                id: id,
+                usuario_id: usuarioId
+            });
+            if (response.data.success) {
+                this.$store.dispatch('deleteNota', id);
+                this.atualizarNotasLocalStorage(usuarioId); // Atualiza localStorage imediatamente
+
+                this.mostrarMensagemAlerta('fa-solid fa-check', response.data.message, 'alert-sucesso');
+
+                // Limpar a interface se necessário
+                this.notaSalva = null;
+                this.nota = '';
+                this.botaoSalvarNota = false;
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover nota.', 'alert-error');
+            console.error('Erro ao remover a nota:', error);
+        }
     }
 
-    // Função para salvar a edição da nota
-    public salvarEdicaoNota() {
-        this.notaSalva = this.nota; // Atualiza a nota salva com a edição
-        this.nota = ''; // Limpa o textarea
-        this.botaoSalvarNota = false; // Esconde o botão de salvar
-        this.editandoNota = false; // Sai do modo de edição
+    // Salvar edição da nota
+    public async salvarEdicaoNota() {
+        const userId = sessionStorage.getItem('user_id');
+
+        if (!this.notaSalva) {
+            console.error('Nota não definida para edição.');
+            return;
+        }
+
+        const notaEditada: Nota = {
+            id: this.notaSalva.id,
+            usuario_id: userId!,
+            nota: this.nota
+        };
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_nota.php', notaEditada);
+            if (response.data.success) {
+                this.$store.commit('UPDATE_NOTA', notaEditada);
+                this.notaSalva = notaEditada;
+                this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Nota editada com sucesso!', 'alert-sucesso');
+
+                // Atualiza o localStorage
+                this.atualizarNotasLocalStorage(userId);
+
+                this.nota = '';
+                this.botaoSalvarNota = false;
+                this.editandoNota = false;
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+            }
+        } catch (error) {
+            console.error('Erro ao editar a nota:', error);
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar alterações', 'alert-error');
+        }
+    }
+
+    private atualizarNotasLocalStorage(usuarioId: string | null) {
+        if (usuarioId) {
+            const notas = this.$store.state.nota;
+            console.log('Notas a serem salvas no LocalStorage:', JSON.parse(JSON.stringify(notas)));
+            localStorage.setItem(`nota_${usuarioId}`, JSON.stringify(notas));
+        } else {
+            console.error('Usuário ID é null.');
+        }
+    }
+
+    public carregarNotasExistentes(userId: string) {
+        // Primeiro tenta pegar as notas do Vuex
+        const carregarNotas = this.$store.state.nota;
+
+        if (carregarNotas && carregarNotas.length > 0) {
+            // Se houver notas no Vuex, exibe as notas
+            this.nota = carregarNotas;
+            console.log(`Notas carregadas do Vuex para o usuário com ID: ${userId}`);
+        } else {
+            // Se não tiver no Vuex, tenta pegar do localStorage
+            const notasDoLocalStorage = localStorage.getItem(`nota_${userId}`);
+            if (notasDoLocalStorage) {
+                // Se encontrar notas no localStorage, exibe as notas
+                this.nota = JSON.parse(notasDoLocalStorage);
+                console.log(`Notas carregadas do localStorage para o usuário com ID: ${userId}`);
+            }
+        }
     }
 
 
@@ -1595,18 +1759,19 @@ export default class PaginaUsuario extends Vue {
     }
 
     //caso precise limpar localStorage
-    /*clearVideo() {
+    /*clearNotas() {
         const userId = sessionStorage.getItem('user_id'); // Pega o ID do usuário atual
         if (userId) {
-            // Limpa o vídeo no localStorage
-            localStorage.removeItem(`video_${userId}`); // Ajuste a chave conforme necessário
+            // Limpa as notas no localStorage
+            localStorage.removeItem(`nota_${userId}`); // Ajuste a chave conforme necessário
 
-            // Limpa o vídeo no Vuex
-            this.$store.commit('CLEAR_VIDEO_URL');
+            // Limpa as notas no Vuex
+            this.$store.commit('CLEAR_NOTA'); // Você deve ter uma mutação para limpar as notas
 
-            console.log('localStorage do vídeo foi limpo.');
+            console.log('localStorage das notas foi limpo.');
         }
-    }*/
+    } */
+
 
 }
 </script>

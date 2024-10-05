@@ -12,7 +12,8 @@ export default createStore({
     imagemUrl: null as string | null,
     videoUrl: null as string | null,
     videoId: null as string | null,
-    mapaUrl: null as string | null
+    mapaUrl: null as string | null,
+    nota: [] as Array<{ id: number; nota: string; usuario_id: string }>
   },
 
   mutations: {
@@ -64,13 +65,13 @@ export default createStore({
     },
 
     // Define a URL da imagem de perfil
-    SET_IMAGEM_PERFIL_URL(state, imagemUrl) {
-      state.imagemUrl = imagemUrl
+    SET_IMAGEM_PERFIL_URL(state, imagemPerfilUrl) {
+      state.imagemPerfilUrl = imagemPerfilUrl
     },
 
     // Limpa a imagem de perfil ao fazer logout
     CLEAR_IMAGEM_PERFIL_URL(state) {
-      state.imagemUrl = null
+      state.imagemPerfilUrl = null
     },
 
     // Define a URL da imagem
@@ -132,6 +133,34 @@ export default createStore({
       state.linksAleatorios = [];
     },
 
+    // Define todas as notas no estado
+    SET_NOTA(state, nota) {
+      state.nota = nota;
+    },
+
+    // Adiciona uma nova nota à lista
+    ADD_NOTA(state, nota) {
+      state.nota.push(nota);
+    },
+
+    // Atualiza uma nota existente
+    UPDATE_NOTA(state, nota) {
+      const index = state.nota.findIndex(nota => nota.id === nota.id);
+      if (index !== -1) {
+        state.nota.splice(index, 1, nota);
+      }
+    },
+
+    // Remove uma nota da lista pelo ID
+    DELETE_NOTA(state, notaId) {
+      state.nota = state.nota.filter(nota => nota.id !== notaId);
+    },
+
+    // Limpa as notas ao fazer logout
+    CLEAR_NOTA(state) {
+      state.nota = [];
+    },
+
   },
 
   actions: {
@@ -142,6 +171,7 @@ export default createStore({
       commit('SET_USUARIO', usuario); // Define o usuário logado, certifique-se que 'usuario' contém o ID
       localStorage.setItem('usuario', JSON.stringify(usuario));
       dispatch('loadLinks'); // Carregar links do novo usuário autenticado
+      dispatch('loadNota')
     },
 
     // Ação de logout
@@ -153,6 +183,7 @@ export default createStore({
       commit('CLEAR_VIDEO_URL')
       commit('CLEAR_MAPA_URL')
       commit('CLEAR_LINKS_ALEATORIOS')
+      commit('CLEAR_NOTA')
       localStorage.removeItem('usuario')
     },
 
@@ -186,7 +217,7 @@ export default createStore({
 
     // Salva os links no localStorage
     saveLinks({ state }) {
-      const userId = state.usuario?.id || sessionStorage.getItem('user_id'); // Utilize o ID correto aqui
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
         localStorage.setItem(`links_${userId}`, JSON.stringify(state.links));
       }
@@ -194,7 +225,7 @@ export default createStore({
 
     // Carrega os links do localStorage e filtra para o usuário logado
     loadLinks({ commit, state }) {
-      const userId = state.usuario?.id || sessionStorage.getItem('user_id'); // Utilize o ID correto aqui
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
         const links = localStorage.getItem(`links_${userId}`);
         if (links) {
@@ -273,7 +304,7 @@ export default createStore({
     saveMapa({ commit, state }, mapaUrl) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId && mapaUrl) {
-        localStorage.setItem(`mapa_${userId}`, mapaUrl); // Salva o video no localStorage
+        localStorage.setItem(`mapa_${userId}`, mapaUrl); // Salva o mapa no localStorage
         commit('SET_MAPA_URL', mapaUrl); // Armazena no estado do Vuex
       }
     },
@@ -289,8 +320,8 @@ export default createStore({
       }
     },
 
-     // Carrega os links aleatórios do localStorage
-     loadLinksAleatorios({ commit, state }) {
+    // Carrega os links aleatórios do localStorage
+    loadLinksAleatorios({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
         const linksAleatorios = localStorage.getItem(`links_aleatorios_${userId}`);
@@ -327,6 +358,45 @@ export default createStore({
         localStorage.setItem(`links_aleatorios_${userId}`, JSON.stringify(state.linksAleatorios));
       }
     },
+
+    // Carrega as notas do localStorage
+    loadNota({ commit, state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        const nota = localStorage.getItem(`nota_${userId}`);
+        if (nota) {
+          commit('SET_NOTA', JSON.parse(nota))
+        }
+      }
+    },
+
+    // Adiciona uma nota
+    addNota({ commit, dispatch, state }, nota) {
+      const newId = state.nota.length > 0 ? Math.max(...state.nota.map(n => n.id)) + 1 : 1;
+      nota.usuario_id = state.usuario?.id;
+      nota.id = newId;
+      commit('ADD_NOTA', nota);
+      dispatch('saveNota');
+    },
+
+    // Atualiza uma nota existente
+    updateNota({ commit, dispatch }, nota) {
+      commit('UPDATE_NOTA', nota);
+      dispatch('saveNota');
+    },
+
+    // Deleta uma nota
+    deleteNota({ commit }, notaId) {
+      commit('DELETE_NOTA', notaId);
+    },
+
+    // Salva as notas no localStorage
+    saveNota({ state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        localStorage.setItem(`nota_${userId}`, JSON.stringify(state.nota));
+      }
+    },
   },
 
   getters: {
@@ -335,7 +405,8 @@ export default createStore({
     imagemUrl: state => state.imagemUrl,
     videoUrl: state => state.videoUrl,
     linksAleatorios: state => state.linksAleatorios,
-    mapaUrl: state => state.mapaUrl
+    mapaUrl: state => state.mapaUrl,
+    nota: state => state.nota
   },
 
   modules: {},
