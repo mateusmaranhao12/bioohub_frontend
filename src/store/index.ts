@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { createStore } from 'vuex';
 
 export default createStore({
@@ -10,12 +9,11 @@ export default createStore({
     linksAleatorios: [] as Array<{ id: number; url: string; usuario_id: string }>,
     perfil: {},
     imagemPerfilUrl: null as string | null,
-    imagemUrl: null as string | null,
     videoUrl: null as string | null,
     videoId: null as string | null,
     mapaUrl: null as string | null,
     nota: [] as Array<{ id: number; nota: string; usuario_id: string }>,
-    imagens: [] as Array<{ id: number; texto: string | null; usuario_id: string }>
+    imagens: [] as Array<{ id: number; imagem: Blob; texto: string | null; usuario_id: string }>
   },
 
   mutations: {
@@ -76,14 +74,24 @@ export default createStore({
       state.imagemPerfilUrl = null
     },
 
-    // Define a URL da imagem
-    SET_IMAGEM_URL(state, imagemUrl) {
-      state.imagemUrl = imagemUrl
+    // Define todas as imagens no estado
+    SET_IMAGEM(state, imagens) {
+      state.imagens = imagens;
     },
 
-    // Limpa a imagem ao fazer logout
-    CLEAR_IMAGEM_URL(state) {
-      state.imagemUrl = null
+    // Adiciona uma nova imagem à lista
+    ADD_IMAGEM(state, imagem) {
+      state.imagens.push(imagem);
+    },
+
+    // Remove uma imagem da lista pelo ID
+    DELETE_IMAGEM(state, imagemId) {
+      state.imagens = state.imagens.filter(imagem => imagem.id !== imagemId);
+    },
+
+    // Limpa as imagens ao fazer logout
+    CLEAR_IMAGEM(state) {
+      state.imagens = [];
     },
 
     // Define a URL do video
@@ -188,15 +196,16 @@ export default createStore({
       commit('CLEAR_LINKS'); // Limpar links do usuário anterior
       commit('SET_USUARIO', usuario); // Define o usuário logado, certifique-se que 'usuario' contém o ID
       localStorage.setItem('usuario', JSON.stringify(usuario));
-      dispatch('loadLinks'); // Carregar links do novo usuário autenticado
+      dispatch('loadLinks')
       dispatch('loadNota')
+      dispatch('loadImagem')
     },
 
     // Ação de logout
     logout({ commit }) {
       commit('CLEAR_USUARIO')
       commit('CLEAR_LINKS')
-      commit('CLEAR_IMAGEM_URL')
+      commit('CLEAR_IMAGEM')
       commit('CLEAR_IMAGEM_PERFIL_URL')
       commit('CLEAR_VIDEO_URL')
       commit('CLEAR_MAPA_URL')
@@ -278,22 +287,45 @@ export default createStore({
       commit('DELETE_LINK_BY_URL', linkUrl);
     },
 
-    // Ação para salvar a imagem no localStorage e Vuex
-    saveImagem({ commit, state }, imagemUrl) {
-      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
-      if (userId && imagemUrl) {
-        localStorage.setItem(`imagem_${userId}`, imagemUrl); // Salva a imagem no localStorage
-        commit('SET_IMAGEM_URL', imagemUrl); // Armazena no estado do Vuex
-      }
-    },
-
-    // Carrega a imagem do localStorage
+    // Carrega as imagens do localStorage
     loadImagem({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
-        const imagemUrl = localStorage.getItem(`imagem_${userId}`);
-        if (imagemUrl) {
-          commit('SET_IMAGEM_URL', imagemUrl);
+        const imagens = localStorage.getItem(`imagens_${userId}`);
+        if (imagens) {
+          commit('SET_IMAGEM', JSON.parse(imagens));
+        }
+      }
+    },
+
+    // Adiciona uma nova imagem
+    addImagem({ commit, dispatch, state }, imagem) {
+      const newId = state.imagens.length > 0 ? Math.max(...state.imagens.map(i => i.id)) + 1 : 1;
+      imagem.usuario_id = state.usuario?.id;
+      imagem.id = newId;
+      commit('ADD_IMAGEM', imagem);
+      dispatch('saveImagem'); // Salva a imagem logo após a adição
+    },
+
+    // Deleta uma imagem existente
+    deleteImagem({ commit, dispatch }, imagemId) {
+      commit('DELETE_IMAGEM', imagemId);
+      dispatch('saveImagem');
+    },
+
+    // Limpa as imagens ao fazer logout
+    clearImagens({ commit }) {
+      commit('CLEAR_IMAGEM');
+    },
+
+    // Salva as imagens no localStorage
+    saveImagem({ state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        if (state.imagens.length > 0) { // Verifica se existem imagens para salvar
+          localStorage.setItem(`imagens_${userId}`, JSON.stringify(state.imagens));
+        } else {
+          localStorage.removeItem(`imagens_${userId}`); // Remove a chave se não houver imagens
         }
       }
     },
@@ -431,7 +463,7 @@ export default createStore({
   getters: {
     usuario: state => state.usuario,
     links: state => state.links,
-    imagemUrl: state => state.imagemUrl,
+    imagens: state => state.imagens,
     videoUrl: state => state.videoUrl,
     linksAleatorios: state => state.linksAleatorios,
     mapaUrl: state => state.mapaUrl,
