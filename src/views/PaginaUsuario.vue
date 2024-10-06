@@ -432,7 +432,7 @@
             </div>
         </div>
 
-        <button class="btn btn-light" @click="clearLocalStorage">Limpar Links</button>
+        <!-- <button class="btn btn-light" @click="clearLocalStorage">Limpar Links</button>-->
 
         <Footer class="animate__animated animate__zoomIn" />
 
@@ -1218,13 +1218,13 @@ export default class PaginaUsuario extends Vue {
             axios.get(`http://localhost/Projetos/bioohub/backend/api/imagens.php?usuario_id=${userId}`)
                 .then(response => {
                     const imagem: Imagem = response.data.imagem; // Assumindo que o backend retorna a imagem no formato correto
-                    if (imagem) {
+                    if (imagem && imagem.usuario_id === userId) { // Verifica se a imagem pertence ao usuário atual
                         this.imagemUrl = imagem.imagem as string; // Armazena a URL da imagem
                         this.imagemSelecionada = true;
                         this.textoImagem = imagem.texto || ''; // Define o texto associado
 
                         // Armazena a imagem no localStorage
-                        if (this.imagemUrl) { // Verifica se imagemUrl não é null ou undefined
+                        if (this.imagemUrl) {
                             localStorage.setItem(`imagem_${imagem.id}`, JSON.stringify(imagem)); // Armazena a imagem como objeto no localStorage
                         }
 
@@ -1238,6 +1238,7 @@ export default class PaginaUsuario extends Vue {
 
                         this.imagemId = imagem.id.toString(); // Converte o ID para string
                     } else {
+                        // Caso a imagem não corresponda ao userId
                         this.recuperarImagemLocalStorage(userId); // Chama função para recuperar imagem do localStorage
                     }
                 })
@@ -1252,15 +1253,23 @@ export default class PaginaUsuario extends Vue {
     // Função auxiliar para recuperar a imagem do localStorage
     public recuperarImagemLocalStorage(userId: string | null): void {
         if (userId) {
-            const imagemData = localStorage.getItem(`imagem_${userId}`);
-            if (imagemData) {
-                const imagem = JSON.parse(imagemData); // Converte o JSON em objeto
-                this.imagemUrl = imagem.imagem; // Carrega a URL da imagem do localStorage
-                this.imagemId = imagem.id; // Carrega o ID da imagem do localStorage
-                this.imagemSelecionada = true; // Marca que uma imagem foi selecionada
+            const imagem = localStorage.getItem(`imagem_${userId}`);
+            if (imagem) {
+                try {
+                    const imagemObj = JSON.parse(imagem);
+                    this.imagemUrl = imagemObj.imagem;
+                    this.imagemSelecionada = true;
+                    this.textoImagem = imagemObj.texto || '';
+                } catch (error) {
+                    console.error('Erro ao recuperar a imagem do localStorage:', error);
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao recuperar imagem do localStorage', 'alert-error');
+                }
+            } else {
+                console.log('Nenhuma imagem encontrada no localStorage para o usuário', userId);
             }
         }
     }
+
 
 
     // Função para mostrar o vídeo no iframe
@@ -1948,7 +1957,7 @@ export default class PaginaUsuario extends Vue {
     }
 
     //caso precise limpar localStorage
-    clearLocalStorage() {
+    /*clearLocalStorage() {
         const userId = sessionStorage.getItem('user_id'); // Pega o ID do usuário atual
         if (userId) {
             // Limpa as notas no localStorage
@@ -1972,7 +1981,7 @@ export default class PaginaUsuario extends Vue {
         localStorage.removeItem(`textoImagem_${fixedUserId}`);
 
         console.log(`localStorage das imagens e textos da imagem do usuário com ID ${fixedUserId} foi limpo.`);
-    }
+    } */
 
 
 }
