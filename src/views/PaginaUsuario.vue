@@ -163,9 +163,11 @@
                         card-imagem d-flex flex-column align-items-center justify-content-center 
                         position-relative" style="overflow: hidden;">
 
+                        <!-- Input de arquivo oculto -->
                         <input type="file" ref="fileInput" @change="carregarImagem" style="display:none;"
                             accept="image/*">
 
+                        <!-- Ícone de + e trash -->
                         <div v-if="!imagemSelecionada && !loading" class="plus-icon position-absolute"
                             @click="abrirSeletorImagem" style="cursor: pointer;">
                             <i class="fa-solid fa-plus" style="color: black;"></i>
@@ -176,16 +178,19 @@
                             <i class="fa-solid fa-trash"></i>
                         </div>
 
+                        <!-- Spinner de carregando durante o upload -->
                         <div v-if="loading"
                             class="position-absolute d-flex align-items-center justify-content-center w-100 h-100">
                             <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
                         </div>
 
+                        <!-- Imagem exibida (se disponível) -->
                         <div v-if="imagemSelecionada" class="w-100 h-100">
                             <img :src="imagemUrl || undefined" class="img-fluid w-100 h-100"
                                 style="object-fit: cover;" />
                         </div>
 
+                        <!-- Ícone e texto padrão quando não há imagem -->
                         <div v-else>
                             <i class="fa-solid fa-mountain fa-2x"></i>
                             <p class="mt-2">Adicionar imagem</p>
@@ -193,8 +198,9 @@
 
                         <div v-if="imagemSelecionada && !loading">
                             <input type="text" class="form-control position-absolute input-card"
-                                placeholder="Você pode escrever aqui" v-model="textoImagem" @blur="salvarTextoImagem" />
+                                placeholder="Descrição da Imagem" />
                         </div>
+
                     </div>
 
                     <!--Inserir redes sociais-->
@@ -209,7 +215,7 @@
                             <!-- Input para descrição acima do ícone da rede social -->
                             <input v-if="!adicionandoLink && !editandoLink" type="text"
                                 class="form-control position-absolute input-link" style="top: -50px; width: 100%;"
-                                placeholder="Você pode escrever aqui" />
+                                placeholder="Descrição da rede social" />
 
 
                             <i v-if="!adicionandoLink && !editandoLink"
@@ -341,7 +347,7 @@
                             <!-- Input para descrição acima do ícone da rede social -->
                             <input v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio" type="text"
                                 class="form-control position-absolute input-link" style="top: -50px; width: 100%;"
-                                placeholder="Você pode escrever aqui" />
+                                placeholder="Descrição da rede social" />
 
                             <!-- Deletar link -->
                             <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
@@ -432,7 +438,7 @@
             </div>
         </div>
 
-        <!-- <button class="btn btn-light" @click="clearLocalStorage">Limpar Links</button>-->
+        <!--<button class="btn btn-light" @click="clearNotas">Limpar Links</button>-->
 
         <Footer class="animate__animated animate__zoomIn" />
 
@@ -454,7 +460,6 @@ import { Alert } from '@/interfaces/Alert'
 import { mapActions } from 'vuex'
 import { Link } from '@/interfaces/Link'
 import { Nota } from '@/interfaces/Nota'
-import { Imagem } from '@/interfaces/Imagem'
 import axios from 'axios'
 
 @Options({
@@ -502,7 +507,6 @@ export default class PaginaUsuario extends Vue {
     //Link de imagem
     public imagemSelecionada = false
     public imagemUrl: string | null = null
-    public imagemId: string | null = null
 
     //spinner de loading
     public loading = false
@@ -532,9 +536,6 @@ export default class PaginaUsuario extends Vue {
     public editandoNota = false
     public botaoSalvarNota = false
 
-    //texto da imagem
-    textoImagem = ''
-
     gerarId(): number {
         // Acesse os links através do getter do Vuex
         const links: Array<Link> = this.$store.getters.links
@@ -563,14 +564,12 @@ export default class PaginaUsuario extends Vue {
                 const links: Link[] = this.$store.getters.links;
                 const linksAleatorios: Link[] = this.$store.getters.linksAleatorios; // Obtém os links aleatórios
                 const nota: Nota[] = this.$store.getters.nota;
-                const imagens: Imagem[] = this.$store.getters.imagens; // Obtém as imagens do Vuex
                 const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id; // ID do usuário autenticado
 
                 // Filtra os links para mostrar apenas os do usuário logado
                 const userLinks = links.filter(link => link.usuario_id === userId);
                 const userLinksAleatorios = linksAleatorios.filter(link => link.usuario_id === userId); // Filtra links aleatórios
                 const userNota = nota.filter(nota => nota.usuario_id === userId);
-                const userImagens = imagens.filter(imagem => imagem.usuario_id === userId); // Filtra imagens do usuário
 
                 if (userLinks.length > 0) {
                     console.log("Links do usuário carregados:", userLinks);
@@ -588,12 +587,6 @@ export default class PaginaUsuario extends Vue {
                     console.log("Notas do usuário carregados:", userNota);
                 } else {
                     console.log("Nenhuma nota encontrada para o usuário com ID:", userId);
-                }
-
-                if (userImagens.length > 0) {
-                    console.log("Imagens do usuário carregadas:", userImagens);
-                } else {
-                    console.log("Nenhuma imagem encontrada para o usuário com ID:", userId);
                 }
 
                 // Adiciona links do localStorage se necessário
@@ -644,22 +637,6 @@ export default class PaginaUsuario extends Vue {
                     }
                 }
 
-                // Adiciona imagens do localStorage se necessário
-                if (!userImagens.length) {
-                    const imagensString = localStorage.getItem(`imagens_${userId}`);
-                    const imagensFromLocalStorage = JSON.parse(imagensString ? imagensString : '[]');
-                    const userImagensFromLocalStorage: Imagem[] = imagensFromLocalStorage.filter((imagem: Imagem) => imagem.usuario_id === userId);
-
-                    if (userImagensFromLocalStorage.length > 0) {
-                        userImagensFromLocalStorage.forEach((imagem: Imagem) => {
-                            this.$store.commit('ADD_IMAGEM', imagem); // Certifique-se de ter essa mutação
-                        });
-                        console.log('Imagens adicionadas do localStorage:', userImagensFromLocalStorage);
-                    } else {
-                        console.log('Nenhuma imagem encontrada no localStorage para o usuário com ID:', userId);
-                    }
-                }
-
                 // Aqui, pegue a nota mais recente ou a nota que deseja exibir
                 const notaSalva = this.$store.getters.nota.find((n: Nota) => n.usuario_id === userId);
                 if (notaSalva) {
@@ -674,12 +651,12 @@ export default class PaginaUsuario extends Vue {
                 this.carregarImagemExistente(userId);
                 this.carregarVideoExistente(userId);
                 this.carregarMapaExistente(userId);
-                this.carregarTextoImagemExistente(userId);
             })
             .catch((error: any) => {
                 console.error('Erro ao carregar links:', error);
             });
     }
+
 
     // Adicionar link
     public async adicionarLink() {
@@ -1107,170 +1084,122 @@ export default class PaginaUsuario extends Vue {
 
     //carregar imagem
     public carregarImagem(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        const userId = sessionStorage.getItem('user_id');
+        const input = event.target as HTMLInputElement
+        const userId = sessionStorage.getItem('user_id')
 
         if (input.files && input.files[0] && userId) {
-            const file = input.files[0];
-            const tiposPermitidos = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
+            const file = input.files[0]
+            const tiposPermitidos = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'] // Lista de tipos permitidos
 
+            // Verifica se o arquivo tem um tipo válido
             if (!tiposPermitidos.includes(file.type)) {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Informe um arquivo válido: PNG, JPG ou SVG', 'alert-error');
-                return;
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Informe um arquivo válido: PNG, JPG ou SVG', 'alert-error')
+                return // Cancela o carregamento
             }
 
-            const reader = new FileReader();
-            reader.onload = (e: ProgressEvent<FileReader>) => {
-                this.imagemUrl = e.target?.result as string; // Aqui você está armazenando a URL da imagem
-                this.imagemSelecionada = true;
-            };
+            const formData = new FormData()
+            formData.append('imagem', file)
+            formData.append('usuario_id', userId)
 
-            reader.readAsDataURL(file); // Lê a imagem como uma URL de dados
+            // Pré-visualização da imagem
+            const reader = new FileReader()
+            reader.onload = (e: any) => {
+                this.imagemUrl = e.target.result // Carrega a URL da imagem para exibição
+                this.imagemSelecionada = true    // Indica que a imagem foi selecionada
 
-            this.loading = true;
+                // Armazena a imagem no localStorage para persistência
+                this.$store.dispatch('saveImagem', this.imagemUrl)
+            }
+            reader.readAsDataURL(file)
+
+            // Ativa o spinner enquanto o arquivo está sendo enviado para o servidor
+            this.loading = true
 
             // Upload para o backend
-            const formData = new FormData();
-            formData.append('imagem', file);
-            formData.append('usuario_id', userId);
-
             axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             })
                 .then(response => {
-                    console.log('Resposta do servidor:', response.data); // Verifique a resposta
-
-                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
-
-                    // Verifica se imagemUrl não é null antes de criar novaImagem
-                    if (!this.imagemUrl) {
-                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'URL da imagem não está disponível.', 'alert-error');
-                        return; // Sai da função se imagemUrl for null
-                    }
-
-                    // Armazena a imagem no Vuex
-                    const novaImagem: Imagem = {
-                        id: Number(response.data.imagem.id), // Acesse o ID aqui
-                        imagem: this.imagemUrl,
-                        texto: this.textoImagem || null,
-                        usuario_id: userId
-                    };
-
-                    this.$store.dispatch('addImagem', novaImagem); // Armazena a imagem no Vuex
-
-                    // Armazena a imagem no localStorage como objeto
-                    localStorage.setItem(`imagem_${novaImagem.id}`, JSON.stringify(novaImagem)); // Use novaImagem.id
-                    this.imagemId = novaImagem.id.toString(); // Armazena o ID da imagem na propriedade imagemId
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
                 })
-
                 .catch(error => {
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao enviar imagem', 'alert-error');
-                    console.log(error);
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error')
+                    console.log(error)
                 })
                 .finally(() => {
-                    this.loading = false;
-                });
+                    // Finaliza o carregamento (spinner)
+                    this.loading = false
+                })
         }
     }
 
-    // Método para remover a imagem
-    public async removerImagem(): Promise<void> {
-        const userId = sessionStorage.getItem('user_id');
-        const imagemId = this.$store.state.imagens.find((imagem: Imagem) => imagem.imagem === this.imagemUrl)?.id;
+    //remover imagem
+    public removerImagem(): void {
+        const userId = sessionStorage.getItem('user_id')
 
-        // Verificação do ID do usuário e ID da imagem
-        if (!userId) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do usuário não encontrado', 'alert-error');
-            return;
-        }
+        if (userId) {
+            axios.delete('http://localhost/Projetos/bioohub/backend/api/imagens.php', {
+                data: { usuario_id: userId }
+            })
+                .then(response => {
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
+                    this.imagemSelecionada = false
+                    this.imagemUrl = null
 
-        if (!imagemId) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Imagem não encontrada', 'alert-error');
-            return;
-        }
-
-        try {
-            const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/imagens.php', {
-                data: { usuario_id: userId, id: imagemId }
-            });
-
-            if (response.data.success) {
-                this.mostrarMensagemAlerta('fa-solid fa-check', response.data.message, 'alert-sucesso');
-                this.imagemSelecionada = false;
-                this.imagemUrl = null;
-
-                // Remove a imagem do localStorage
-                localStorage.removeItem(`imagem_${imagemId}`); // Ajustado para usar imagemId
-                this.$store.dispatch('deleteImagem', imagemId); // Remover do Vuex
-            } else {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
-            }
-        } catch (error) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error');
-            console.error('Erro capturado:', error);
+                    // Remove a imagem do localStorage
+                    localStorage.removeItem(`imagem_${userId}`)
+                })
+                .catch(error => {
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error')
+                    console.log(error)
+                })
+        } else {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do usuario nao encontrado', 'alert-error')
         }
     }
 
+    //carregar imagem existente
     public carregarImagemExistente(userId: string | null): void {
         if (userId) {
+            // Tenta carregar a imagem da API
             axios.get(`http://localhost/Projetos/bioohub/backend/api/imagens.php?usuario_id=${userId}`)
                 .then(response => {
-                    const imagem: Imagem = response.data.imagem; // Assumindo que o backend retorna a imagem no formato correto
-                    if (imagem && imagem.usuario_id === userId) { // Verifica se a imagem pertence ao usuário atual
-                        this.imagemUrl = imagem.imagem as string; // Armazena a URL da imagem
-                        this.imagemSelecionada = true;
-                        this.textoImagem = imagem.texto || ''; // Define o texto associado
+                    if (response.data.imagem) {
+                        this.imagemUrl = response.data.imagem // Define a URL da imagem retornada do backend
+                        this.imagemSelecionada = true
 
-                        // Armazena a imagem no localStorage
-                        if (this.imagemUrl) {
-                            localStorage.setItem(`imagem_${imagem.id}`, JSON.stringify(imagem)); // Armazena a imagem como objeto no localStorage
+                        // Armazena no localStorage para persistir após F5
+                        if (userId && this.imagemUrl) { // Certifica-se de que userId não é null
+                            localStorage.setItem(`imagem_${userId}`, this.imagemUrl)
+                            console.log('Imagem carregada do backend e armazenada no localStorage')
                         }
 
-                        // Armazena a imagem no Vuex
-                        this.$store.dispatch('addImagem', {
-                            id: Number(imagem.id), // Adiciona o ID como número
-                            imagem: this.imagemUrl, // Armazena a URL da imagem
-                            texto: this.textoImagem, // Texto associado
-                            usuario_id: userId // ID do usuário
-                        });
-
-                        this.imagemId = imagem.id.toString(); // Converte o ID para string
                     } else {
-                        // Caso a imagem não corresponda ao userId
-                        this.recuperarImagemLocalStorage(userId); // Chama função para recuperar imagem do localStorage
+                        // Se não houver imagem no backend, tenta carregar do localStorage
+                        const imagemLocalStorage = localStorage.getItem(`imagem_${userId}`)
+                        if (imagemLocalStorage) {
+                            this.imagemUrl = imagemLocalStorage
+                            this.imagemSelecionada = true
+                            console.log('Imagem carregada do localStorage')
+                        } else {
+                            console.log('Nenhuma imagem encontrada no backend ou localStorage')
+                        }
                     }
                 })
                 .catch(error => {
-                    console.error('Erro ao carregar a imagem do backend:', error);
-                    this.recuperarImagemLocalStorage(userId); // Chama função para recuperar imagem do localStorage
-                });
+                    console.error('Erro ao carregar a imagem do backend:', error)
+                    // Carregar do localStorage se houver erro no backend
+                    const imagemLocalStorage = localStorage.getItem(`imagem_${userId}`)
+                    if (imagemLocalStorage) {
+                        this.imagemUrl = imagemLocalStorage
+                        this.imagemSelecionada = true
+                        console.log('Imagem carregada do localStorage após falha no backend')
+                    }
+                })
         }
     }
-
-
-    // Função auxiliar para recuperar a imagem do localStorage
-    public recuperarImagemLocalStorage(userId: string | null): void {
-        if (userId) {
-            const imagem = localStorage.getItem(`imagem_${userId}`);
-            if (imagem) {
-                try {
-                    const imagemObj = JSON.parse(imagem);
-                    this.imagemUrl = imagemObj.imagem;
-                    this.imagemSelecionada = true;
-                    this.textoImagem = imagemObj.texto || '';
-                } catch (error) {
-                    console.error('Erro ao recuperar a imagem do localStorage:', error);
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao recuperar imagem do localStorage', 'alert-error');
-                }
-            } else {
-                console.log('Nenhuma imagem encontrada no localStorage para o usuário', userId);
-            }
-        }
-    }
-
-
 
     // Função para mostrar o vídeo no iframe
     public mostrarVideo() {
@@ -1622,7 +1551,7 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    // Deletar link aleatorio
+    //Remover link aleatorio
     public async deletarLinkAleatorio(id: number) {
         const dados = {
             id: id,
@@ -1720,6 +1649,7 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+
     // Remover a nota
     public async removerNota(id: number) {
         if (!id) {
@@ -1800,7 +1730,6 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    //carregar notas existentes
     public carregarNotasExistentes(userId: string) {
         // Primeiro tenta pegar as notas do Vuex
         const carregarNotas = this.$store.state.nota;
@@ -1820,133 +1749,6 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    // salvar texto da imagem
-    public async salvarTextoImagem(id: number) {
-        try {
-            if (this.textoImagem.trim() === '') {
-                // Se o texto estiver vazio, deletar o texto do banco
-                await this.deletarTextoImagem(id);
-            } else {
-                // Se houver texto, salvar ou atualizar no banco
-                await this.atualizarTextoImagem(id);
-            }
-
-            // Persistir o texto no Vuex
-            this.$store.commit('UPDATE_TEXTO_IMAGEM', { texto: this.textoImagem, id });
-
-            // Armazenar no localStorage para persistir após F5
-            localStorage.setItem(`textoImagem_${sessionStorage.getItem('user_id')}`, this.textoImagem);
-
-        } catch (error) {
-            console.error('Erro ao salvar o texto:', error);
-        }
-    }
-
-    // Atualizar texto da imagem
-    public async atualizarTextoImagem(id: number) {
-        const usuarioId = sessionStorage.getItem('user_id');
-        const payload = {
-            usuario_id: usuarioId,
-            texto: this.textoImagem,
-            id: id, // Adicionando o ID da imagem ao payload
-        };
-
-        console.log('Atualizando texto da imagem com payload:', payload); // Log do payload
-
-        try {
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/atualizar_texto_imagem.php', payload);
-            console.log('Resposta do backend ao atualizar texto:', response.data);
-
-            // Se a atualização no backend for bem-sucedida
-            if (response.data.success) {
-                console.log('Texto da imagem atualizado com sucesso!');
-            } else {
-                console.log('Falha ao atualizar texto:', response.data.message);
-            }
-        } catch (error) {
-            console.error('Erro ao atualizar o texto da imagem:', error);
-        }
-    }
-
-    // Deletar texto da imagem
-    public async deletarTextoImagem(id: number): Promise<void> {
-        const usuarioId = sessionStorage.getItem('user_id');
-        const payload = {
-            usuario_id: usuarioId,
-            id: id, // Adicionando o ID da imagem ao payload
-        };
-
-        console.log('Deletando texto da imagem com payload:', payload); // Log do payload
-
-        try {
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/deletar_texto_imagem.php', payload);
-            console.log('Resposta do backend ao deletar texto:', response.data);
-
-            // Verifica se a resposta foi bem-sucedida
-            if (response.data.success) {
-                console.log('Texto deletado com sucesso!');
-
-                // Remover do Vuex
-                this.$store.commit('DELETE_TEXTO_IMAGEM', id);
-                console.log('Texto removido do Vuex para o ID:', id);
-
-                // Remover do localStorage
-                localStorage.removeItem(`textoImagem_${usuarioId}`);
-                console.log('Texto removido do localStorage para o usuário:', usuarioId);
-            } else {
-                console.log('Falha ao deletar texto:', response.data.message);
-            }
-        } catch (error) {
-            console.error('Erro ao deletar o texto da imagem:', error);
-        }
-    }
-
-    // Carregar texto da imagem existente
-    public carregarTextoImagemExistente(userId: string | null): void {
-        if (userId) {
-            console.log('Carregando texto da imagem para o usuário:', userId); // Log do usuário
-
-            // Tenta carregar o texto da API
-            axios.get(`http://localhost/Projetos/bioohub/backend/api/imagens.php?usuario_id=${userId}`)
-                .then(response => {
-                    console.log('Resposta do backend ao carregar texto:', response.data); // Log da resposta
-
-                    if (response.data.texto) {
-                        this.textoImagem = response.data.texto; // Define o texto retornado do backend
-                        // Persistir no Vuex
-                        this.$store.commit('UPDATE_TEXTO_IMAGEM', { texto: this.textoImagem, id: response.data.id });
-                        // Armazenar no localStorage para persistir após F5
-                        localStorage.setItem(`textoImagem_${userId}`, this.textoImagem);
-                        console.log('Texto carregado do backend e armazenado no localStorage');
-                    } else {
-                        // Carregar do localStorage se não houver texto no backend
-                        const textoLocalStorage = localStorage.getItem(`textoImagem_${userId}`);
-                        if (textoLocalStorage) {
-                            this.textoImagem = textoLocalStorage;
-                            // Persistir no Vuex
-                            this.$store.commit('UPDATE_TEXTO_IMAGEM', { texto: this.textoImagem, id: userId }); // Usar userId aqui
-                            console.log('Texto carregado do localStorage');
-                        } else {
-                            console.log('Nenhum texto encontrado no backend ou localStorage');
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar o texto do backend:', error);
-                    // Carregar do localStorage se houver erro no backend
-                    const textoLocalStorage = localStorage.getItem(`textoImagem_${userId}`);
-                    if (textoLocalStorage) {
-                        this.textoImagem = textoLocalStorage;
-                        // Persistir no Vuex
-                        this.$store.commit('UPDATE_TEXTO_IMAGEM', { texto: this.textoImagem, id: userId }); // Usar userId aqui
-                        console.log('Texto carregado do localStorage após falha no backend');
-                    }
-                });
-        } else {
-            console.log('ID do usuário é nulo ou indefinido');
-        }
-    }
-
 
     // Mostrar mensagem de alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
@@ -1957,30 +1759,17 @@ export default class PaginaUsuario extends Vue {
     }
 
     //caso precise limpar localStorage
-    /*clearLocalStorage() {
+    /*clearNotas() {
         const userId = sessionStorage.getItem('user_id'); // Pega o ID do usuário atual
         if (userId) {
             // Limpa as notas no localStorage
-            //localStorage.removeItem(`nota_${userId}`); // Ajuste a chave conforme necessário
-
-            // Limpa os textos das imagens no localStorage
-            localStorage.removeItem(`textoImagem_${userId}`); // Remove o texto da imagem
-
-            // Limpa as imagens no localStorage (adicionando a remoção da imagem)
-            localStorage.removeItem(`imagem_${userId}`); // Remove a imagem
+            localStorage.removeItem(`nota_${userId}`); // Ajuste a chave conforme necessário
 
             // Limpa as notas no Vuex
-            //this.$store.commit('CLEAR_NOTA'); // Você deve ter uma mutação para limpar as notas
+            this.$store.commit('CLEAR_NOTA'); // Você deve ter uma mutação para limpar as notas
 
-            //console.log('localStorage das notas, textos das imagens e imagens foi limpo.');
+            console.log('localStorage das notas foi limpo.');
         }
-
-        // Adicionando limpeza do localStorage para o ID 1
-        const fixedUserId = '1'; // ID fixo que você quer limpar
-        localStorage.removeItem(`imagem_${fixedUserId}`);
-        localStorage.removeItem(`textoImagem_${fixedUserId}`);
-
-        console.log(`localStorage das imagens e textos da imagem do usuário com ID ${fixedUserId} foi limpo.`);
     } */
 
 
