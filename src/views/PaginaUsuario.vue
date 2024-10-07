@@ -270,8 +270,8 @@
                         <i class="fa-solid fa-link fa-2x my-3"></i>
 
                         <!-- Input para inserir ou editar link -->
-                        <input v-if="link.adicionando || link.editando" v-model="link.url" type="text" class="form-control mt-2"
-                            placeholder="Insira o link" />
+                        <input v-if="link.adicionando || link.editando" v-model="link.url" type="text"
+                            class="form-control mt-2" placeholder="Insira o link" />
 
                         <!-- Mostrar ícones de ação -->
                         <div class="mt-3 d-flex flex-row justify-content-between w-100">
@@ -306,7 +306,7 @@
                         <!-- Botão para salvar alterações, aparece durante a edição -->
                         <button v-if="link.editando" @click="salvarAlteracoesLinkFooter(index)"
                             class="btn btn-success btn-sm mt-2">
-                            <i class="fa-solid fa-save"></i> Salvar Alterações
+                            <i class="fa-solid fa-check"></i> Salvar Alterações
                         </button>
                     </div>
 
@@ -384,11 +384,6 @@
                             class="mt-3 d-flex flex-column align-items-center position-relative">
                             <i v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
                                 class="fa-solid fa-link fa-2x"></i>
-
-                            <!-- Input para descrição acima do ícone da rede social -->
-                            <input v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio" type="text"
-                                class="form-control position-absolute input-link" style="top: -50px; width: 100%;"
-                                placeholder="Descrição da rede social" />
 
                             <!-- Deletar link -->
                             <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
@@ -579,7 +574,7 @@ export default class PaginaUsuario extends Vue {
     public botaoSalvarNota = false
 
     //link footer
-    public linksFooter: Array<{ url: string, salvo: boolean, editando: boolean, adicionando: boolean }> = []
+    public linksFooter: Array<{ id: number, url: string, salvo: boolean, editando: boolean, adicionando: boolean }> = []
 
     gerarId(): number {
         // Acesse os links através do getter do Vuex
@@ -1795,33 +1790,94 @@ export default class PaginaUsuario extends Vue {
     }
 
     public adicionarLinkFooter() {
-        this.linksFooter.push({ url: '', salvo: false, editando: false, adicionando: true });
-        console.log('adicionar link footer');
+        const novoLink = { id: 0, url: '', salvo: false, editando: false, adicionando: true }; // id inicial temporário
+        this.linksFooter.push(novoLink);
     }
 
-    public salvarLinkFooter(index: number) {
-        this.linksFooter[index].salvo = true;
-        this.linksFooter[index].editando = false;
-        this.linksFooter[index].adicionando = false;
-        console.log('Link salvo:', this.linksFooter[index].url);
+
+    //salvar links do footer
+    public async salvarLinkFooter(index: number) {
+        const link = this.linksFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links_aleatorios.php', {
+                usuario_id: usuario_id,
+                url: link.url, // agora envia o URL para salvar
+            });
+
+            if (response.data.success) {
+                // Atualiza o link com o ID retornado do banco de dados
+                this.linksFooter[index] = {
+                    id: response.data.link.id,
+                    url: response.data.link.url,
+                    salvo: true,
+                    editando: false,
+                    adicionando: false,
+                };
+
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Link adicionado com sucesso', 'alert-sucesso')
+
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link', 'alert-error');
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
+        }
     }
 
+    //editar links do footer
     public editarLinkFooter(index: number) {
-        this.linksFooter[index].editando = true;
-        this.linksFooter[index].salvo = false;
-        console.log('Editando link:', this.linksFooter[index].url);
+        this.linksFooter[index].editando = true
+        this.linksFooter[index].salvo = false
     }
 
-    public salvarAlteracoesLinkFooter(index: number) {
-        this.linksFooter[index].salvo = true;
-        this.linksFooter[index].editando = false;
-        console.log('Alterações salvas:', this.linksFooter[index].url);
+    //salvar alteracoes
+    public async salvarAlteracoesLinkFooter(index: number) {
+        const link = this.linksFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_links_aleatorios.php', {
+                usuario_id: usuario_id,
+                id: link.id,
+                url: link.url,
+            });
+
+            if (response.data.success) {
+                this.linksFooter[index].salvo = true;
+                this.linksFooter[index].editando = false;
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Alterações salvas com sucesso!', 'alert-sucesso')
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar alterações', 'alert-error')
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error')
+        }
     }
 
-    public removerLinkFooter(index: number) {
-        this.linksFooter.splice(index, 1);
-        console.log('Link removido');
+    //remover links vindos do footer
+    public async removerLinkFooter(index: number) {
+        const link = this.linksFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/deletar_links_aleatorios.php', {
+                usuario_id: usuario_id,
+                id: link.id,
+            });
+
+            if (response.data.success) {
+                this.linksFooter.splice(index, 1);
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Link removido com sucesso!', 'alert-sucesso')
+            } else {
+                console.error('Erro ao remover link:', response.data.message);
+            }
+        } catch (error) {
+            console.error('Erro ao conectar ao servidor:', error);
+        }
     }
+
 
     // Mostrar mensagem de alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {

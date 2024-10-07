@@ -9,11 +9,11 @@ export default createStore({
     linksAleatorios: [] as Array<{ id: number; url: string; usuario_id: string }>,
     perfil: {},
     imagemPerfilUrl: null as string | null,
+    imagemUrl: null as string | null,
     videoUrl: null as string | null,
     videoId: null as string | null,
     mapaUrl: null as string | null,
     nota: [] as Array<{ id: number; nota: string; usuario_id: string }>,
-    imagens: [] as Array<{ id: number; imagem: Blob; texto: string | null; usuario_id: string }>
   },
 
   mutations: {
@@ -74,24 +74,14 @@ export default createStore({
       state.imagemPerfilUrl = null
     },
 
-    // Define todas as imagens no estado
-    SET_IMAGEM(state, imagens) {
-      state.imagens = imagens;
-    },
-
-    // Adiciona uma nova imagem à lista
-    ADD_IMAGEM(state, imagem) {
-      state.imagens.push(imagem);
-    },
-
     // Remove uma imagem da lista pelo ID
-    DELETE_IMAGEM(state, imagemId) {
-      state.imagens = state.imagens.filter(imagem => imagem.id !== imagemId);
+    SET_IMAGEM_URL(state, imagemUrl) {
+      state.imagemUrl = imagemUrl
     },
 
-    // Limpa as imagens ao fazer logout
-    CLEAR_IMAGEM(state) {
-      state.imagens = [];
+    // Limpa a imagem ao fazer logout
+    CLEAR_IMAGEM_URL(state) {
+      state.imagemUrl = null
     },
 
     // Define a URL do video
@@ -171,22 +161,6 @@ export default createStore({
       state.nota = [];
     },
 
-    // Mutação para atualizar o texto da imagem
-    UPDATE_TEXTO_IMAGEM(state, { texto, id }) {
-      const imagem = state.imagens.find(img => img.id === id);
-      if (imagem) {
-        imagem.texto = texto; // Atualiza o texto da imagem no estado
-      }
-    },
-
-    // Mutação para deletar o texto da imagem
-    DELETE_TEXTO_IMAGEM(state, id) {
-      const imagem = state.imagens.find(img => img.id === id);
-      if (imagem) {
-        imagem.texto = null; // Remove o texto da imagem no estado
-      }
-    },
-
   },
 
   actions: {
@@ -205,7 +179,7 @@ export default createStore({
     logout({ commit }) {
       commit('CLEAR_USUARIO')
       commit('CLEAR_LINKS')
-      commit('CLEAR_IMAGEM')
+      commit('CLEAR_IMAGEM_URL')
       commit('CLEAR_IMAGEM_PERFIL_URL')
       commit('CLEAR_VIDEO_URL')
       commit('CLEAR_MAPA_URL')
@@ -288,44 +262,21 @@ export default createStore({
     },
 
     // Carrega as imagens do localStorage
-    loadImagem({ commit, state }) {
+    saveImagem({ commit, state }, imagemUrl) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
-      if (userId) {
-        const imagens = localStorage.getItem(`imagens_${userId}`);
-        if (imagens) {
-          commit('SET_IMAGEM', JSON.parse(imagens));
-        }
+      if (userId && imagemUrl) {
+        localStorage.setItem(`imagem_${userId}`, imagemUrl); // Salva a imagem no localStorage
+        commit('SET_IMAGEM_URL', imagemUrl); // Armazena no estado do Vuex
       }
     },
 
-    // Adiciona uma nova imagem
-    addImagem({ commit, dispatch, state }, imagem) {
-      const newId = state.imagens.length > 0 ? Math.max(...state.imagens.map(i => i.id)) + 1 : 1;
-      imagem.usuario_id = state.usuario?.id;
-      imagem.id = newId;
-      commit('ADD_IMAGEM', imagem);
-      dispatch('saveImagem'); // Salva a imagem logo após a adição
-    },
-
-    // Deleta uma imagem existente
-    deleteImagem({ commit, dispatch }, imagemId) {
-      commit('DELETE_IMAGEM', imagemId);
-      dispatch('saveImagem');
-    },
-
-    // Limpa as imagens ao fazer logout
-    clearImagens({ commit }) {
-      commit('CLEAR_IMAGEM');
-    },
-
-    // Salva as imagens no localStorage
-    saveImagem({ state }) {
+    // Carrega a imagem do localStorage
+    loadImagem({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
-        if (state.imagens.length > 0) { // Verifica se existem imagens para salvar
-          localStorage.setItem(`imagens_${userId}`, JSON.stringify(state.imagens));
-        } else {
-          localStorage.removeItem(`imagens_${userId}`); // Remove a chave se não houver imagens
+        const imagemUrl = localStorage.getItem(`imagem_${userId}`);
+        if (imagemUrl) {
+          commit('SET_IMAGEM_URL', imagemUrl);
         }
       }
     },
@@ -448,26 +399,16 @@ export default createStore({
       }
     },
 
-    // Atualiza o texto de uma imagem
-    async atualizarTextoImagem({ commit, state }, { texto, id }) {
-      commit('UPDATE_TEXTO_IMAGEM', { texto, id }); // Atualiza o texto no Vuex
-    },
-
-    // Deleta o texto de uma imagem
-    async deletarTextoImagem({ commit }, id) {
-      commit('DELETE_TEXTO_IMAGEM', id); // Deleta o texto no Vuex
-      // Aqui você pode fazer a requisição para o servidor, se necessário
-    },
   },
 
   getters: {
     usuario: state => state.usuario,
     links: state => state.links,
-    imagens: state => state.imagens,
+    imagemUrl: state => state.imagemUrl,
     videoUrl: state => state.videoUrl,
     linksAleatorios: state => state.linksAleatorios,
     mapaUrl: state => state.mapaUrl,
-    nota: state => state.nota
+    nota: state => state.nota,
   },
 
   modules: {},
