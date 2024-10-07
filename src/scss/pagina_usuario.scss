@@ -227,6 +227,25 @@
             }
         }
 
+        &.card-links-footer {
+            width: 220px;
+            height: 220px;
+            padding: 20px;
+
+            i {
+                .fa-save,
+                .fa-pencil-alt,
+                .fa-check,
+                .fa-trash {
+                    color: #ffffff; // Aplique a cor branca para os ícones de salvar, editar, etc.
+                }
+            }
+
+            i.fa-link {
+                color: #005a2d;
+            }
+        }
+
         &.card-maps {
             width: 220px;
             height: 230px;
@@ -277,11 +296,14 @@
         }
 
         .input-link {
-            position: absolute; /* Para manter o input na posição desejada */
-            background-color: rgba(255, 255, 255, 0.8); /* Fundo semitransparente */
-            z-index: 10; /* Coloque o input acima de outros elementos, se necessário */
+            position: absolute;
+            /* Para manter o input na posição desejada */
+            background-color: rgba(255, 255, 255, 0.8);
+            /* Fundo semitransparente */
+            z-index: 10;
+            /* Coloque o input acima de outros elementos, se necessário */
         }
-        
+
     }
 
     .icon-editar-nota {

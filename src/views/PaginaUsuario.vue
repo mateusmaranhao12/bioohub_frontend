@@ -196,11 +196,6 @@
                             <p class="mt-2">Adicionar imagem</p>
                         </div>
 
-                        <div v-if="imagemSelecionada && !loading">
-                            <input type="text" class="form-control position-absolute input-card"
-                                placeholder="Descrição da Imagem" />
-                        </div>
-
                     </div>
 
                     <!--Inserir redes sociais-->
@@ -212,14 +207,11 @@
                         <div v-for="link in $store.getters.links" :key="link.id"
                             class="mt-3 d-flex flex-column align-items-center position-relative">
 
-                            <!-- Input para descrição acima do ícone da rede social -->
-                            <input v-if="!adicionandoLink && !editandoLink" type="text"
-                                class="form-control position-absolute input-link" style="top: -50px; width: 100%;"
-                                placeholder="Descrição da rede social" />
-
-
                             <i v-if="!adicionandoLink && !editandoLink"
                                 :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
+
+                            <!-- Exibir o nome da rede social -->
+                            <p v-if="!adicionandoLink && !editandoLink" class="mt-2">{{ link.redeSocial }}</p>
 
                             <!-- Deletar link -->
                             <div v-if="!adicionandoLink && !editandoLink" @click="deletarLink(link.id)"
@@ -267,6 +259,55 @@
                                     style="color: white;"></i>
                             </button>
                         </div>
+                    </div>
+
+                    <!--Links do footer-->
+                    <div v-for="(link, index) in linksFooter" :key="index"
+                        class="card link-card card-links-footer d-flex flex-column align-items-center justify-content-center position-relative"
+                        style="overflow: hidden;">
+
+                        <!-- Ícone de link no centro do card -->
+                        <i class="fa-solid fa-link fa-2x my-3"></i>
+
+                        <!-- Input para inserir ou editar link -->
+                        <input v-if="link.adicionando || link.editando" v-model="link.url" type="text" class="form-control mt-2"
+                            placeholder="Insira o link" />
+
+                        <!-- Mostrar ícones de ação -->
+                        <div class="mt-3 d-flex flex-row justify-content-between w-100">
+                            <div class="d-flex align-items-center">
+                                <!-- Salvar link -->
+                                <button v-if="!link.salvo && link.adicionando" @click="salvarLinkFooter(index)"
+                                    class="btn btn-success btn-sm me-2">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+
+                                <!-- Seguir para link -->
+                                <a v-if="link.salvo" :href="link.url" target="_blank" class="btn btn-dark btn-sm me-2">
+                                    Ir para o link
+                                </a>
+                            </div>
+
+                            <div>
+                                <!-- Editar link -->
+                                <button v-if="link.salvo" @click="editarLinkFooter(index)"
+                                    class="btn btn-primary btn-sm me-2">
+                                    <i class="fa-solid fa-pencil-alt"></i>
+                                </button>
+
+                                <!-- Remover link -->
+                                <button v-if="link.salvo" @click="removerLinkFooter(index)"
+                                    class="btn btn-danger btn-sm">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Botão para salvar alterações, aparece durante a edição -->
+                        <button v-if="link.editando" @click="salvarAlteracoesLinkFooter(index)"
+                            class="btn btn-success btn-sm mt-2">
+                            <i class="fa-solid fa-save"></i> Salvar Alterações
+                        </button>
                     </div>
 
                     <!--Inserir videos-->
@@ -440,7 +481,8 @@
 
         <!--<button class="btn btn-light" @click="clearNotas">Limpar Links</button>-->
 
-        <Footer class="animate__animated animate__zoomIn" />
+        <!--Foter-->
+        <Footer @adicionar-link-footer="adicionarLinkFooter" class="animate__animated animate__zoomIn" />
 
         <!-- Inclui os modais -->
         <AlterarSenha />
@@ -535,6 +577,9 @@ export default class PaginaUsuario extends Vue {
     public notaSalva: Nota | null = null
     public editandoNota = false
     public botaoSalvarNota = false
+
+    //link footer
+    public linksFooter: Array<{ url: string, salvo: boolean, editando: boolean, adicionando: boolean }> = []
 
     gerarId(): number {
         // Acesse os links através do getter do Vuex
@@ -1749,6 +1794,34 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+    public adicionarLinkFooter() {
+        this.linksFooter.push({ url: '', salvo: false, editando: false, adicionando: true });
+        console.log('adicionar link footer');
+    }
+
+    public salvarLinkFooter(index: number) {
+        this.linksFooter[index].salvo = true;
+        this.linksFooter[index].editando = false;
+        this.linksFooter[index].adicionando = false;
+        console.log('Link salvo:', this.linksFooter[index].url);
+    }
+
+    public editarLinkFooter(index: number) {
+        this.linksFooter[index].editando = true;
+        this.linksFooter[index].salvo = false;
+        console.log('Editando link:', this.linksFooter[index].url);
+    }
+
+    public salvarAlteracoesLinkFooter(index: number) {
+        this.linksFooter[index].salvo = true;
+        this.linksFooter[index].editando = false;
+        console.log('Alterações salvas:', this.linksFooter[index].url);
+    }
+
+    public removerLinkFooter(index: number) {
+        this.linksFooter.splice(index, 1);
+        console.log('Link removido');
+    }
 
     // Mostrar mensagem de alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
