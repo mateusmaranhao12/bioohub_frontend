@@ -6,24 +6,30 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 100%; /* Largura total */
-    max-width: 800px; /* Largura máxima */
+    width: 100%;
+    /* Largura total */
+    max-width: 800px;
+    /* Largura máxima */
     height: 50px;
     background-color: $white;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
     display: $flex;
-    justify-content: space-between; /* Distribui os itens */
+    justify-content: space-between;
+    /* Distribui os itens */
     align-items: $center;
     border-radius: 10px;
     z-index: 1000;
-    padding: 0 20px; /* Padding lateral para espaçamento */
+    padding: 0 20px;
+    /* Padding lateral para espaçamento */
 
     .footer-content {
         display: $flex;
         align-items: $center;
-        justify-content: space-between; /* Distribuição dos itens */
+        justify-content: space-between;
+        /* Distribuição dos itens */
         width: 100%;
-        text-align: $center; /* Alinhamento centralizado */
+        text-align: $center;
+        /* Alinhamento centralizado */
         font-size: 14px;
         color: #333;
 
@@ -33,7 +39,8 @@
             padding: 5px 15px;
             border: $none;
             border-radius: 5px;
-            height: 35px; /* Altura fixa */
+            height: 35px;
+            /* Altura fixa */
             font-weight: $bold;
             cursor: $pointer;
             transition: background-color 0.3s ease;
@@ -45,14 +52,28 @@
             }
         }
 
-        .icone {
+        .img-footer {
             cursor: $pointer;
             transition: transform .2s ease;
-            margin: 0 10px; /* Espaçamento entre os ícones */
+            margin: 0 10px;
+            /* Espaçamento entre os ícones */
 
             &:hover {
                 transform: scale(1.2);
             }
+        }
+
+        img {
+            max-width: 100%;
+            /* Garante que a imagem não ultrapasse a largura do footer */
+            height: auto;
+            /* Mantém a proporção da imagem */
+            object-fit: contain;
+            /* Faz a imagem se ajustar proporcionalmente sem cortar */
+            max-height: 30px;
+            /* Limita a altura da imagem para evitar que fique muito grande */
+            margin: 0 auto;
+            /* Centraliza a imagem */
         }
 
         .screen {
@@ -71,15 +92,21 @@
 // Media query para telas pequenas
 @media (max-width: 600px) {
     .footer {
-        flex-direction: $column; /* Muda a direção para coluna em telas pequenas */
-        height: $auto; /* Permite que a altura se ajuste automaticamente */
-        padding: 10px 0; /* Ajusta o padding */
+        flex-direction: $column;
+        /* Muda a direção para coluna em telas pequenas */
+        height: $auto;
+        /* Permite que a altura se ajuste automaticamente */
+        padding: 10px 0;
+        /* Ajusta o padding */
     }
 
     .footer-content {
-        flex-direction: row; /* Mantém a direção em linha */
-        justify-content: $center; /* Centraliza o conteúdo */
-        flex-wrap: wrap; /* Permite que os itens se movam para a linha seguinte se necessário */
+        flex-direction: row;
+        /* Mantém a direção em linha */
+        justify-content: $center;
+        /* Centraliza o conteúdo */
+        flex-wrap: wrap;
+        /* Permite que os itens se movam para a linha seguinte se necessário */
     }
 
     // Oculta o botão "Share my Bioohub"

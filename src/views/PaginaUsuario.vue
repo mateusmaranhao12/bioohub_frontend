@@ -1,495 +1,514 @@
 <template>
-    <div class="container pagina-usuario">
+    <div v-if="modoTela === 'computador'">
+        <div class="container pagina-usuario">
 
-        <!--Alerta de sucesso ao cadastrar usuario-->
-        <div class="col-md-12 d-flex justify-content-center mt-2">
-            <Alerta :mensagem_alerta="mensagem_alerta" />
-        </div>
-
-        <div class="row">
-            <!-- Coluna Dados -->
-            <div class="col-md-6 mt-5">
-
-                <!-- Escolher imagem -->
-                <div class="animate__animated animate__zoomIn avatar-circle 
-                    d-flex flex-column justify-content-center align-items-center p
-                    osition-relative">
-                    <input type="file" id="file-input" class="file-input" accept="image/*"
-                        @change="carregarImagemPerfil" :disabled="imagemPerfilSelecionada" style="display:none;">
-                    <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
-                        <img v-if="selectedImage" :src="selectedImage" class="img-fluid rounded-circle"
-                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                        <img v-else :src="imagemPerfilUrl || '../default-image.png'" class="img-fluid rounded-circle"
-                            style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                        <i v-if="!selectedImage" class="icone-upload fa-solid fa-upload fa-2x mb-5"></i>
-                        <p v-if="!selectedImage" class="text-center mb-4">Adicionar foto</p>
-                    </label>
-
-                    <div v-if="selectedImage" class="position-absolute" style="top: 5px; right: 5px;">
-                        <button class="btn btn-danger btn-sm ms-2" @click="removerImagemPerfil">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Input para editar nome -->
-                <div class="animate__animated animate__zoomIn mt-4">
-                    <div v-if="!salvandoAlteracoes">
-                        <div v-if="editandoNome" class="d-flex align-items-center">
-                            <input type="text" v-model="nome" class="form-control input-usuario" placeholder="Seu nome"
-                                aria-label="Nome">
-                            <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
-                                    class="fa fa-check"></i></button>
-                        </div>
-                        <div v-else class="d-flex align-items-center">
-                            <h4>{{ nome }}</h4>
-                            <button class="btn btn-dark btn-sm ms-2" @click="editarNome"><i
-                                    class="fa fa-pencil"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Input para editar bio -->
-                <div class="animate__animated animate__zoomIn mt-2">
-                    <div v-if="salvandoAlteracoes">
-                        <p class="text-start">Salvando alterações...</p> <!-- Mensagem durante o salvamento -->
-                    </div>
-                    <div v-else>
-                        <div v-if="editandoBio" class="d-flex align-items-center">
-                            <textarea v-model="bio" class="form-control input-bio" placeholder="Sua biografia..."
-                                aria-label="Bio"></textarea>
-                            <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
-                                    class="fa fa-check"></i></button>
-                        </div>
-                        <div v-else class="d-flex align-items-center">
-                            <p>{{ bio }}</p>
-                            <button class="btn btn-dark btn-sm ms-2" @click="editarBio"><i
-                                    class="fa fa-pencil"></i></button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="animate__animated animate__zoomIn mt-5">
-                    <h6>Nenhuma visualização hoje</h6>
-                </div>
-
-                <!-- Menu Hamburguer visível em dispositivos menores (abaixo do textarea) -->
-                <nav class="navbar navbar-expand-lg navbar-light d-md-none mt-3">
-                    <div class="container-fluid">
-                        <button class="animate__animated animate__zoomIn navbar-toggler mb-3" type="button"
-                            data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav"
-                            aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                            Exibir mais
-                        </button>
-                        <div class="collapse navbar-collapse" id="navbarNav">
-                            <ul class="navbar-nav">
-                                <li class="nav-item">
-                                    <div class="d-flex justify-content-start gap-2">
-                                        <div class="dropdown dropup mb-2">
-                                            <button
-                                                class="animate__animated animate__zoomIn botao-dropdown btn btn-configuracoes dropdown-toggle btn-sm"
-                                                type="button" id="settingsDropdown" data-bs-toggle="dropdown"
-                                                aria-expanded="false">
-                                                <i class="fa-solid fa-gear"></i>
-                                            </button>
-                                            <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                                                <li>
-                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                        data-bs-target="#alterarSenhaModal">Alterar senha</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                        data-bs-target="#alterarEmailModal">Alterar e-mail</a>
-                                                </li>
-                                                <li>
-                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                        data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
-                                                </li>
-                                                <li>
-                                                    <a @click="fazerLogout()" class="dropdown-item" href="#">
-                                                        <i class="fa-solid fa-sign-out-alt"></i> Logout</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-
-                                        <router-link to="/usuario"
-                                            class="animate__animated animate__zoomIn btn btn-visualizar-perfil btn-sm">
-                                            <i class="fa-solid fa-user"></i>
-                                        </router-link>
-                                    </div>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </nav>
-
+            <!--Alerta de sucesso ao cadastrar usuario-->
+            <div class="col-md-12 d-flex justify-content-center mt-2">
+                <Alerta :mensagem_alerta="mensagem_alerta" />
             </div>
 
-            <!-- Coluna de links, imagens, videos, etc -->
-            <div class="col-md-6 mt-5 mb-5">
-                <div class="d-flex flex-wrap gap-3 justify-content-between">
+            <div class="row">
+                <!-- Coluna Dados -->
+                <div class="col-md-6 mt-5">
 
-                    <!--Inserir nota-->
-                    <div class="animate__animated animate__zoomIn">
-                        <!-- Textarea para adicionar ou editar nota -->
-                        <textarea v-if="!notaSalva || editandoNota" placeholder="Adicione uma nota aqui"
-                            class="form-control text-area" rows="3" :style="textareaStyle" v-model="nota"
-                            @input="botaoSalvarNota = true">
-                        </textarea>
+                    <!-- Escolher imagem -->
+                    <div class="animate__animated animate__zoomIn avatar-circle 
+                        d-flex flex-column justify-content-center align-items-center p
+                        osition-relative">
+                        <input type="file" id="file-input" class="file-input" accept="image/*"
+                            @change="carregarImagemPerfil" :disabled="imagemPerfilSelecionada" style="display:none;">
+                        <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
+                            <img v-if="selectedImage" :src="selectedImage" class="img-fluid rounded-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            <img v-else :src="imagemPerfilUrl || '../default-image.png'"
+                                class="img-fluid rounded-circle"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            <i v-if="!selectedImage" class="icone-upload fa-solid fa-upload fa-2x mb-5"></i>
+                            <p v-if="!selectedImage" class="text-center mb-4">Adicionar foto</p>
+                        </label>
 
-                        <!-- Exibir a nota salva -->
-                        <p v-if="notaSalva && !editandoNota" class="nota-display">
-                            {{ notaSalva.nota }}
-                            <span @click="editarNota" class="icon-editar-nota"
-                                style="cursor: pointer; margin-left: 10px;">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </span>
-                            <span @click="removerNota(notaSalva.id)" class="icon-remover-nota"
-                                style="cursor: pointer; margin-left: 5px;">
+                        <div v-if="selectedImage" class="position-absolute" style="top: 5px; right: 5px;">
+                            <button class="btn btn-danger btn-sm ms-2" @click="removerImagemPerfil">
                                 <i class="fa-solid fa-trash"></i>
-                            </span>
-                        </p>
-
-                        <!-- Botão para salvar nota ou salvar alterações -->
-                        <button v-if="botaoSalvarNota" @click="editandoNota ? salvarEdicaoNota() : salvarNota()"
-                            class="btn btn-success mt-2">
-                            <i class="fa-solid fa-check"></i> {{ editandoNota ? 'Salvar alterações' : 'Salvar nota' }}
-                        </button>
+                            </button>
+                        </div>
                     </div>
 
-                    <!--Inserir imagens-->
-                    <div class="animate__animated animate__zoomIn card link-card 
-                        card-imagem d-flex flex-column align-items-center justify-content-center 
-                        position-relative" style="overflow: hidden;">
-
-                        <!-- Input de arquivo oculto -->
-                        <input type="file" ref="fileInput" @change="carregarImagem" style="display:none;"
-                            accept="image/*">
-
-                        <!-- Ícone de + e trash -->
-                        <div v-if="!imagemSelecionada && !loading" class="plus-icon position-absolute"
-                            @click="abrirSeletorImagem" style="cursor: pointer;">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
+                    <!-- Input para editar nome -->
+                    <div class="animate__animated animate__zoomIn mt-4">
+                        <div v-if="!salvandoAlteracoes">
+                            <div v-if="editandoNome" class="d-flex align-items-center">
+                                <input type="text" v-model="nome" class="form-control input-usuario"
+                                    placeholder="Seu nome" aria-label="Nome">
+                                <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
+                                        class="fa fa-check"></i></button>
+                            </div>
+                            <div v-else class="d-flex align-items-center">
+                                <h4>{{ nome }}</h4>
+                                <button class="btn btn-dark btn-sm ms-2" @click="editarNome"><i
+                                        class="fa fa-pencil"></i></button>
+                            </div>
                         </div>
+                    </div>
 
-                        <div v-if="imagemSelecionada && !loading" class="plus-icon position-absolute"
-                            @click="removerImagem" style="cursor: pointer;">
-                            <i class="fa-solid fa-trash"></i>
+                    <!-- Input para editar bio -->
+                    <div class="animate__animated animate__zoomIn mt-2">
+                        <div v-if="salvandoAlteracoes">
+                            <p class="text-start">Salvando alterações...</p> <!-- Mensagem durante o salvamento -->
                         </div>
-
-                        <!-- Spinner de carregando durante o upload -->
-                        <div v-if="loading"
-                            class="position-absolute d-flex align-items-center justify-content-center w-100 h-100">
-                            <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
-                        </div>
-
-                        <!-- Imagem exibida (se disponível) -->
-                        <div v-if="imagemSelecionada" class="w-100 h-100">
-                            <img :src="imagemUrl || undefined" class="img-fluid w-100 h-100"
-                                style="object-fit: cover;" />
-                        </div>
-
-                        <!-- Ícone e texto padrão quando não há imagem -->
                         <div v-else>
-                            <i class="fa-solid fa-mountain fa-2x"></i>
-                            <p class="mt-2">Adicionar imagem</p>
+                            <div v-if="editandoBio" class="d-flex align-items-center">
+                                <textarea v-model="bio" class="form-control input-bio" placeholder="Sua biografia..."
+                                    aria-label="Bio"></textarea>
+                                <button class="btn btn-success btn-sm ms-2" @click="salvarPerfil"><i
+                                        class="fa fa-check"></i></button>
+                            </div>
+                            <div v-else class="d-flex align-items-center">
+                                <p>{{ bio }}</p>
+                                <button class="btn btn-dark btn-sm ms-2" @click="editarBio"><i
+                                        class="fa fa-pencil"></i></button>
+                            </div>
                         </div>
-
                     </div>
 
-                    <!--Inserir redes sociais-->
-                    <div class="animate__animated animate__zoomIn card link-card card-redes-sociais 
-                        d-flex flex-column align-items-center justify-content-center position-relative"
-                        style="overflow: hidden;">
+                    <div class="animate__animated animate__zoomIn mt-5">
+                        <h6>Nenhuma visualização hoje</h6>
+                    </div>
 
-                        <!-- Exibir links se houver algum adicionado -->
-                        <div v-for="link in $store.getters.links" :key="link.id"
-                            class="mt-3 d-flex flex-column align-items-center position-relative">
+                    <!-- Menu Hamburguer visível em dispositivos menores (abaixo do textarea) -->
+                    <nav class="navbar navbar-expand-lg navbar-light d-md-none mt-3">
+                        <div class="container-fluid">
+                            <button class="animate__animated animate__zoomIn navbar-toggler mb-3" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav"
+                                aria-expanded="false" aria-label="Toggle navigation">
+                                <span class="navbar-toggler-icon"></span>
+                                Exibir mais
+                            </button>
+                            <div class="collapse navbar-collapse" id="navbarNav">
+                                <ul class="navbar-nav">
+                                    <li class="nav-item">
+                                        <div class="d-flex justify-content-start gap-2">
+                                            <div class="dropdown dropup mb-2">
+                                                <button
+                                                    class="animate__animated animate__zoomIn botao-dropdown btn btn-configuracoes dropdown-toggle btn-sm"
+                                                    type="button" id="settingsDropdown" data-bs-toggle="dropdown"
+                                                    aria-expanded="false">
+                                                    <i class="fa-solid fa-gear"></i>
+                                                </button>
+                                                <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                            data-bs-target="#alterarSenhaModal">Alterar senha</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                            data-bs-target="#alterarEmailModal">Alterar e-mail</a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                            data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
+                                                    </li>
+                                                    <li>
+                                                        <a @click="fazerLogout()" class="dropdown-item" href="#">
+                                                            <i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
 
-                            <i v-if="!adicionandoLink && !editandoLink"
+                                            <router-link to="/usuario"
+                                                class="animate__animated animate__zoomIn btn btn-visualizar-perfil btn-sm">
+                                                <i class="fa-solid fa-user"></i>
+                                            </router-link>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
+
+                </div>
+
+                <!-- Coluna de links, imagens, videos, etc -->
+                <div class="col-md-6 mt-5 mb-5">
+                    <div class="d-flex flex-wrap gap-3 justify-content-between">
+
+                        <!--Inserir nota-->
+                        <div class="animate__animated animate__zoomIn">
+                            <!-- Textarea para adicionar ou editar nota -->
+                            <textarea v-if="!notaSalva || editandoNota" placeholder="Adicione uma nota aqui"
+                                class="form-control text-area" rows="3" :style="textareaStyle" v-model="nota"
+                                @input="botaoSalvarNota = true">
+                </textarea>
+
+                            <!-- Exibir a nota salva -->
+                            <p v-if="notaSalva && !editandoNota" class="nota-display">
+                                {{ notaSalva.nota }}
+                                <span @click="editarNota" class="icon-editar-nota"
+                                    style="cursor: pointer; margin-left: 10px;">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </span>
+                                <span @click="removerNota(notaSalva.id)" class="icon-remover-nota"
+                                    style="cursor: pointer; margin-left: 5px;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </span>
+                            </p>
+
+                            <!-- Botão para salvar nota ou salvar alterações -->
+                            <button v-if="botaoSalvarNota" @click="editandoNota ? salvarEdicaoNota() : salvarNota()"
+                                class="btn btn-success mt-2">
+                                <i class="fa-solid fa-check"></i> {{ editandoNota ? 'Salvar alterações' : 'Salvar nota'
+                                }}
+                            </button>
+                        </div>
+
+                        <!--Inserir imagens-->
+                        <div class="animate__animated animate__zoomIn card link-card 
+                card-imagem d-flex flex-column align-items-center justify-content-center 
+                position-relative" style="overflow: hidden;">
+
+                            <!-- Input de arquivo oculto -->
+                            <input type="file" ref="fileInput" @change="carregarImagem" style="display:none;"
+                                accept="image/*">
+
+                            <!-- Ícone de + e trash -->
+                            <div v-if="!imagemSelecionada && !loading" class="plus-icon position-absolute"
+                                @click="abrirSeletorImagem" style="cursor: pointer;">
+                                <i class="fa-solid fa-plus" style="color: black;"></i>
+                            </div>
+
+                            <div v-if="imagemSelecionada && !loading" class="plus-icon position-absolute"
+                                @click="removerImagem" style="cursor: pointer;">
+                                <i class="fa-solid fa-trash"></i>
+                            </div>
+
+                            <!-- Spinner de carregando durante o upload -->
+                            <div v-if="loading"
+                                class="position-absolute d-flex align-items-center justify-content-center w-100 h-100">
+                                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                            </div>
+
+                            <!-- Imagem exibida (se disponível) -->
+                            <div v-if="imagemSelecionada" class="w-100 h-100">
+                                <img :src="imagemUrl || undefined" class="img-fluid w-100 h-100"
+                                    style="object-fit: cover;" />
+                            </div>
+
+                            <!-- Ícone e texto padrão quando não há imagem -->
+                            <div v-else>
+                                <i class="fa-solid fa-mountain fa-2x"></i>
+                                <p class="mt-2">Adicionar imagem</p>
+                            </div>
+
+                        </div>
+
+                        <!--Inserir redes sociais-->
+                        <div class="animate__animated animate__zoomIn card link-card card-redes-sociais 
+                d-flex flex-column align-items-center justify-content-center position-relative"
+                            style="overflow: hidden;">
+
+                            <!-- Exibir links se houver algum adicionado -->
+                            <div v-for="link in $store.getters.links" :key="link.id"
+                                class="mt-3 d-flex flex-column align-items-center position-relative">
+
+                                <i v-if="!adicionandoLink && !editandoLink"
+                                    :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
+
+                                <!-- Exibir o nome da rede social -->
+                                <p v-if="!adicionandoLink && !editandoLink" class="mt-2">{{ link.redeSocial }}</p>
+
+                                <!-- Deletar link -->
+                                <div v-if="!adicionandoLink && !editandoLink" @click="deletarLink(link.id)"
+                                    class="delete-icon" style="position: absolute; top: -10px; right: -15px;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </div>
+
+                                <!-- Ícone de editar fora do card, em cima dele, somente se a rede social for válida -->
+                                <div v-if="!adicionandoLink && !editandoLink" @click="iniciarEdicaoLink(link)"
+                                    class="edit-icon" style="position: absolute; top: 30px; right: -15px;">
+                                    <i class="fa-solid fa-pencil-alt"></i>
+                                </div>
+
+                                <button v-if="!adicionandoLink && !editandoLink" @click="redirecionarParaLink(link)"
+                                    class="btn btn-secondary btn-sm mt-2">
+                                    Ir para o link
+                                </button>
+                            </div>
+
+                            <!-- Ícone do globo e texto "Adicionar Link" (inicial) -->
+                            <div v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
+                                @click="iniciarAdicaoLink" class="plus-icon position-absolute"
+                                style="top: 10px; right: 10px;">
+                                <i class="fa-solid fa-plus" style="color: black;"></i>
+                            </div>
+
+                            <i v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
+                                class="fa-solid fa-globe fa-2x"></i>
+                            <p v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
+                                class="mt-2">
+                                Adicionar link
+                            </p>
+
+                            <!-- Exibir input e botão somente após clicar no ícone "+" -->
+                            <div v-if="adicionandoLink || editandoLink"
+                                class="w-100 d-flex flex-column align-items-center">
+                                <i v-if="editandoLink" @click="cancelarEdicao" class="mb-3 fa-solid fa-arrow-left"
+                                    style="cursor: pointer;"></i>
+                                <input v-model="novoLink" type="text" class="form-control mt-2"
+                                    placeholder="Insira o link" />
+
+                                <!-- Botão alterna entre adicionar e editar -->
+                                <button @click="editandoLink ? editarLink() : adicionarLink()"
+                                    :class="editandoLink ? 'btn btn-success mt-2 btn-sm' : 'btn btn-primary mt-2 btn-sm'">
+                                    <i :class="editandoLink ? 'fa-solid fa-check' : 'fa-solid fa-plus'"
+                                        style="color: white;"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!--Links do footer-->
+                        <div v-for="(link, index) in linksFooter" :key="index"
+                            class="animate__animated animate__zoomIn card link-card card-links-footer d-flex flex-column align-items-center justify-content-center position-relative"
+                            style="overflow: hidden;">
+
+                            <!-- Exibe o ícone correspondente à rede social -->
+                            <i v-if="link.redeSocial" style="color: darkgreen"
                                 :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
 
-                            <!-- Exibir o nome da rede social -->
-                            <p v-if="!adicionandoLink && !editandoLink" class="mt-2">{{ link.redeSocial }}</p>
+                            <!-- Ícone de link genérico se não for uma rede social detectada -->
+                            <i v-else class="fa-solid fa-link fa-2x"></i>
 
-                            <!-- Deletar link -->
-                            <div v-if="!adicionandoLink && !editandoLink" @click="deletarLink(link.id)"
-                                class="delete-icon" style="position: absolute; top: -10px; right: -15px;">
-                                <i class="fa-solid fa-trash"></i>
+                            <!-- Nome da rede social ou link genérico -->
+                            <p>{{ link.redeSocial }}</p>
+
+                            <!-- Input para inserir ou editar link -->
+                            <input v-if="link.adicionando || link.editando" v-model="link.url" type="text"
+                                class="form-control mt-2" placeholder="Insira o link" />
+
+                            <!-- Mostrar ícones de ação -->
+                            <div class="mt-3 d-flex flex-row justify-content-between w-100">
+                                <div class="d-flex align-items-center">
+                                    <!-- Salvar link -->
+                                    <button v-if="!link.salvo && link.adicionando" @click="salvarLinkFooter(index)"
+                                        class="btn btn-success btn-sm me-2">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+
+                                    <!-- Seguir para link -->
+                                    <a v-if="link.salvo" :href="link.url" target="_blank"
+                                        class="btn btn-dark btn-sm me-2">
+                                        Ir para o link
+                                    </a>
+                                </div>
+
+                                <div>
+                                    <!-- Editar link -->
+                                    <button v-if="link.salvo" @click="editarLinkFooter(index)"
+                                        class="btn btn-primary btn-sm me-2">
+                                        <i class="fa-solid fa-pencil-alt"></i>
+                                    </button>
+
+                                    <!-- Remover link -->
+                                    <button v-if="link.salvo" @click="removerLinkFooter(index)"
+                                        class="btn btn-danger btn-sm">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Ícone de editar fora do card, em cima dele, somente se a rede social for válida -->
-                            <div v-if="!adicionandoLink && !editandoLink" @click="iniciarEdicaoLink(link)"
-                                class="edit-icon" style="position: absolute; top: 30px; right: -15px;">
-                                <i class="fa-solid fa-pencil-alt"></i>
-                            </div>
-
-                            <button v-if="!adicionandoLink && !editandoLink" @click="redirecionarParaLink(link)"
-                                class="btn btn-secondary btn-sm mt-2">
-                                Ir para o link
+                            <!-- Botão para salvar alterações, aparece durante a edição -->
+                            <button v-if="link.editando" @click="salvarAlteracoesLinkFooter(index)"
+                                class="btn btn-success btn-sm mt-2">
+                                <i class="fa-solid fa-check"></i> Salvar Alterações
                             </button>
                         </div>
 
-                        <!-- Ícone do globo e texto "Adicionar Link" (inicial) -->
-                        <div v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
-                            @click="iniciarAdicaoLink" class="plus-icon position-absolute"
-                            style="top: 10px; right: 10px;">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
-                        </div>
+                        <!--Inserir videos-->
+                        <div
+                            class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center position-relative">
+                            <!-- Ícone de adicionar vídeo (fa-plus) -->
+                            <div class="plus-icon position-absolute" v-if="!mostrar_input_video">
+                                <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputVideo"></i>
+                            </div>
 
-                        <i v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
-                            class="fa-solid fa-globe fa-2x"></i>
-                        <p v-if="!adicionandoLink && !editandoLink && !redeSocial && !$store.getters.links.length"
-                            class="mt-2">
-                            Adicionar link
-                        </p>
+                            <!-- Ícone de remover vídeo -->
+                            <div class="plus-icon position-absolute" v-if="videoUrlIframe && mostrar_video_youtube">
+                                <i class="fa-solid fa-trash" @click="() => removerVideo(videoId)"></i>
+                            </div>
 
-                        <!-- Exibir input e botão somente após clicar no ícone "+" -->
-                        <div v-if="adicionandoLink || editandoLink" class="w-100 d-flex flex-column align-items-center">
-                            <i v-if="editandoLink" @click="cancelarEdicao" class="mb-3 fa-solid fa-arrow-left"
-                                style="cursor: pointer;"></i>
-                            <input v-model="novoLink" type="text" class="form-control mt-2"
-                                placeholder="Insira o link" />
+                            <i v-if="!mostrar_input_video && !mostrar_video_youtube"
+                                class="fa-solid fa-video fa-2x"></i>
+                            <p v-if="!mostrar_input_video && !mostrar_video_youtube" class="mt-2">Adicionar vídeo</p>
 
-                            <!-- Botão alterna entre adicionar e editar -->
-                            <button @click="editandoLink ? editarLink() : adicionarLink()"
-                                :class="editandoLink ? 'btn btn-success mt-2 btn-sm' : 'btn btn-primary mt-2 btn-sm'">
-                                <i :class="editandoLink ? 'fa-solid fa-check' : 'fa-solid fa-plus'"
-                                    style="color: white;"></i>
-                            </button>
-                        </div>
-                    </div>
+                            <!-- Input para o link do YouTube e botão para confirmar -->
+                            <div v-if="mostrar_input_video && !mostrar_video_youtube" class="mt-3">
+                                <input v-model="videoUrlInput" class="form-control" type="text"
+                                    placeholder="Insira o link do vídeo do YouTube" />
 
-                    <!--Links do footer-->
-                    <div v-for="(link, index) in linksFooter" :key="index"
-                        class="animate__animated animate__zoomIn card link-card card-links-footer d-flex flex-column align-items-center justify-content-center position-relative"
-                        style="overflow: hidden;">
-
-                        <!-- Exibe o ícone correspondente à rede social -->
-                        <i v-if="link.redeSocial" style="color: darkgreen"
-                            :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
-
-                        <!-- Ícone de link genérico se não for uma rede social detectada -->
-                        <i v-else class="fa-solid fa-link fa-2x"></i>
-
-                        <!-- Nome da rede social ou link genérico -->
-                        <p>{{ link.redeSocial}}</p>
-
-                        <!-- Input para inserir ou editar link -->
-                        <input v-if="link.adicionando || link.editando" v-model="link.url" type="text"
-                            class="form-control mt-2" placeholder="Insira o link" />
-
-                        <!-- Mostrar ícones de ação -->
-                        <div class="mt-3 d-flex flex-row justify-content-between w-100">
-                            <div class="d-flex align-items-center">
-                                <!-- Salvar link -->
-                                <button v-if="!link.salvo && link.adicionando" @click="salvarLinkFooter(index)"
-                                    class="btn btn-success btn-sm me-2">
+                                <!-- Botão success com ícone fa-check -->
+                                <button class="btn btn-success mt-3" @click="mostrarVideo">
                                     <i class="fa-solid fa-check"></i>
                                 </button>
-
-                                <!-- Seguir para link -->
-                                <a v-if="link.salvo" :href="link.url" target="_blank" class="btn btn-dark btn-sm me-2">
-                                    Ir para o link
-                                </a>
                             </div>
 
-                            <div>
-                                <!-- Editar link -->
-                                <button v-if="link.salvo" @click="editarLinkFooter(index)"
-                                    class="btn btn-primary btn-sm me-2">
-                                    <i class="fa-solid fa-pencil-alt"></i>
-                                </button>
+                            <!-- Iframe para exibir o vídeo, será exibido abaixo do card -->
+                            <div v-if="videoUrlIframe && mostrar_video_youtube">
+                                <iframe :src="videoUrlIframe" width="300px" height="360px" frameborder="0"
+                                    allowfullscreen></iframe>
+                            </div>
+                        </div>
 
-                                <!-- Remover link -->
-                                <button v-if="link.salvo" @click="removerLinkFooter(index)"
-                                    class="btn btn-danger btn-sm">
+                        <!--Inserir localizacao-->
+                        <div
+                            class="animate__animated animate__zoomIn card link-card card-maps d-flex flex-column align-items-center justify-content-center position-relative">
+                            <!-- Ícone de adicionar localização (fa-plus) -->
+                            <div class="plus-icon position-absolute" v-if="!mostrar_input_maps">
+                                <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputMaps"></i>
+                            </div>
+
+                            <!-- Ícone de remover localização -->
+                            <div class="plus-icon position-absolute" v-if="mostrar_maps">
+                                <i class="fa-solid fa-trash" @click="removerMaps"></i>
+                            </div>
+
+                            <i v-if="!mostrar_input_maps && !mostrar_maps"
+                                class="fa-solid fa-map-location-dot fa-2x"></i>
+                            <p v-if="!mostrar_input_maps && !mostrar_maps" class="mt-2">Adicionar localização</p>
+
+                            <!-- Input para o link do Google Maps e botão para confirmar -->
+                            <div v-if="mostrar_input_maps && !mostrar_maps" class="mt-3">
+                                <input v-model="localizacaoInput" class="form-control" type="text"
+                                    placeholder="Insira a URL de localização do Google Maps" />
+                                <button class="btn btn-success mt-3" @click="salvarMapaGoogleMaps">
+                                    <i class="fa-solid fa-check"></i> Salvar Localização
+                                </button>
+                            </div>
+
+                            <!-- Botão para abrir o link do Google Maps -->
+                            <div v-if="mostrar_maps" class="mt-3">
+                                <button class="btn btn-map" @click="abrirMapaGoogleMaps">
+                                    <i class="fa-solid fa-location-dot"></i> Ver localização
+                                </button>
+                            </div>
+                        </div>
+
+                        <!--Inserir qualquer link-->
+                        <div
+                            class="animate__animated animate__zoomIn card link-card card-links-livres d-flex flex-column align-items-center justify-content-center position-relative">
+                            <div v-for="linkAleatorio in $store.getters.linksAleatorios" :key="linkAleatorio.id"
+                                class="mt-3 d-flex flex-column align-items-center position-relative">
+                                <i v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
+                                    class="fa-solid fa-link fa-2x"></i>
+
+                                <!-- Deletar link -->
+                                <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
+                                    @click="deletarLinkAleatorio(linkAleatorio.id)" class="delete-icon"
+                                    style="position: absolute; top: -10px; right: -15px;">
                                     <i class="fa-solid fa-trash"></i>
+                                </div>
+
+                                <!-- Editar link -->
+                                <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
+                                    @click="iniciarEdicaoLinkAleatorio(linkAleatorio)" class="edit-icon"
+                                    style="position: absolute; top: 30px; right: -15px;">
+                                    <i class="fa-solid fa-pencil-alt"></i>
+                                </div>
+
+                                <button v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
+                                    @click="redirecionarParaLinkAleatorio(linkAleatorio)"
+                                    class="btn btn-secondary btn-sm mt-2">
+                                    Ir para o link
+                                </button>
+                            </div>
+
+                            <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
+                                @click="iniciarAdicaoLinkAleatorio" class="plus-icon position-absolute"
+                                style="top: 10px; right: 10px;">
+                                <i class="fa-solid fa-plus" style="color: black;"></i>
+                            </div>
+
+                            <i v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
+                                class="fa-solid fa-globe fa-2x"></i>
+                            <p v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
+                                class="mt-2">Adicionar link</p>
+
+                            <div v-if="adicionandoLinkAleatorio || editandoLinkAleatorio"
+                                class="w-100 d-flex flex-column align-items-center">
+                                <i v-if="editandoLinkAleatorio" @click="cancelarEdicaoLinkAleatorio"
+                                    class="mb-3 fa-solid fa-arrow-left" style="cursor: pointer;"></i>
+                                <input v-model="novoLinkAleatorio" type="text" class="form-control mt-2"
+                                    placeholder="Insira o link" />
+
+                                <button
+                                    @click="editandoLinkAleatorio ? editarLinkAleatorio() : adicionarLinkAleatorio()"
+                                    :class="editandoLinkAleatorio ? 'btn btn-success mt-2 btn-sm' : 'btn btn-primary mt-2 btn-sm'">
+                                    <i :class="editandoLinkAleatorio ? 'fa-solid fa-check' : 'fa-solid fa-plus'"
+                                        style="color: white;"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Botão para salvar alterações, aparece durante a edição -->
-                        <button v-if="link.editando" @click="salvarAlteracoesLinkFooter(index)"
-                            class="btn btn-success btn-sm mt-2">
-                            <i class="fa-solid fa-check"></i> Salvar Alterações
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões visíveis em dispositivos maiores -->
+            <div class="mt-3 col-md-6 d-none d-md-block">
+                <div class="d-flex justify-content-start gap-2" style="width: 60%;">
+                    <div class="dropdown dropup mb-2">
+                        <button
+                            class="animate__animated animate__zoomIn botao-dropdown btn btn-configuracoes dropdown-toggle btn-sm"
+                            type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-gear"></i>
                         </button>
+                        <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
+                            <li>
+                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#alterarSenhaModal">Alterar senha</a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#alterarEmailModal">Alterar e-mail</a>
+                                <small class="text-muted d-block ms-3 me-3">{{ email }}</small>
+                            </li>
+                            <li>
+                                <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
+                                    data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
+                                <small class="text-muted d-block ms-3 me-3">{{ usuario }}</small>
+                            </li>
+                            <li>
+                                <a @click="fazerLogout()" class="dropdown-item mt-2" href="#">
+                                    <i class="fa-solid fa-sign-out-alt"></i> Logout</a>
+                            </li>
+                        </ul>
                     </div>
 
-                    <!--Inserir videos-->
-                    <div
-                        class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center position-relative">
-                        <!-- Ícone de adicionar vídeo (fa-plus) -->
-                        <div class="plus-icon position-absolute" v-if="!mostrar_input_video">
-                            <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputVideo"></i>
-                        </div>
-
-                        <!-- Ícone de remover vídeo -->
-                        <div class="plus-icon position-absolute" v-if="videoUrlIframe && mostrar_video_youtube">
-                            <i class="fa-solid fa-trash" @click="() => removerVideo(videoId)"></i>
-                        </div>
-
-                        <i v-if="!mostrar_input_video && !mostrar_video_youtube" class="fa-solid fa-video fa-2x"></i>
-                        <p v-if="!mostrar_input_video && !mostrar_video_youtube" class="mt-2">Adicionar vídeo</p>
-
-                        <!-- Input para o link do YouTube e botão para confirmar -->
-                        <div v-if="mostrar_input_video && !mostrar_video_youtube" class="mt-3">
-                            <input v-model="videoUrlInput" class="form-control" type="text"
-                                placeholder="Insira o link do vídeo do YouTube" />
-
-                            <!-- Botão success com ícone fa-check -->
-                            <button class="btn btn-success mt-3" @click="mostrarVideo">
-                                <i class="fa-solid fa-check"></i>
-                            </button>
-                        </div>
-
-                        <!-- Iframe para exibir o vídeo, será exibido abaixo do card -->
-                        <div v-if="videoUrlIframe && mostrar_video_youtube">
-                            <iframe :src="videoUrlIframe" width="300px" height="360px" frameborder="0"
-                                allowfullscreen></iframe>
-                        </div>
-                    </div>
-
-                    <!--Inserir localizacao-->
-                    <div
-                        class="animate__animated animate__zoomIn card link-card card-maps d-flex flex-column align-items-center justify-content-center position-relative">
-                        <!-- Ícone de adicionar localização (fa-plus) -->
-                        <div class="plus-icon position-absolute" v-if="!mostrar_input_maps">
-                            <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputMaps"></i>
-                        </div>
-
-                        <!-- Ícone de remover localização -->
-                        <div class="plus-icon position-absolute" v-if="mostrar_maps">
-                            <i class="fa-solid fa-trash" @click="removerMaps"></i>
-                        </div>
-
-                        <i v-if="!mostrar_input_maps && !mostrar_maps" class="fa-solid fa-map-location-dot fa-2x"></i>
-                        <p v-if="!mostrar_input_maps && !mostrar_maps" class="mt-2">Adicionar localização</p>
-
-                        <!-- Input para o link do Google Maps e botão para confirmar -->
-                        <div v-if="mostrar_input_maps && !mostrar_maps" class="mt-3">
-                            <input v-model="localizacaoInput" class="form-control" type="text"
-                                placeholder="Insira a URL de localização do Google Maps" />
-                            <button class="btn btn-success mt-3" @click="salvarMapaGoogleMaps">
-                                <i class="fa-solid fa-check"></i> Salvar Localização
-                            </button>
-                        </div>
-
-                        <!-- Botão para abrir o link do Google Maps -->
-                        <div v-if="mostrar_maps" class="mt-3">
-                            <button class="btn btn-map" @click="abrirMapaGoogleMaps">
-                                <i class="fa-solid fa-location-dot"></i> Ver localização
-                            </button>
-                        </div>
-                    </div>
-
-                    <!--Inserir qualquer link-->
-                    <div
-                        class="animate__animated animate__zoomIn card link-card card-links-livres d-flex flex-column align-items-center justify-content-center position-relative">
-                        <div v-for="linkAleatorio in $store.getters.linksAleatorios" :key="linkAleatorio.id"
-                            class="mt-3 d-flex flex-column align-items-center position-relative">
-                            <i v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
-                                class="fa-solid fa-link fa-2x"></i>
-
-                            <!-- Deletar link -->
-                            <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
-                                @click="deletarLinkAleatorio(linkAleatorio.id)" class="delete-icon"
-                                style="position: absolute; top: -10px; right: -15px;">
-                                <i class="fa-solid fa-trash"></i>
-                            </div>
-
-                            <!-- Editar link -->
-                            <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
-                                @click="iniciarEdicaoLinkAleatorio(linkAleatorio)" class="edit-icon"
-                                style="position: absolute; top: 30px; right: -15px;">
-                                <i class="fa-solid fa-pencil-alt"></i>
-                            </div>
-
-                            <button v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
-                                @click="redirecionarParaLinkAleatorio(linkAleatorio)"
-                                class="btn btn-secondary btn-sm mt-2">
-                                Ir para o link
-                            </button>
-                        </div>
-
-                        <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
-                            @click="iniciarAdicaoLinkAleatorio" class="plus-icon position-absolute"
-                            style="top: 10px; right: 10px;">
-                            <i class="fa-solid fa-plus" style="color: black;"></i>
-                        </div>
-
-                        <i v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
-                            class="fa-solid fa-globe fa-2x"></i>
-                        <p v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
-                            class="mt-2">Adicionar link</p>
-
-                        <div v-if="adicionandoLinkAleatorio || editandoLinkAleatorio"
-                            class="w-100 d-flex flex-column align-items-center">
-                            <i v-if="editandoLinkAleatorio" @click="cancelarEdicaoLinkAleatorio"
-                                class="mb-3 fa-solid fa-arrow-left" style="cursor: pointer;"></i>
-                            <input v-model="novoLinkAleatorio" type="text" class="form-control mt-2"
-                                placeholder="Insira o link" />
-
-                            <button @click="editandoLinkAleatorio ? editarLinkAleatorio() : adicionarLinkAleatorio()"
-                                :class="editandoLinkAleatorio ? 'btn btn-success mt-2 btn-sm' : 'btn btn-primary mt-2 btn-sm'">
-                                <i :class="editandoLinkAleatorio ? 'fa-solid fa-check' : 'fa-solid fa-plus'"
-                                    style="color: white;"></i>
-                            </button>
-                        </div>
-                    </div>
-
+                    <router-link to="/usuario"
+                        class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-visualizar-perfil btn-sm">
+                        <i class="fa-solid fa-user"></i>
+                    </router-link>
                 </div>
             </div>
+
+            <!--<button class="btn btn-light" @click="clearNotas">Limpar Links</button>-->
+
+            <!--Foter-->
+            <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
+                class="animate__animated animate__zoomIn" />
+
+            <!-- Inclui os modais -->
+            <AlterarSenha />
+            <AlterarEmail @emailAlterado="atualizarEmail" />
+            <AlterarUsuario @usuarioAlterado="atualizarUsuario" />
+        </div>
+    </div>
+
+    <div v-if="modoTela === 'celular'">
+        <div class="conteudo-celular">
+            <h2>Tela de celular</h2>
         </div>
 
-        <!-- Botões visíveis em dispositivos maiores -->
-        <div class="mt-3 col-md-6 d-none d-md-block">
-            <div class="d-flex justify-content-start gap-2" style="width: 60%;">
-                <div class="dropdown dropup mb-2">
-                    <button
-                        class="animate__animated animate__zoomIn botao-dropdown btn btn-configuracoes dropdown-toggle btn-sm"
-                        type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-solid fa-gear"></i>
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                        <li>
-                            <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                data-bs-target="#alterarSenhaModal">Alterar senha</a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
-                                data-bs-target="#alterarEmailModal">Alterar e-mail</a>
-                            <small class="text-muted d-block ms-3 me-3">{{ email }}</small>
-                        </li>
-                        <li>
-                            <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
-                                data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
-                            <small class="text-muted d-block ms-3 me-3">{{ usuario }}</small>
-                        </li>
-                        <li>
-                            <a @click="fazerLogout()" class="dropdown-item mt-2" href="#">
-                                <i class="fa-solid fa-sign-out-alt"></i> Logout</a>
-                        </li>
-                    </ul>
-                </div>
-
-                <router-link to="/usuario"
-                    class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-visualizar-perfil btn-sm">
-                    <i class="fa-solid fa-user"></i>
-                </router-link>
-            </div>
-        </div>
-
-        <!--<button class="btn btn-light" @click="clearNotas">Limpar Links</button>-->
-
-        <!--Foter-->
-        <Footer @adicionar-link-footer="adicionarLinkFooter" class="animate__animated animate__zoomIn" />
-
-        <!-- Inclui os modais -->
-        <AlterarSenha />
-        <AlterarEmail @emailAlterado="atualizarEmail" />
-        <AlterarUsuario @usuarioAlterado="atualizarUsuario" />
+        <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
+            class="animate__animated animate__zoomIn" />
     </div>
 </template>
 
@@ -522,6 +541,8 @@ import axios from 'axios'
 })
 
 export default class PaginaUsuario extends Vue {
+
+    public modoTela = 'computador'
 
     public usuario = '' // Armazenar nome do usuário
     public email = '' // Armazenar email do usuário
@@ -582,6 +603,11 @@ export default class PaginaUsuario extends Vue {
 
     //link footer
     public linksFooter: Array<{ id: number, url: string, salvo: boolean, editando: boolean, adicionando: boolean, redeSocial: string; }> = []
+
+    // Função para alterar o modo de visualização
+    public alterarModoTela(modo: string) {
+        this.modoTela = modo;
+    }
 
     gerarId(): number {
         // Acesse os links através do getter do Vuex
