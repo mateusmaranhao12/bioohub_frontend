@@ -17,6 +17,8 @@ export default createStore({
   },
 
   mutations: {
+
+    
     // Define o usuário logado
     SET_USUARIO(state, usuario) {
       state.usuario = usuario;

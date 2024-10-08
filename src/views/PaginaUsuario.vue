@@ -263,11 +263,18 @@
 
                     <!--Links do footer-->
                     <div v-for="(link, index) in linksFooter" :key="index"
-                        class="card link-card card-links-footer d-flex flex-column align-items-center justify-content-center position-relative"
+                        class="animate__animated animate__zoomIn card link-card card-links-footer d-flex flex-column align-items-center justify-content-center position-relative"
                         style="overflow: hidden;">
 
-                        <!-- Ícone de link no centro do card -->
-                        <i class="fa-solid fa-link fa-2x my-3"></i>
+                        <!-- Exibe o ícone correspondente à rede social -->
+                        <i v-if="link.redeSocial" style="color: darkgreen"
+                            :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
+
+                        <!-- Ícone de link genérico se não for uma rede social detectada -->
+                        <i v-else class="fa-solid fa-link fa-2x"></i>
+
+                        <!-- Nome da rede social ou link genérico -->
+                        <p>{{ link.redeSocial}}</p>
 
                         <!-- Input para inserir ou editar link -->
                         <input v-if="link.adicionando || link.editando" v-model="link.url" type="text"
@@ -574,7 +581,7 @@ export default class PaginaUsuario extends Vue {
     public botaoSalvarNota = false
 
     //link footer
-    public linksFooter: Array<{ id: number, url: string, salvo: boolean, editando: boolean, adicionando: boolean }> = []
+    public linksFooter: Array<{ id: number, url: string, salvo: boolean, editando: boolean, adicionando: boolean, redeSocial: string; }> = []
 
     gerarId(): number {
         // Acesse os links através do getter do Vuex
@@ -691,6 +698,7 @@ export default class PaginaUsuario extends Vue {
                 this.carregarImagemExistente(userId);
                 this.carregarVideoExistente(userId);
                 this.carregarMapaExistente(userId);
+                this.carregarLinksFooterDoLocalStorage()
             })
             .catch((error: any) => {
                 console.error('Erro ao carregar links:', error);
@@ -905,7 +913,7 @@ export default class PaginaUsuario extends Vue {
         } else if (/https?:\/\/(www\.)?reddit\.com\/r\/[^/]+/.test(url)) {
             return 'reddit'
         } else {
-            return 'google' // Retorna 'globe' se não for reconhecida
+            return null // Retorna null como icone generico se não for reconhecida
         }
     }
 
@@ -976,7 +984,17 @@ export default class PaginaUsuario extends Vue {
     public carregarImagemPerfil(event: Event) {
         const input = event.target as HTMLInputElement
         if (input.files && input.files.length > 0) {
+
             const file = input.files[0]
+
+            const tiposPermitidos = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'] // Lista de tipos permitidos
+
+            // Verifica se o arquivo tem um tipo válido
+            if (!tiposPermitidos.includes(file.type)) {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Informe um arquivo válido: PNG, JPG ou SVG', 'alert-error')
+                return // Cancela o carregamento
+            }
+
             const reader = new FileReader()
 
             // Converter a imagem para Base64
@@ -1789,8 +1807,16 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+    //adicionar link footer
     public adicionarLinkFooter() {
-        const novoLink = { id: 0, url: '', salvo: false, editando: false, adicionando: true }; // id inicial temporário
+        const novoLink = {
+            id: 0,
+            url: '',
+            salvo: false,
+            editando: false,
+            adicionando: true,
+            redeSocial: '', // Inicializando a propriedade 'redeSocial'
+        }; // id inicial temporário
         this.linksFooter.push(novoLink);
     }
 
@@ -1800,24 +1826,29 @@ export default class PaginaUsuario extends Vue {
         const link = this.linksFooter[index];
         const usuario_id = sessionStorage.getItem('user_id');
 
+        // Detecta a rede social e salva no objeto link
+        link.redeSocial = this.detectarRedeSocial(link.url) ?? ''; // Usando coalescência nula
+
         try {
             const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links_aleatorios.php', {
                 usuario_id: usuario_id,
-                url: link.url, // agora envia o URL para salvar
+                url: link.url,
             });
 
             if (response.data.success) {
-                // Atualiza o link com o ID retornado do banco de dados
                 this.linksFooter[index] = {
                     id: response.data.link.id,
                     url: response.data.link.url,
+                    redeSocial: link.redeSocial,  // Salva o tipo de rede social detectado
                     salvo: true,
                     editando: false,
                     adicionando: false,
                 };
 
-                this.mostrarMensagemAlerta('fa-solid fa-check', 'Link adicionado com sucesso', 'alert-sucesso')
+                // Salva os links atualizados no localStorage
+                this.salvarLinksFooterNoLocalStorage();
 
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Link adicionado com sucesso', 'alert-sucesso');
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link', 'alert-error');
             }
@@ -1826,16 +1857,28 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    //editar links do footer
-    public editarLinkFooter(index: number) {
-        this.linksFooter[index].editando = true
-        this.linksFooter[index].salvo = false
+    //salvar link footer no localstorage
+    private salvarLinksFooterNoLocalStorage() {
+        const usuario_id = sessionStorage.getItem('user_id');
+        if (usuario_id) {
+            const linksUsuario = this.linksFooter.map(link => ({ ...link, usuario_id }));
+            localStorage.setItem(`linksFooter_${usuario_id}`, JSON.stringify(linksUsuario));
+        }
     }
 
-    //salvar alteracoes
+    // Editar links do footer
+    public editarLinkFooter(index: number) {
+        this.linksFooter[index].editando = true;
+        this.linksFooter[index].salvo = false;
+    }
+
+    // Salvar alterações do link footer
     public async salvarAlteracoesLinkFooter(index: number) {
         const link = this.linksFooter[index];
         const usuario_id = sessionStorage.getItem('user_id');
+
+        // Detecta a rede social ao editar
+        link.redeSocial = this.detectarRedeSocial(link.url) ?? '';  // Usando coalescência nula
 
         try {
             const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_links_aleatorios.php', {
@@ -1847,12 +1890,16 @@ export default class PaginaUsuario extends Vue {
             if (response.data.success) {
                 this.linksFooter[index].salvo = true;
                 this.linksFooter[index].editando = false;
-                this.mostrarMensagemAlerta('fa-solid fa-check', 'Alterações salvas com sucesso!', 'alert-sucesso')
+
+                // Salva os links atualizados no localStorage
+                this.salvarLinksFooterNoLocalStorage();
+
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Alterações salvas com sucesso!', 'alert-sucesso');
             } else {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar alterações', 'alert-error')
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar alterações', 'alert-error');
             }
         } catch (error) {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error')
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
         }
     }
 
@@ -1869,7 +1916,11 @@ export default class PaginaUsuario extends Vue {
 
             if (response.data.success) {
                 this.linksFooter.splice(index, 1);
-                this.mostrarMensagemAlerta('fa-solid fa-check', 'Link removido com sucesso!', 'alert-sucesso')
+
+                // Salva os links atualizados no localStorage para o usuário
+                this.salvarLinksFooterNoLocalStorage();
+
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Link removido com sucesso!', 'alert-sucesso');
             } else {
                 console.error('Erro ao remover link:', response.data.message);
             }
@@ -1878,6 +1929,15 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+    private carregarLinksFooterDoLocalStorage() {
+        const usuario_id = sessionStorage.getItem('user_id');
+        if (usuario_id) {
+            const linksString = localStorage.getItem(`linksFooter_${usuario_id}`);
+            if (linksString) {
+                this.linksFooter = JSON.parse(linksString);
+            }
+        }
+    }
 
     // Mostrar mensagem de alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
