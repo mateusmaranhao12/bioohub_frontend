@@ -1,7 +1,6 @@
 <template>
-    <div class="animate__animated animate__zoomIn avatar-circle 
-                        d-flex flex-column justify-content-center align-items-center p
-                        osition-relative">
+    <div
+        class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center position-relative">
         <input type="file" id="file-input" class="file-input" accept="image/*" @change="carregarImagemPerfil"
             :disabled="imagemPerfilSelecionada" style="display:none;">
         <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
