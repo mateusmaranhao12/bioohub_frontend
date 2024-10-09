@@ -12,13 +12,9 @@
                 <div class="col-md-6 mt-5">
 
                     <!-- Escolher imagem -->
-                    <ImagemPerfil 
-                        :selectedImage="selectedImage"
-                        :imagemPerfilUrl="imagemPerfilUrl"
+                    <ImagemPerfil :selectedImage="selectedImage" :imagemPerfilUrl="imagemPerfilUrl"
                         :imagemPerfilSelecionada="imagemPerfilSelecionada"
-                        @carregar-imagem-perfil="carregarImagemPerfil"
-                        @remover-imagem-perfil="removerImagemPerfil" 
-                    />
+                        @carregar-imagem-perfil="carregarImagemPerfil" @remover-imagem-perfil="removerImagemPerfil" />
 
                     <!-- Input para editar nome -->
                     <div class="animate__animated animate__zoomIn mt-4">
@@ -61,9 +57,7 @@
                     <VisualizacoesPerfil />
 
                     <!-- Menu Hamburguer visível em dispositivos menores (abaixo do textarea) -->
-                    <MenuHamburguer
-                        @fazer-logout="fazerLogout"
-                    />
+                    <MenuHamburguer @fazer-logout="fazerLogout" />
 
                 </div>
 
@@ -72,34 +66,9 @@
                     <div class="d-flex flex-wrap gap-3 justify-content-between">
 
                         <!-- Título -->
-                        <div v-for="(titulo, index) in titulosFooter" :key="titulo.id"
-                            class="col-md-12 animate__animated animate__zoomIn titulo-footer">
-                            <div v-if="titulo.adicionando">
-                                <input class="form-control" v-model="titulo.titulo" placeholder="Digite o título">
-                                <button class="btn btn-success mt-2" @click="salvarTituloFooter(index)">
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                            </div>
-
-                            <div v-if="titulo.editando">
-                                <!-- Input de título quando editando -->
-                                <input class="form-control" v-model="titulo.titulo" placeholder="Editar título">
-                                <button class="btn btn-success mt-2" @click="salvarAlteracoesTituloFooter(index)">
-                                    <i class="fa-solid fa-check"></i> Salvar alterações
-                                </button>
-                            </div>
-
-                            <div v-if="!titulo.adicionando && !titulo.editando">
-                                <h1 class="titulo-footer mt-2">{{ titulo.titulo }}</h1>
-                                <span class="action-icons">
-                                    <i class="icon-editar-titulo fas fa-edit fa-2x" @click="editarTituloFooter(index)"
-                                        style="cursor: pointer; margin-left: 5px;" title="Editar"></i>
-                                    <i class="icon-remover-titulo fas fa-trash fa-2x"
-                                        @click="removerTituloFooter(index)" style="cursor: pointer; margin-left: 5px;"
-                                        title="Remover"></i>
-                                </span>
-                            </div>
-                        </div>
+                        <TitulosFooter :titulosFooter="titulosFooter" @salvar-titulo-footer="salvarTituloFooter"
+                            @salvar-alteracoes-titulo-footer="salvarAlteracoesTituloFooter"
+                            @editar-titulo-footer="editarTituloFooter" @remover-titulo-footer="removerTituloFooter" />
 
                         <!--Inserir nota-->
                         <div class="animate__animated animate__zoomIn">
@@ -171,33 +140,9 @@
                         </div>
 
                         <!--Notas footer-->
-                        <div class="col-md-12 animate__animated animate__zoomIn">
-                            <div v-for="(nota, index) in notasFooter" :key="index">
-
-                                <div v-if="nota.adicionando">
-                                    <textarea class="form-control textarea" v-model="nota.texto"></textarea>
-                                    <button class="btn btn-success mt-2" @click="salvarNotaFooter(index)">
-                                        <i class="fa-solid fa-check"></i>
-                                    </button>
-                                </div>
-
-                                <div v-if="nota.editando">
-                                    <textarea class="form-control textarea" v-model="nota.texto"></textarea>
-                                    <button class="btn btn-success mt-2" @click="salvarAlteracoesNotaFooter(index)">
-                                        <i class="fa-solid fa-check"></i> Salvar alterações
-                                    </button>
-                                </div>
-                                <div v-else>
-                                    <p class="mt-2" v-if="!nota.adicionando">{{ nota.texto }}</p>
-                                    <span class="action-icons" v-if="!nota.adicionando">
-                                        <i class="icon-editar-nota fas fa-edit" @click="editarNotaFooter(index)"
-                                            style="cursor: pointer; margin-left: 5px;" title="Editar"></i>
-                                        <i class="icon-remover-nota fas fa-trash" @click="removerNotaFooter(index)"
-                                            style="cursor: pointer; margin-left: 5px;" title="Remover"></i>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                        <NotasFooter :notasFooter="notasFooter" @salvar-nota-footer="salvarNotaFooter"
+                            @salvar-alteracoes-nota-footer="salvarAlteracoesNotaFooter"
+                            @editar-nota-footer="editarNotaFooter" @remover-nota-footer="removerNotaFooter" />
 
                         <!--Inserir redes sociais-->
                         <div class="animate__animated animate__zoomIn card link-card card-redes-sociais 
@@ -264,61 +209,9 @@
                         </div>
 
                         <!--Links do footer-->
-                        <div v-for="(link, index) in linksFooter" :key="index"
-                            class="animate__animated animate__zoomIn card link-card card-links-footer d-flex flex-column align-items-center justify-content-center position-relative"
-                            style="overflow: hidden;">
-
-                            <!-- Exibe o ícone correspondente à rede social -->
-                            <i v-if="link.redeSocial" style="color: darkgreen"
-                                :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
-
-                            <!-- Ícone de link genérico se não for uma rede social detectada -->
-                            <i v-else class="fa-solid fa-link fa-2x"></i>
-
-                            <!-- Nome da rede social ou link genérico -->
-                            <p>{{ link.redeSocial }}</p>
-
-                            <!-- Input para inserir ou editar link -->
-                            <input v-if="link.adicionando || link.editando" v-model="link.url" type="text"
-                                class="form-control mt-2" placeholder="Insira o link" />
-
-                            <!-- Mostrar ícones de ação -->
-                            <div class="mt-3 d-flex flex-row justify-content-between w-100">
-                                <div class="d-flex align-items-center">
-                                    <!-- Salvar link -->
-                                    <button v-if="!link.salvo && link.adicionando" @click="salvarLinkFooter(index)"
-                                        class="btn btn-success btn-sm me-2">
-                                        <i class="fa-solid fa-check"></i>
-                                    </button>
-
-                                    <!-- Seguir para link -->
-                                    <a v-if="link.salvo" :href="link.url" target="_blank"
-                                        class="btn btn-dark btn-sm me-2">
-                                        Ir para o link
-                                    </a>
-                                </div>
-
-                                <div>
-                                    <!-- Editar link -->
-                                    <button v-if="link.salvo" @click="editarLinkFooter(index)"
-                                        class="btn btn-primary btn-sm me-2">
-                                        <i class="fa-solid fa-pencil-alt"></i>
-                                    </button>
-
-                                    <!-- Remover link -->
-                                    <button v-if="link.salvo" @click="removerLinkFooter(index)"
-                                        class="btn btn-danger btn-sm">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Botão para salvar alterações, aparece durante a edição -->
-                            <button v-if="link.editando" @click="salvarAlteracoesLinkFooter(index)"
-                                class="btn btn-success btn-sm mt-2">
-                                <i class="fa-solid fa-check"></i> Salvar Alterações
-                            </button>
-                        </div>
+                        <LinksFooter :linksFooter="linksFooter" @salvar-link-footer="salvarLinkFooter"
+                            @salvar-alteracoes-link-footer="salvarAlteracoesLinkFooter"
+                            @editar-link-footer="editarLinkFooter" @remover-link-footer="removerLinkFooter" />
 
                         <!--Inserir videos-->
                         <div
@@ -495,6 +388,9 @@ import ImagemPerfil from '@/components/ImagemPerfil.vue'
 import MenuHamburguer from '@/components/MenuHamburguer.vue'
 import VisualizacoesPerfil from '@/components/VisualizacoesPerfil.vue'
 import MenuConfig from '@/components/MenuConfig.vue'
+import TitulosFooter from '@/components/TitulosFooter.vue'
+import NotasFooter from '@/components/NotasFooter.vue'
+import LinksFooter from '@/components/LinksFooter.vue'
 
 @Options({
     components: {
@@ -506,7 +402,10 @@ import MenuConfig from '@/components/MenuConfig.vue'
         ImagemPerfil,
         MenuHamburguer,
         VisualizacoesPerfil,
-        MenuConfig
+        MenuConfig,
+        TitulosFooter,
+        NotasFooter,
+        LinksFooter
     },
 
     methods: {
