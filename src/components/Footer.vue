@@ -14,7 +14,7 @@
                 <img src="../assets/imgs/title.png" @click="adicionarTituloFooter" class="img-footer img-fluid"
                     title="Adicionar título">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 d-md-block d-none">
                 <img src="../assets/imgs/activity-feed.png" class="img-fluid img-footer" title="Tela de PC"
                     @click="mostrarTelaComputador">
                 <img src="../assets/imgs/smartphone.png" class="img-fluid img-footer" title="Tela Mobile"

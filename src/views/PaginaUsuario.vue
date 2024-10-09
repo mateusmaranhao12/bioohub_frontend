@@ -12,27 +12,13 @@
                 <div class="col-md-6 mt-5">
 
                     <!-- Escolher imagem -->
-                    <div class="animate__animated animate__zoomIn avatar-circle 
-                        d-flex flex-column justify-content-center align-items-center p
-                        osition-relative">
-                        <input type="file" id="file-input" class="file-input" accept="image/*"
-                            @change="carregarImagemPerfil" :disabled="imagemPerfilSelecionada" style="display:none;">
-                        <label for="file-input" class="d-flex flex-column justify-content-center align-items-center">
-                            <img v-if="selectedImage" :src="selectedImage" class="img-fluid rounded-circle"
-                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                            <img v-else :src="imagemPerfilUrl || '../default-image.png'"
-                                class="img-fluid rounded-circle"
-                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-                            <i v-if="!selectedImage" class="icone-upload fa-solid fa-upload fa-2x mb-5"></i>
-                            <p v-if="!selectedImage" class="text-center mb-4">Adicionar foto</p>
-                        </label>
-
-                        <div v-if="selectedImage" class="position-absolute" style="top: 5px; right: 5px;">
-                            <button class="btn btn-danger btn-sm ms-2" @click="removerImagemPerfil">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
+                    <ImagemPerfil 
+                        :selectedImage="selectedImage"
+                        :imagemPerfilUrl="imagemPerfilUrl"
+                        :imagemPerfilSelecionada="imagemPerfilSelecionada"
+                        @carregar-imagem-perfil="carregarImagemPerfil"
+                        @remover-imagem-perfil="removerImagemPerfil" 
+                    />
 
                     <!-- Input para editar nome -->
                     <div class="animate__animated animate__zoomIn mt-4">
@@ -71,60 +57,13 @@
                         </div>
                     </div>
 
-                    <div class="animate__animated animate__zoomIn mt-5">
-                        <h6>Nenhuma visualização hoje</h6>
-                    </div>
+                    <!--Numero de visualizacoes-->
+                    <VisualizacoesPerfil />
 
                     <!-- Menu Hamburguer visível em dispositivos menores (abaixo do textarea) -->
-                    <nav class="navbar navbar-expand-lg navbar-light d-md-none mt-3">
-                        <div class="container-fluid">
-                            <button class="animate__animated animate__zoomIn navbar-toggler mb-3" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav"
-                                aria-expanded="false" aria-label="Toggle navigation">
-                                <span class="navbar-toggler-icon"></span>
-                                Exibir mais
-                            </button>
-                            <div class="collapse navbar-collapse" id="navbarNav">
-                                <ul class="navbar-nav">
-                                    <li class="nav-item">
-                                        <div class="d-flex justify-content-start gap-2">
-                                            <div class="dropdown dropup mb-2">
-                                                <button
-                                                    class="animate__animated animate__zoomIn botao-dropdown btn btn-configuracoes dropdown-toggle btn-sm"
-                                                    type="button" id="settingsDropdown" data-bs-toggle="dropdown"
-                                                    aria-expanded="false">
-                                                    <i class="fa-solid fa-gear"></i>
-                                                </button>
-                                                <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                                                    <li>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                            data-bs-target="#alterarSenhaModal">Alterar senha</a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                            data-bs-target="#alterarEmailModal">Alterar e-mail</a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                                            data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
-                                                    </li>
-                                                    <li>
-                                                        <a @click="fazerLogout()" class="dropdown-item" href="#">
-                                                            <i class="fa-solid fa-sign-out-alt"></i> Logout</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-
-                                            <router-link to="/usuario"
-                                                class="animate__animated animate__zoomIn btn btn-visualizar-perfil btn-sm">
-                                                <i class="fa-solid fa-user"></i>
-                                            </router-link>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </nav>
+                    <MenuHamburguer
+                        @fazer-logout="fazerLogout"
+                    />
 
                 </div>
 
@@ -511,43 +450,7 @@
             </div>
 
             <!-- Botões visíveis em dispositivos maiores -->
-            <div class="mt-3 col-md-6 d-none d-md-block">
-                <div class="d-flex justify-content-start gap-2" style="width: 60%;">
-                    <div class="dropdown dropup mb-2">
-                        <button
-                            class="animate__animated animate__zoomIn botao-dropdown btn btn-configuracoes dropdown-toggle btn-sm"
-                            type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa-solid fa-gear"></i>
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
-                            <li>
-                                <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                    data-bs-target="#alterarSenhaModal">Alterar
-                                    senha</a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
-                                    data-bs-target="#alterarEmailModal">Alterar e-mail</a>
-                                <small class="text-muted d-block ms-3 me-3">{{ email }}</small>
-                            </li>
-                            <li>
-                                <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
-                                    data-bs-target="#alterarUsuarioModal">Alterar usuário</a>
-                                <small class="text-muted d-block ms-3 me-3">{{ usuario }}</small>
-                            </li>
-                            <li>
-                                <a @click="fazerLogout()" class="dropdown-item mt-2" href="#">
-                                    <i class="fa-solid fa-sign-out-alt"></i> Logout</a>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <router-link to="/usuario"
-                        class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-visualizar-perfil btn-sm">
-                        <i class="fa-solid fa-user"></i>
-                    </router-link>
-                </div>
-            </div>
+            <MenuConfig :email="email" :usuario="usuario" @logout="fazerLogout" />
 
             <!--<button class="btn btn-danger" @click="limparTodasImagens">Limpar Todas as Imagens</button>-->
 
@@ -588,6 +491,10 @@ import { mapActions } from 'vuex'
 import { Link } from '@/interfaces/Link'
 import { Nota } from '@/interfaces/Nota'
 import axios from 'axios'
+import ImagemPerfil from '@/components/ImagemPerfil.vue'
+import MenuHamburguer from '@/components/MenuHamburguer.vue'
+import VisualizacoesPerfil from '@/components/VisualizacoesPerfil.vue'
+import MenuConfig from '@/components/MenuConfig.vue'
 
 @Options({
     components: {
@@ -596,6 +503,10 @@ import axios from 'axios'
         AlterarSenha,
         AlterarEmail,
         AlterarUsuario,
+        ImagemPerfil,
+        MenuHamburguer,
+        VisualizacoesPerfil,
+        MenuConfig
     },
 
     methods: {
