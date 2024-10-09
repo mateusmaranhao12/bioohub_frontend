@@ -8,7 +8,7 @@
                 <img src="../assets/imgs/link-building.png" @click="adicionarLinkFooter" class="img-footer img-fluid"
                     title="Adicionar link">
                 <img src="../assets/imgs/media.png" class="img-footer img-fluid" title="Adicionar imagem">
-                <img src="../assets/imgs/pencil.png" class="img-footer img-fluid" title="Adicionar nota">
+                <img src="../assets/imgs/pencil.png" @click="adicionarNotaFooter" class="img-footer img-fluid" title="Adicionar nota">
                 <img src="../assets/imgs/location.png" class="img-footer img-fluid" title="Adicionar localização">
                 <img src="../assets/imgs/title.png" class="img-footer img-fluid" title="Adicionar título">
             </div>
@@ -28,15 +28,22 @@ import { Options, Vue } from 'vue-class-component';
 @Options({})
 export default class Footer extends Vue {
 
-    // Emitir evento para alternar a exibição de telas
+    // links footer
     public adicionarLinkFooter() {
         this.$emit('adicionar-link-footer');
     }
 
+    //notas footer
+    public adicionarNotaFooter() {
+        this.$emit('adicionar-nota-footer');
+    }
+
+    //tela no computador
     public mostrarTelaComputador() {
         this.$emit('mudar-tela', 'computador');
     }
 
+    //tela no celular
     public mostrarTelaCelular() {
         this.$emit('mudar-tela', 'celular');
     }

@@ -138,7 +138,7 @@
                             <textarea v-if="!notaSalva || editandoNota" placeholder="Adicione uma nota aqui"
                                 class="form-control text-area" rows="3" :style="textareaStyle" v-model="nota"
                                 @input="botaoSalvarNota = true">
-                </textarea>
+                            </textarea>
 
                             <!-- Exibir a nota salva -->
                             <p v-if="notaSalva && !editandoNota" class="nota-display">
@@ -163,8 +163,8 @@
 
                         <!--Inserir imagens-->
                         <div class="animate__animated animate__zoomIn card link-card 
-                card-imagem d-flex flex-column align-items-center justify-content-center 
-                position-relative" style="overflow: hidden;">
+                            card-imagem d-flex flex-column align-items-center justify-content-center 
+                            position-relative" style="overflow: hidden;">
 
                             <!-- Input de arquivo oculto -->
                             <input type="file" ref="fileInput" @change="carregarImagem" style="display:none;"
@@ -201,9 +201,38 @@
 
                         </div>
 
+                        <!--Notas footer-->
+                        <div class="col-md-12 animate__animated animate__zoomIn">
+                            <div v-for="(nota, index) in notasFooter" :key="index">
+
+                                <div v-if="nota.adicionando">
+                                    <textarea class="form-control textarea" v-model="nota.texto"></textarea>
+                                    <button class="btn btn-success mt-2" @click="salvarNotaFooter(index)">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                </div>
+
+                                <div v-if="nota.editando">
+                                    <textarea class="form-control textarea" v-model="nota.texto"></textarea>
+                                    <button class="btn btn-success mt-2" @click="salvarAlteracoesNotaFooter(index)">
+                                        <i class="fa-solid fa-check"></i> Salvar alterações
+                                    </button>
+                                </div>
+                                <div v-else>
+                                    <p class="mt-2" v-if="!nota.adicionando">{{ nota.texto }}</p>
+                                    <span class="action-icons" v-if="!nota.adicionando">
+                                        <i class="icon-editar-nota fas fa-edit" @click="editarNotaFooter(index)"
+                                            style="cursor: pointer; margin-left: 5px;" title="Editar"></i>
+                                        <i class="icon-remover-nota fas fa-trash" @click="removerNotaFooter(index)"
+                                            style="cursor: pointer; margin-left: 5px;" title="Remover"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
                         <!--Inserir redes sociais-->
                         <div class="animate__animated animate__zoomIn card link-card card-redes-sociais 
-                d-flex flex-column align-items-center justify-content-center position-relative"
+                            d-flex flex-column align-items-center justify-content-center position-relative"
                             style="overflow: hidden;">
 
                             <!-- Exibir links se houver algum adicionado -->
@@ -463,7 +492,8 @@
                         <ul class="dropdown-menu" aria-labelledby="settingsDropdown">
                             <li>
                                 <a class="dropdown-item" href="#" data-bs-toggle="modal"
-                                    data-bs-target="#alterarSenhaModal">Alterar senha</a>
+                                    data-bs-target="#alterarSenhaModal">Alterar
+                                    senha</a>
                             </li>
                             <li>
                                 <a class="dropdown-item mt-2" href="#" data-bs-toggle="modal"
@@ -489,11 +519,13 @@
                 </div>
             </div>
 
+            <!--<button class="btn btn-danger" @click="limparTodasImagens">Limpar Todas as Imagens</button>-->
+
             <!--<button class="btn btn-light" @click="clearNotas">Limpar Links</button>-->
 
             <!--Foter-->
             <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
-                class="animate__animated animate__zoomIn" />
+                @adicionar-nota-footer="adicionarNotaFooter" class="animate__animated animate__zoomIn" />
 
             <!-- Inclui os modais -->
             <AlterarSenha />
@@ -603,6 +635,10 @@ export default class PaginaUsuario extends Vue {
 
     //link footer
     public linksFooter: Array<{ id: number, url: string, salvo: boolean, editando: boolean, adicionando: boolean, redeSocial: string; }> = []
+
+    //nota footer
+    public notasFooter: Array<{ id: number, texto: string, editando: boolean, adicionando: boolean }> = [];
+    public mostrandoNotaFooter = false
 
     // Função para alterar o modo de visualização
     public alterarModoTela(modo: string) {
@@ -725,12 +761,12 @@ export default class PaginaUsuario extends Vue {
                 this.carregarVideoExistente(userId);
                 this.carregarMapaExistente(userId);
                 this.carregarLinksFooterDoLocalStorage()
+                this.carregarNotasFooterDoLocalStorage()
             })
             .catch((error: any) => {
                 console.error('Erro ao carregar links:', error);
             });
     }
-
 
     // Adicionar link
     public async adicionarLink() {
@@ -1965,6 +2001,121 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+    // Função para carregar as notas do localStorage
+    public carregarNotasFooterDoLocalStorage() {
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        // Verifica se há notas no localStorage e se correspondem ao usuario_id
+        const notasSalvas = localStorage.getItem(`notasFooter_${usuario_id}`);
+        if (notasSalvas) {
+            this.notasFooter = JSON.parse(notasSalvas);
+        }
+    }
+
+    // Função para salvar as notas no localStorage
+    public salvarNotasFooterNoLocalStorage() {
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        // Salva as notas associadas ao usuario_id no localStorage
+        localStorage.setItem(`notasFooter_${usuario_id}`, JSON.stringify(this.notasFooter));
+    }
+
+    // Função para exibir o textarea
+    public adicionarNotaFooter() {
+        this.notasFooter.push({
+            id: -1,
+            texto: '',
+            editando: false,
+            adicionando: true
+        });
+    }
+
+    // Função para salvar a nota e exibir como <p>
+    public async salvarNotaFooter(index: number) {
+        const nota = this.notasFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_nota.php', {
+                usuario_id: usuario_id,
+                nota: nota.texto,
+            });
+
+            if (response.data.success) {
+                this.notasFooter[index] = {
+                    ...nota,
+                    id: response.data.nota.id,  // Atualiza o id retornado do backend
+                    editando: false,
+                    adicionando: false,
+                };
+
+                this.salvarNotasFooterNoLocalStorage()
+
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Nota adicionada com sucesso', 'alert-sucesso');
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar nota', 'alert-error');
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
+    // Função para editar uma nota existente
+    public editarNotaFooter(index: number) {
+        this.notasFooter[index].editando = true; // Exibe o textarea novamente para edição
+    }
+
+    // Função para salvar alterações em uma nota existente
+    public async salvarAlteracoesNotaFooter(index: number) {
+        const nota = this.notasFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_nota.php', {
+                usuario_id: usuario_id,
+                id: nota.id,  // Agora usa o id da nota
+                nota: nota.texto,
+            });
+
+            if (response.data.success) {
+                this.notasFooter[index].editando = false;
+                this.salvarNotasFooterNoLocalStorage()
+
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Alterações salvas com sucesso', 'alert-sucesso');
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao editar nota', 'alert-error');
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
+    // Função para remover uma nota
+    public async removerNotaFooter(index: number) {
+        const nota = this.notasFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/remover_nota.php', {
+                usuario_id: usuario_id,
+                id: nota.id,  // Usa o id da nota para remover
+            });
+
+            if (response.data.success) {
+                this.notasFooter.splice(index, 1);  // Remove a nota localmente
+
+                // Atualiza as notas no localStorage após a remoção
+                this.salvarNotasFooterNoLocalStorage();
+
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Nota removida com sucesso', 'alert-sucesso');
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover nota', 'alert-error');
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
     // Mostrar mensagem de alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
         this.mensagem_alerta = { icone, mensagem, status }
@@ -1987,6 +2138,23 @@ export default class PaginaUsuario extends Vue {
         }
     } */
 
+    // Limpar imagem do localStorage
+    /* public limparTodasImagens(): void {
+        // Itera sobre todas as chaves do localStorage
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+            const chave = localStorage.key(i);
+
+            // Verifica se a chave começa com 'imagem_' (indicando que é uma imagem)
+            if (chave && chave.startsWith('imagem_')) {
+                localStorage.removeItem(chave); // Remove a chave do localStorage
+                console.log(`Imagem removida: ${chave}`);
+            }
+        }
+
+        this.imagemUrl = null; // Limpa a URL da imagem na variável, se aplicável
+        this.mostrarMensagemAlerta('fa-solid fa-check', 'Todas as imagens foram limpas do localStorage.', 'alert-sucesso');
+        console.log('Todas as imagens foram limpas do localStorage.');
+    }*/
 
 }
 </script>
