@@ -132,6 +132,36 @@
                 <div class="col-md-6 mt-5 mb-5">
                     <div class="d-flex flex-wrap gap-3 justify-content-between">
 
+                        <!-- Título -->
+                        <div v-for="(titulo, index) in titulosFooter" :key="titulo.id"
+                            class="col-md-12 animate__animated animate__zoomIn titulo-footer">
+                            <div v-if="titulo.adicionando">
+                                <input class="form-control" v-model="titulo.titulo" placeholder="Digite o título">
+                                <button class="btn btn-success mt-2" @click="salvarTituloFooter(index)">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                            </div>
+
+                            <div v-if="titulo.editando">
+                                <!-- Input de título quando editando -->
+                                <input class="form-control" v-model="titulo.titulo" placeholder="Editar título">
+                                <button class="btn btn-success mt-2" @click="salvarAlteracoesTituloFooter(index)">
+                                    <i class="fa-solid fa-check"></i> Salvar alterações
+                                </button>
+                            </div>
+
+                            <div v-if="!titulo.adicionando && !titulo.editando">
+                                <h1 class="titulo-footer mt-2">{{ titulo.titulo }}</h1>
+                                <span class="action-icons">
+                                    <i class="icon-editar-titulo fas fa-edit fa-2x" @click="editarTituloFooter(index)"
+                                        style="cursor: pointer; margin-left: 5px;" title="Editar"></i>
+                                    <i class="icon-remover-titulo fas fa-trash fa-2x"
+                                        @click="removerTituloFooter(index)" style="cursor: pointer; margin-left: 5px;"
+                                        title="Remover"></i>
+                                </span>
+                            </div>
+                        </div>
+
                         <!--Inserir nota-->
                         <div class="animate__animated animate__zoomIn">
                             <!-- Textarea para adicionar ou editar nota -->
@@ -525,7 +555,8 @@
 
             <!--Foter-->
             <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
-                @adicionar-nota-footer="adicionarNotaFooter" class="animate__animated animate__zoomIn" />
+                @adicionar-titulo-footer="adicionarTituloFooter" @adicionar-nota-footer="adicionarNotaFooter"
+                class="animate__animated animate__zoomIn" />
 
             <!-- Inclui os modais -->
             <AlterarSenha />
@@ -540,6 +571,7 @@
         </div>
 
         <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
+            @adicionar-nota-footer="adicionarNotaFooter" @adicionar-titulo-footer="adicionarTituloFooter"
             class="animate__animated animate__zoomIn" />
     </div>
 </template>
@@ -639,6 +671,9 @@ export default class PaginaUsuario extends Vue {
     //nota footer
     public notasFooter: Array<{ id: number, texto: string, editando: boolean, adicionando: boolean }> = [];
     public mostrandoNotaFooter = false
+
+    //titulo footer
+    public titulosFooter: Array<{ id: number, titulo: string, editando: boolean, adicionando: boolean }> = [];
 
     // Função para alterar o modo de visualização
     public alterarModoTela(modo: string) {
@@ -762,6 +797,7 @@ export default class PaginaUsuario extends Vue {
                 this.carregarMapaExistente(userId);
                 this.carregarLinksFooterDoLocalStorage()
                 this.carregarNotasFooterDoLocalStorage()
+                this.carregarTitulosFooterDoLocalStorage()
             })
             .catch((error: any) => {
                 console.error('Erro ao carregar links:', error);
@@ -2110,6 +2146,117 @@ export default class PaginaUsuario extends Vue {
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Nota removida com sucesso', 'alert-sucesso');
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover nota', 'alert-error');
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
+    // Função para carregar os títulos do localStorage
+    public carregarTitulosFooterDoLocalStorage() {
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        // Verifica se há títulos no localStorage e se correspondem ao usuario_id
+        const titulosSalvos = localStorage.getItem(`titulosFooter_${usuario_id}`);
+        if (titulosSalvos) {
+            this.titulosFooter = JSON.parse(titulosSalvos);
+        }
+    }
+
+    // Função para salvar os títulos no localStorage
+    public salvarTitulosFooterNoLocalStorage() {
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        // Salva os títulos associados ao usuario_id no localStorage
+        localStorage.setItem(`titulosFooter_${usuario_id}`, JSON.stringify(this.titulosFooter));
+    }
+
+    // Função para exibir o input para adicionar título
+    public adicionarTituloFooter() {
+        this.titulosFooter.push({
+            id: Date.now(), // ID temporário baseado no timestamp
+            titulo: '',
+            editando: false,
+            adicionando: true
+        });
+    }
+
+    // Função para salvar o título e exibir
+    public async salvarTituloFooter(index: number) {
+        const titulo = this.titulosFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_titulo.php', {
+                usuario_id: usuario_id,
+                titulo: titulo.titulo,
+            });
+
+            if (response.data.success) {
+                // Atualiza o id do título retornado do backend
+                this.titulosFooter[index] = {
+                    ...titulo,
+                    id: response.data.titulo.id,  // Atualiza o id do backend
+                    adicionando: false,
+                };
+
+                // Salva os títulos no localStorage
+                this.salvarTitulosFooterNoLocalStorage();
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Título adicionado com sucesso', 'alert-sucesso');
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar título', 'alert-error');
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
+    // Função para editar um título
+    public editarTituloFooter(index: number) {
+        this.titulosFooter[index].editando = true; // Exibe o input novamente para edição
+    }
+
+    // Função para salvar as alterações no título
+    public async salvarAlteracoesTituloFooter(index: number) {
+        const titulo = this.titulosFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_titulo.php', {
+                usuario_id: usuario_id,
+                id: titulo.id,  // Usa o id do título para editar
+                titulo: titulo.titulo,
+            });
+
+            if (response.data.success) {
+                this.titulosFooter[index].editando = false;  // Finaliza a edição
+                this.salvarTitulosFooterNoLocalStorage(); // Salva no localStorage
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Alterações salvas com sucesso', 'alert-sucesso');
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao editar título', 'alert-error');
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
+    // Função para remover um título
+    public async removerTituloFooter(index: number) {
+        const titulo = this.titulosFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/remover_titulo.php', {
+                usuario_id: usuario_id,
+                id: titulo.id,  // Usa o id do título para remover
+            });
+
+            if (response.data.success) {
+                this.titulosFooter.splice(index, 1);  // Remove o título localmente
+                this.salvarTitulosFooterNoLocalStorage(); // Atualiza o localStorage
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Título removido com sucesso', 'alert-sucesso');
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover título', 'alert-error');
             }
         } catch (error) {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');

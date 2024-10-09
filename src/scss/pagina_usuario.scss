@@ -307,13 +307,13 @@
 
     }
 
-    .icon-editar-nota {
+    .icon-editar-nota, .icon-editar-titulo {
         background: none;
         color: blue;
         padding: 10px;
     }
 
-    .icon-remover-nota {
+    .icon-remover-nota, .icon-remover-titulo {
         background: none;
         color: rgb(175, 0, 0);
         padding: 10px;
@@ -341,4 +341,21 @@
     background-color: none;
     border: none;
     color: gray;
+}
+
+.form-control {
+    background-color: #ececec;
+    border: $none;
+    color: $gray;
+
+    &::placeholder {
+        color: $gray;
+    }
+}
+
+.titulo-footer {
+    text-transform: $uppercase;
+    color: $black;
+    letter-spacing: 0.1rem;
+    font-weight: 700;
 }

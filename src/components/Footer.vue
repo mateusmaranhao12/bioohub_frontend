@@ -8,9 +8,11 @@
                 <img src="../assets/imgs/link-building.png" @click="adicionarLinkFooter" class="img-footer img-fluid"
                     title="Adicionar link">
                 <img src="../assets/imgs/media.png" class="img-footer img-fluid" title="Adicionar imagem">
-                <img src="../assets/imgs/pencil.png" @click="adicionarNotaFooter" class="img-footer img-fluid" title="Adicionar nota">
+                <img src="../assets/imgs/pencil.png" @click="adicionarNotaFooter" class="img-footer img-fluid"
+                    title="Adicionar nota">
                 <img src="../assets/imgs/location.png" class="img-footer img-fluid" title="Adicionar localização">
-                <img src="../assets/imgs/title.png" class="img-footer img-fluid" title="Adicionar título">
+                <img src="../assets/imgs/title.png" @click="adicionarTituloFooter" class="img-footer img-fluid"
+                    title="Adicionar título">
             </div>
             <div class="col-md-4">
                 <img src="../assets/imgs/activity-feed.png" class="img-fluid img-footer" title="Tela de PC"
@@ -33,6 +35,11 @@ export default class Footer extends Vue {
         this.$emit('adicionar-link-footer');
     }
 
+    // links footer
+    public adicionarTituloFooter() {
+        this.$emit('adicionar-titulo-footer');
+    }
+
     //notas footer
     public adicionarNotaFooter() {
         this.$emit('adicionar-nota-footer');
@@ -51,5 +58,5 @@ export default class Footer extends Vue {
 </script>
 
 <style lang="scss">
-    @import '../scss/footer.scss';
+@import '../scss/footer.scss';
 </style>
