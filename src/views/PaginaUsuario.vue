@@ -1071,56 +1071,60 @@ export default class PaginaUsuario extends Vue {
         inputFile.click()
     }
 
-    //carregar imagem
     public carregarImagem(event: Event): void {
-        const input = event.target as HTMLInputElement
-        const userId = sessionStorage.getItem('user_id')
+        const input = event.target as HTMLInputElement;
+        const userId = sessionStorage.getItem('user_id');
 
         if (input.files && input.files[0] && userId) {
-            const file = input.files[0]
-            const tiposPermitidos = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'] // Lista de tipos permitidos
+            const file = input.files[0];
+            const tiposPermitidos = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp']; // Lista de tipos permitidos
 
             // Verifica se o arquivo tem um tipo válido
             if (!tiposPermitidos.includes(file.type)) {
-                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Informe um arquivo válido: PNG, JPG ou SVG', 'alert-error')
-                return // Cancela o carregamento
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Informe um arquivo válido: PNG, JPG ou SVG', 'alert-error');
+                return; // Cancela o carregamento
             }
 
-            const formData = new FormData()
-            formData.append('imagem', file)
-            formData.append('usuario_id', userId)
-
-            // Pré-visualização da imagem
-            const reader = new FileReader()
+            const reader = new FileReader();
             reader.onload = (e: any) => {
-                this.imagemUrl = e.target.result // Carrega a URL da imagem para exibição
-                this.imagemSelecionada = true    // Indica que a imagem foi selecionada
+                const imagemBase64 = e.target.result; // Obtém a string base64
+
+                // Criar objeto com imagem base64 e usuário ID
+                const dados = {
+                    imagem: imagemBase64,
+                    usuario_id: userId,
+                };
+
+                // Pré-visualização da imagem
+                this.imagemUrl = imagemBase64; // Carrega a URL da imagem para exibição
+                this.imagemSelecionada = true; // Indica que a imagem foi selecionada
 
                 // Armazena a imagem no localStorage para persistência
-                this.$store.dispatch('saveImagem', this.imagemUrl)
-            }
-            reader.readAsDataURL(file)
+                this.$store.dispatch('saveImagem', this.imagemUrl);
 
-            // Ativa o spinner enquanto o arquivo está sendo enviado para o servidor
-            this.loading = true
+                // Ativa o spinner enquanto o arquivo está sendo enviado para o servidor
+                this.loading = true;
 
-            // Upload para o backend
-            axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            })
-                .then(response => {
-                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
+                // Upload para o backend com JSON
+                axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', dados, {
+                    headers: {
+                        'Content-Type': 'application/json', // Alterado para JSON
+                    },
                 })
-                .catch(error => {
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error')
-                    console.log(error)
-                })
-                .finally(() => {
-                    // Finaliza o carregamento (spinner)
-                    this.loading = false
-                })
+                    .then(response => {
+                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+                    })
+                    .catch(error => {
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao carregar imagem', 'alert-error');
+                        console.log(error);
+                    })
+                    .finally(() => {
+                        // Finaliza o carregamento (spinner)
+                        this.loading = false;
+                    });
+            };
+
+            reader.readAsDataURL(file); // Converte o arquivo para base64
         }
     }
 
