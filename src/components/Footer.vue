@@ -11,7 +11,7 @@
                     title="Adicionar imagem">
                 <img src="../assets/imgs/pencil.png" @click="adicionarNotaFooter" class="img-footer img-fluid"
                     title="Adicionar nota">
-                <img src="../assets/imgs/location.png" class="img-footer img-fluid" title="Adicionar localização">
+                <img src="../assets/imgs/location.png" @click="adicionarMapaFooter" class="img-footer img-fluid" title="Adicionar localização">
                 <img src="../assets/imgs/title.png" @click="adicionarTituloFooter" class="img-footer img-fluid"
                     title="Adicionar título">
             </div>
@@ -68,6 +68,10 @@ export default class Footer extends Vue {
 
     public adicionarNotaFooter() {
         this.$emit('adicionar-nota-footer');
+    }
+
+    public adicionarMapaFooter() {
+        this.$emit('adicionar-mapa-footer');
     }
 
     public mostrarTelaComputador() {

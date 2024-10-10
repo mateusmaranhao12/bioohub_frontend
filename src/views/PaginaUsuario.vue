@@ -301,6 +301,45 @@
                             </div>
                         </div>
 
+                        <!-- Lista de mapas footer -->
+                        <div v-for="(mapa, index) in mapasFooter" :key="index" class="animate__animated animate__zoomIn link-card card-maps card mb-3">
+                            <div class="mt-2">
+                                <div class="float-end">
+                                    <span class="action-icons">
+                                        <i v-if="!mapa.editando && !mapa.adicionando"
+                                            class="icon-editar-mapa fas fa-edit" @click="editarMapaFooter(index)"
+                                            style="cursor: pointer; margin-left: 5px;" title="Editar"></i>
+                                        <i v-if="!mapa.editando && !mapa.adicionando"
+                                            class="icon-remover-mapa fas fa-trash-can" @click="removerMapaFooter(index)"
+                                            style="cursor: pointer; margin-left: 5px;" title="Remover"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Mostrar o botão de visualizar localização apenas quando não estiver editando ou adicionando -->
+                            <div class="card-body" v-if="!mapa.editando && !mapa.adicionando">
+                                <h6>{{ mapa.titulo }}</h6>
+                                <button class="btn btn-danger" @click="verLocalizacao(mapa.localizacao)">Ver
+                                    Localização</button>
+                            </div>
+
+                            <!-- Formulário para adicionar ou editar mapa -->
+                            <div v-if="mapa.adicionando || mapa.editando" class="form-group mt-5">
+                                <input type="text" v-model="mapa.titulo" placeholder="Título do mapa"
+                                    class="form-control mb-2">
+                                <input type="text" v-model="mapa.localizacao" placeholder="URL do Google Maps"
+                                    class="form-control mb-2">
+
+                                <!-- Botão para salvar alterações ou o novo mapa -->
+                                <button class="btn btn-success" @click="salvarAlteracoesMapaFooter(index)"
+                                    v-if="mapa.editando"><i class="fa-solid fa-check"></i></button>
+                                <button class="btn btn-primary ms-2" @click="salvarMapaFooter(index)"
+                                    v-if="mapa.adicionando"><i class="fa-solid fa-check"></i></button>
+                                <button class="btn btn-secondary ms-2" @click="cancelarEdicaoFooter(index)"><i
+                                        class="fa-solid fa-x"></i></button>
+                            </div>
+                        </div>
+
                         <!--Inserir qualquer link-->
                         <div
                             class="animate__animated animate__zoomIn card link-card card-links-livres d-flex flex-column align-items-center justify-content-center position-relative">
@@ -371,7 +410,8 @@
             <!--Foter-->
             <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
                 @adicionar-titulo-footer="adicionarTituloFooter" @adicionar-nota-footer="adicionarNotaFooter"
-                @imagem-selecionada-footer="handleImagemFooterSelecionada" class="animate__animated animate__zoomIn" />
+                @imagem-selecionada-footer="handleImagemFooterSelecionada" @adicionar-mapa-footer="adicionarMapaFooter"
+                class="animate__animated animate__zoomIn" />
 
             <!-- Inclui os modais -->
             <AlterarSenha />
@@ -505,7 +545,11 @@ export default class PaginaUsuario extends Vue {
     public titulosFooter: Array<{ id: number, titulo: string, editando: boolean, adicionando: boolean }> = [];
 
     //imagem footer
-    public imagensFooter: Array<{ id: number, imagem: string }> = [];
+    public imagensFooter: Array<{ id: number, imagem: string }> = []
+
+    //mapa footer
+    public mapasFooter: Array<{ id: number, titulo: string, localizacao: string, editando: boolean, adicionando: boolean }> = [];
+    public mapaIndex: number | null = null
 
     // Função para alterar o modo de visualização
     public alterarModoTela(modo: string) {
@@ -631,6 +675,8 @@ export default class PaginaUsuario extends Vue {
                 this.carregarNotasFooterDoLocalStorage()
                 this.carregarTitulosFooterDoLocalStorage()
                 this.carregarImagensFooterDoLocalStorage()
+                this.carregarMapasDoLocalStorage()
+
             })
             .catch((error: any) => {
                 console.error('Erro ao carregar links:', error);
@@ -2208,6 +2254,196 @@ export default class PaginaUsuario extends Vue {
             }
         } catch (error) {
             this.mostrarMensagemAlerta('fa-solid fa-xmark', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
+    // Validação da URL do Google Maps (regex simples para verificar se é um link válido)
+    private validarLocalizacao(localizacao: string): boolean {
+        const regex = /^(https?:\/\/)?(www\.)?(google\.com\/maps|maps\.google\.com).+/i;
+        return regex.test(localizacao);
+    }
+
+    // Função para adicionar um novo mapa
+    public adicionarMapaFooter() {
+        this.mapasFooter.push({
+            id: Date.now(),  // Gerando um ID temporário com Date.now()
+            titulo: '',
+            localizacao: '',
+            editando: false,
+            adicionando: true
+        });
+    }
+
+    // Função para salvar o novo mapa ou as alterações
+    public salvarMapaFooter(index: number) {
+        const mapa = this.mapasFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');  // Obtém o ID do usuário
+
+        if (!usuario_id) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado', 'alert-error');
+            return;
+        }
+
+        console.log('ID do mapa (antes de salvar no banco):', mapa.id);
+        console.log('Título do mapa:', mapa.titulo);
+        console.log('URL do mapa:', mapa.localizacao);
+
+        if (mapa.titulo && this.validarLocalizacao(mapa.localizacao)) {
+            axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_mapa_footer.php', {
+                usuario_id: usuario_id,
+                titulo: mapa.titulo,
+                url: mapa.localizacao
+            })
+                .then(response => {
+                    if (response.data.success) {
+                        // Atualiza o ID do mapa com o valor retornado do backend
+                        mapa.id = response.data.id;
+                        mapa.adicionando = false;
+                        mapa.editando = false;
+
+                        // Salva os mapas atualizados no localStorage
+                        this.salvarMapasNoLocalStorage();
+
+                        this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Mapa adicionado com sucesso!', 'alert-sucesso');
+                        console.log('ID do mapa após salvar:', mapa.id);
+                    } else {
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+                    }
+                })
+                .catch(error => {
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar mapa.', 'alert-error');
+                    console.error('erro: ', error);
+                });
+        } else {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, preencha todos os campos corretamente e insira uma URL válida do Google Maps.', 'alert-error');
+        }
+    }
+
+    // Função para editar um mapa existente
+    public editarMapaFooter(index: number) {
+        const mapa = this.mapasFooter[index];
+        mapa.editando = true;
+        mapa.adicionando = false;
+    }
+
+    // Função para salvar alterações no mapa
+    public salvarAlteracoesMapaFooter(index: number) {
+        const mapa = this.mapasFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');  // Obtém o ID do usuário
+
+        if (!usuario_id) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado', 'alert-error');
+            return;
+        }
+
+        console.log('Usuário ID:', usuario_id);
+        console.log('Mapa ID:', mapa.id); // O ID pode já ser o verdadeiro se foi salvo no banco de dados
+
+        if (!mapa.id) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do mapa não encontrado', 'alert-error');
+            return;
+        }
+
+        if (mapa.titulo && this.validarLocalizacao(mapa.localizacao)) {
+            axios.post('http://localhost/Projetos/bioohub/backend/api/editar_mapa_footer.php', {
+                usuario_id: usuario_id,
+                id: mapa.id,  // O id agora é o real após a resposta do servidor
+                titulo: mapa.titulo,
+                url: mapa.localizacao
+            })
+                .then(response => {
+                    if (response.data.success) {
+                        mapa.editando = false;
+
+                        // Salva os mapas atualizados no localStorage
+                        this.salvarMapasNoLocalStorage();
+
+                        this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Alterações salvas com sucesso!', 'alert-sucesso');
+                    } else {
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+                    }
+                })
+                .catch(error => {
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar alterações do mapa.', 'alert-error');
+                    console.error('erro: ', error);
+                });
+        } else {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, preencha todos os campos corretamente e insira uma URL válida do Google Maps.', 'alert-error');
+        }
+    }
+
+
+    // Função para cancelar a edição de um mapa
+    public cancelarEdicaoFooter(index: number) {
+        const mapa = this.mapasFooter[index];
+        if (mapa.adicionando) {
+            // Se for um mapa novo (adicionando), remove o mapa
+            this.mapasFooter.splice(index, 1)
+        } else {
+            // Caso contrário, apenas cancela a edição
+            mapa.editando = false
+        }
+    }
+
+    // Função para remover um mapa
+    public removerMapaFooter(index: number) {
+        const mapa = this.mapasFooter[index];
+        const usuario_id = sessionStorage.getItem('user_id');  // Obtém o ID do usuário
+
+        if (!usuario_id) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado', 'alert-error');
+            return;
+        }
+
+        if (!mapa.id) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do mapa não encontrado', 'alert-error');
+            return;
+        }
+
+        axios.post('http://localhost/Projetos/bioohub/backend/api/remover_mapa_footer.php', {
+            usuario_id: usuario_id,
+            id: mapa.id  // Enviando o ID do mapa para remoção
+        })
+            .then(response => {
+                if (response.data.success) {
+                    // Remove o mapa do array local após sucesso no servidor
+                    this.mapasFooter.splice(index, 1);
+
+                    // Atualiza o localStorage com os novos mapas
+                    this.salvarMapasNoLocalStorage();
+
+                    this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Mapa removido com sucesso!', 'alert-sucesso');
+                } else {
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
+                }
+            })
+            .catch(error => {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover mapa.', 'alert-error');
+                console.error('erro: ', error)
+            });
+    }
+
+    // Função para visualizar a localização no Google Maps
+    public verLocalizacao(localizacao: string) {
+        window.open(localizacao, '_blank');
+    }
+
+    // Função para salvar os mapas no localStorage
+    private salvarMapasNoLocalStorage() {
+        const usuario_id = sessionStorage.getItem('user_id');
+        if (usuario_id) {
+            localStorage.setItem(`mapasFooter_${usuario_id}`, JSON.stringify(this.mapasFooter));
+        }
+    }
+
+    //carregar mapas no localStorage
+    private carregarMapasDoLocalStorage() {
+        const usuario_id = sessionStorage.getItem('user_id');
+        if (usuario_id) {
+            const mapasSalvos = localStorage.getItem(`mapasFooter_${usuario_id}`);
+            if (mapasSalvos) {
+                this.mapasFooter = JSON.parse(mapasSalvos);
+            }
         }
     }
 

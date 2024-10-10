@@ -33,3 +33,18 @@
         border: $none;
     }
 }
+
+.btn-secondary {
+    background-color: rgb(107, 107, 107);
+    border: $none;
+    border-radius: 20px;
+
+    &:hover {
+        background-color: rgb(51, 51, 51);
+        border: $none;
+    }
+}
+
+.btn-dark {
+    border-radius: 20px;
+}

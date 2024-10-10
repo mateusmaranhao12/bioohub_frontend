@@ -250,8 +250,15 @@
         &.card-maps {
             width: 220px;
             height: 230px;
+            padding: 5px;
 
-            i {
+            h6 {
+                color: $black;
+                font-weight: $bold;
+                margin-bottom: 20px;
+            }
+
+            .fa-map-location-dot {
                 color: #be0000;
             }
 
@@ -307,13 +314,13 @@
 
     }
 
-    .icon-editar-nota, .icon-editar-titulo {
+    .icon-editar-nota, .icon-editar-titulo, .icon-editar-mapa {
         background: none;
         color: blue;
         padding: 10px;
     }
 
-    .icon-remover-nota, .icon-remover-titulo {
+    .icon-remover-nota, .icon-remover-titulo, .icon-remover-mapa {
         background: none;
         color: rgb(175, 0, 0);
         padding: 10px;
