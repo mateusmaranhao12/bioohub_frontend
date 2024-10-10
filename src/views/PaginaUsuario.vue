@@ -139,6 +139,25 @@
 
                         </div>
 
+                        <!--Imagem footer selecionada-->
+                        <div v-for="imagem in imagensFooter" :key="imagem.id"
+                            class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative"
+                            style="overflow: hidden; height: 100%;">
+
+                            <div class="card-body" style="position: relative; padding: 0; height: 100%;">
+
+                                <!-- Imagem exibida -->
+                                <img :src="imagem.imagem" alt="Imagem escolhida" class="img-fluid"
+                                    style="object-fit: cover; width: 100%; height: 100%;" />
+
+                                <!-- Botão de Remover Imagem -->
+                                <div class="plus-icon position-absolute" @click="removerImagemFooter(imagem.id)"
+                                    style="cursor: pointer;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </div>
+                            </div>
+                        </div>
+
                         <!--Notas footer-->
                         <NotasFooter :notasFooter="notasFooter" @salvar-nota-footer="salvarNotaFooter"
                             @salvar-alteracoes-nota-footer="salvarAlteracoesNotaFooter"
@@ -352,7 +371,7 @@
             <!--Foter-->
             <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
                 @adicionar-titulo-footer="adicionarTituloFooter" @adicionar-nota-footer="adicionarNotaFooter"
-                class="animate__animated animate__zoomIn" />
+                @imagem-selecionada-footer="handleImagemFooterSelecionada" class="animate__animated animate__zoomIn" />
 
             <!-- Inclui os modais -->
             <AlterarSenha />
@@ -485,6 +504,9 @@ export default class PaginaUsuario extends Vue {
     //titulo footer
     public titulosFooter: Array<{ id: number, titulo: string, editando: boolean, adicionando: boolean }> = [];
 
+    //imagem footer
+    public imagensFooter: Array<{ id: number, imagem: string }> = [];
+
     // Função para alterar o modo de visualização
     public alterarModoTela(modo: string) {
         this.modoTela = modo;
@@ -608,6 +630,7 @@ export default class PaginaUsuario extends Vue {
                 this.carregarLinksFooterDoLocalStorage()
                 this.carregarNotasFooterDoLocalStorage()
                 this.carregarTitulosFooterDoLocalStorage()
+                this.carregarImagensFooterDoLocalStorage()
             })
             .catch((error: any) => {
                 console.error('Erro ao carregar links:', error);
@@ -2070,6 +2093,117 @@ export default class PaginaUsuario extends Vue {
             }
         } catch (error) {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
+    // Função para carregar as imagens armazenadas no localStorage
+    public carregarImagensFooterDoLocalStorage() {
+        const usuario_id = sessionStorage.getItem('user_id');  // Obtém o ID do usuário logado
+        const imagensSalvas = localStorage.getItem('imagensFooter');
+        if (imagensSalvas) {
+            // Parse o JSON do localStorage
+            const todasImagens = JSON.parse(imagensSalvas);
+            // Filtra as imagens pelo usuário logado
+            this.imagensFooter = todasImagens.filter((imagem: { usuario_id: string }) => imagem.usuario_id === usuario_id);
+        }
+    }
+
+
+    // Função para inserir imagem
+    public async handleImagemFooterSelecionada(file: File) {
+        const usuario_id = sessionStorage.getItem('user_id');  // Obtém o ID do usuário
+
+        if (!usuario_id) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado', 'alert-error');
+            return;
+        }
+
+        const imagemBase64 = await this.convertToBase64(file);  // Converte a imagem para base64
+
+        // Verifica a imagem em base64
+        if (!imagemBase64 || imagemBase64.length < 100) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao converter a imagem', 'alert-error');
+            return;
+        }
+
+        try {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/imagens_footer.php', {
+                usuario_id: usuario_id,
+                imagem: imagemBase64  // Envia a imagem em base64
+            });
+
+            if (response.data.mensagem === 'Imagem inserida com sucesso') {
+                const novaImagem = {
+                    id: response.data.id,  // O ID da imagem inserida
+                    imagem: imagemBase64,  // A imagem em base64
+                    usuario_id: usuario_id  // Associa a imagem ao usuário logado
+                };
+                this.imagensFooter.push(novaImagem);
+                this.salvarImagensFooterDoLocalStorage();  // Salva as imagens no localStorage
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Imagem inserida com sucesso', 'alert-sucesso');
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao inserir a imagem', 'alert-error');
+            }
+
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-xmark', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
+    // Função para salvar as imagens no localStorage
+    public salvarImagensFooterDoLocalStorage() {
+        // Obtém todas as imagens atuais do localStorage
+        const todasImagens = localStorage.getItem('imagensFooter') ? JSON.parse(localStorage.getItem('imagensFooter')!) : [];
+
+        // Remove qualquer imagem anterior do mesmo usuário antes de adicionar as novas
+        const usuario_id = sessionStorage.getItem('user_id');
+        const imagensFiltradas = todasImagens.filter((imagem: { usuario_id: string }) => imagem.usuario_id !== usuario_id);
+
+        // Adiciona as novas imagens do usuário
+        const novasImagens = [...imagensFiltradas, ...this.imagensFooter];
+        localStorage.setItem('imagensFooter', JSON.stringify(novasImagens));
+    }
+
+    // Função auxiliar para converter a imagem para base64
+    private convertToBase64(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                console.log('Imagem carregada com sucesso:', reader.result);  // Log para verificar a imagem carregada
+                resolve(reader.result as string);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Função para remover uma imagem
+    public async removerImagemFooter(id: number) {
+        const usuario_id = sessionStorage.getItem('user_id');  // Obtém o ID do usuário
+
+        if (!usuario_id) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Usuário não autenticado', 'alert-error');
+            return;
+        }
+
+        try {
+            const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/imagens_footer.php', {
+                data: {
+                    usuario_id: usuario_id,  // Passa o ID do usuário
+                    imagem_id: id  // Passa o ID da imagem que será removida
+                }
+            });
+
+            if (response.data.mensagem === 'Imagem removida com sucesso') {
+                // Remove a imagem localmente
+                this.imagensFooter = this.imagensFooter.filter(imagem => imagem.id !== id);
+                this.salvarImagensFooterDoLocalStorage();  // Salva as imagens no localStorage após a remoção
+                this.mostrarMensagemAlerta('fa-solid fa-check', 'Imagem removida com sucesso', 'alert-sucesso');
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover a imagem', 'alert-error');
+            }
+        } catch (error) {
+            this.mostrarMensagemAlerta('fa-solid fa-xmark', 'Erro ao conectar ao servidor', 'alert-error');
         }
     }
 

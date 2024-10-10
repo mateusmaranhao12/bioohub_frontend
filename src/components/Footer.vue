@@ -7,7 +7,8 @@
             <div class="col-md-4 d-flex justify-content-center">
                 <img src="../assets/imgs/link-building.png" @click="adicionarLinkFooter" class="img-footer img-fluid"
                     title="Adicionar link">
-                <img src="../assets/imgs/media.png" class="img-footer img-fluid" title="Adicionar imagem">
+                <img src="../assets/imgs/media.png" @click="abrirSeletorImagemFooter" class="img-footer img-fluid"
+                    title="Adicionar imagem">
                 <img src="../assets/imgs/pencil.png" @click="adicionarNotaFooter" class="img-footer img-fluid"
                     title="Adicionar nota">
                 <img src="../assets/imgs/location.png" class="img-footer img-fluid" title="Adicionar localização">
@@ -21,6 +22,10 @@
                     @click="mostrarTelaCelular">
             </div>
         </div>
+
+        <!-- Seletor de arquivo de imagem -->
+        <input ref="imagemFooterInput" type="file" accept=".png, .jpg, .jpeg, .svg" style="display: none;"
+            @change="emitirImagemSelecionada" />
     </footer>
 </template>
 
@@ -30,27 +35,45 @@ import { Options, Vue } from 'vue-class-component';
 @Options({})
 export default class Footer extends Vue {
 
-    // links footer
+    // Função que abre o seletor de imagem
+    public abrirSeletorImagemFooter() {
+        const imagemFooterInput: HTMLInputElement = this.$refs.imagemFooterInput as HTMLInputElement;
+        imagemFooterInput.click();  // Aciona o clique no input de arquivos
+    }
+
+    // Emite evento para o PaginaUsuario.vue quando a imagem for selecionada
+    public emitirImagemSelecionada(event: Event) {
+        const input = event.target as HTMLInputElement;
+        const file = input?.files ? input.files[0] : null;
+
+        if (file) {
+            // Verifica se o arquivo é PNG, JPG ou SVG
+            const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+            if (validTypes.includes(file.type)) {
+                this.$emit('imagem-selecionada-footer', file);  // Emite evento para o PaginaUsuario
+            } else {
+                alert('Por favor, selecione um arquivo PNG, JPG ou SVG.');
+            }
+        }
+    }
+
+    // Funções de outros eventos (como adicionar link, etc.)
     public adicionarLinkFooter() {
         this.$emit('adicionar-link-footer');
     }
 
-    // links footer
     public adicionarTituloFooter() {
         this.$emit('adicionar-titulo-footer');
     }
 
-    //notas footer
     public adicionarNotaFooter() {
         this.$emit('adicionar-nota-footer');
     }
 
-    //tela no computador
     public mostrarTelaComputador() {
         this.$emit('mudar-tela', 'computador');
     }
 
-    //tela no celular
     public mostrarTelaCelular() {
         this.$emit('mudar-tela', 'celular');
     }
