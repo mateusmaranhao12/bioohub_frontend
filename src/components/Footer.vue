@@ -48,11 +48,11 @@ export default class Footer extends Vue {
 
         if (file) {
             // Verifica se o arquivo é PNG, JPG ou SVG
-            const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml'];
+            const validTypes = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp'];
             if (validTypes.includes(file.type)) {
                 this.$emit('imagem-selecionada-footer', file);  // Emite evento para o PaginaUsuario
             } else {
-                alert('Por favor, selecione um arquivo PNG, JPG ou SVG.');
+                alert('Por favor, selecione um arquivo PNG, JPG, WEBP ou SVG.');
             }
         }
     }

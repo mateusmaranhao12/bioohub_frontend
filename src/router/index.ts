@@ -6,8 +6,8 @@ import Index from '../views/Index.vue'
 import Login from '../views/Login.vue'
 import PaginaUsuario from '@/views/PaginaUsuario.vue'
 import Planos from '@/components/Planos.vue'
-import RedesSociais from '@/components/RedesSociais.vue'
 import Usuario from '@/views/Usuario.vue'
+import PaginaNaoEncontrada from '@/views/PaginaNaoEncontrada.vue'
 
 function isAuthenticated() { //verificar se o usuario está autenticado
   //verificar se o email do usuário está salvo no sessionStorage
@@ -30,12 +30,6 @@ const routes: Array<RouteRecordRaw> = [
     component: Cadastro,
     props: (route) => ({ userId: route.params.userId }),
     children: [
-      {
-        path: 'redes-sociais', // Rota filha para RedesSociais
-        name: 'redes-sociais',
-        component: RedesSociais,
-        props: (route) => ({ userId: route.params.userId })
-      },
       {
         path: 'planos', // Rota filha para Planos
         name: 'planos',
@@ -69,11 +63,16 @@ const routes: Array<RouteRecordRaw> = [
 
   //Usuario.vue
   {
-    path: '/usuario',
+    path: '/:username',
     name: 'usuario',
     component: Usuario
-  }
+  },
 
+  //PaginaNaoEncontrada.vue
+  {
+    path: '/:catchAll(.*)*', //PaginaNaoEncontrada.vue, se a pagina digitada nao existir
+    component: PaginaNaoEncontrada
+  },
 
 ]
 

@@ -302,7 +302,8 @@
                         </div>
 
                         <!-- Lista de mapas footer -->
-                        <div v-for="(mapa, index) in mapasFooter" :key="index" class="animate__animated animate__zoomIn link-card card-maps card mb-3">
+                        <div v-for="(mapa, index) in mapasFooter" :key="index"
+                            class="animate__animated animate__zoomIn link-card card-maps card mb-3">
                             <div class="mt-2">
                                 <div class="float-end">
                                     <span class="action-icons">
@@ -406,6 +407,8 @@
             <!--<button class="btn btn-danger" @click="limparTodasImagens">Limpar Todas as Imagens</button>-->
 
             <!--<button class="btn btn-light" @click="clearNotas">Limpar Links</button>-->
+
+            <!--<button @click="limparImagensDePerfil"> Limpar Todas as Imagens de Perfil </button>-->
 
             <!--Foter-->
             <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
@@ -1086,6 +1089,30 @@ export default class PaginaUsuario extends Vue {
                 console.error('Erro ao remover a imagem de perfil:', error.response?.data || error.message)
             })
     }
+
+    /*public limparImagensDePerfil() {
+        // Percorre todas as chaves do localStorage
+        for (let i = 0; i < localStorage.length; i++) {
+            const chave = localStorage.key(i);
+
+            // Verifica se a chave está relacionada ao perfil (começa com 'perfil_')
+            if (chave && chave.startsWith('perfil_')) {
+                const perfilItem = localStorage.getItem(chave);
+
+                if (perfilItem) {
+                    const perfil = JSON.parse(perfilItem);
+
+                    // Se existir uma imagem de perfil, remove apenas o campo `foto_perfil`
+                    if (perfil && perfil.foto_perfil) {
+                        delete perfil.foto_perfil;
+                        localStorage.setItem(chave, JSON.stringify(perfil));
+                    }
+                }
+            }
+        }
+
+        console.log("Todas as imagens de perfil foram removidas do localStorage.");
+    } */
 
     // Alterna o estado de edição do nome
     public editarNome() {

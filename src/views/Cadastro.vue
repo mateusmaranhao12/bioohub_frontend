@@ -120,16 +120,6 @@
                 </div>
 
             </div>
-
-            <!-- Etapa 4 (Redes sociais) -->
-            <div v-if="etapa === 4"
-                :class="{ 'animate__animated animate__fadeOutLeft': animacaoSaida, 'animate__animated animate__fadeInRight': animacaoEntrada }"
-                class="cadastro col-md-12">
-
-                <!--Funcao cadastrar usuario-->
-                <RedesSociais :userId="userId" @pular="pularEtapa" />
-
-            </div>
         </div>
     </div>
 
@@ -138,7 +128,6 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component'
 import Planos from '../components/Planos.vue'
-import RedesSociais from '@/components/RedesSociais.vue'
 import Alerta from '@/components/Alerta.vue'
 import GrabLink from '@/components/GrabLink.vue'
 import axios from 'axios'
@@ -148,7 +137,6 @@ import { Alert } from '@/interfaces/Alert'
     components: {
         Alerta,
         Planos,
-        RedesSociais,
         GrabLink
     },
 
@@ -235,7 +223,7 @@ export default class Cadastro extends Vue {
             console.log('ID do usuário armazenado:', response.data.usuario_id)
 
             // Redireciona o usuário após o cadastro
-            this.$router.push({ name: 'planos', params: { userId: response.data.usuario_id } }) // Passando o ID do usuário
+            this.$router.push('/pagina-usuario') // Passando o ID do usuário
 
             return response // Retorne a resposta corretamente
         } catch (error) {
@@ -322,36 +310,6 @@ export default class Cadastro extends Vue {
             .catch(error => {
                 console.error('Erro ao cadastrar usuário durante a etapa de pular:', error)
             })
-    }
-
-    // Adicionar redes sociais
-    public cadastrarRedesSociais(): Promise<void> {
-        return new Promise((resolve, reject) => {
-            console.log('Dados a serem enviados para cadastro de redes sociais: ', {
-                usuario_id: this.usuario_id,
-                redes: this.redesSociaisSelecionadas
-            })
-
-            axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', {
-                usuario_id: this.usuario_id,
-                redes: this.redesSociaisSelecionadas
-            })
-                .then(response => {
-                    console.log('Redes sociais cadastradas: ', response.data)
-                    this.$router.push('/pagina-usuario')
-                    resolve() // Resolve a promise
-                })
-                .catch(error => {
-                    console.log('Erro ao cadastrar redes sociais: ', error)
-                    if (error.response && error.response.data) {
-                        console.error('Resposta do servidor: ', error.response.data)
-                    } else {
-                        console.error('Erro inesperado:', error)
-                    }
-                    this.mostrarMensagemAlerta('fa-solid fa-circle-info', 'Erro ao cadastrar redes sociais.', 'alert-error')
-                    reject(new Error('Erro ao cadastrar redes sociais.'))
-                })
-        })
     }
 
     //proxima etapa
