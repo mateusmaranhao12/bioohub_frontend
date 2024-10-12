@@ -66,9 +66,22 @@
                         <img style="border-radius: 18px;" :src="imagem_footer.imagem" class="img-fluid w-100 h-100" />
                     </div>
 
-                    <div
+                    <!-- Mapa -->
+                    <div v-for="(mapa, index) in mapas" :key="index"
                         class="animate__animated animate__zoomIn card link-card card-redes-sociais d-flex flex-column align-items-center justify-content-center">
-                        <i class="fa-solid fa-globe fa-2x"></i>
+                        <h6>{{ mapa.nome }}</h6>
+                        <button class="btn btn-danger" @click="abrirMapaGoogleMaps(mapa.mapa_url)">
+                            <i class="fa-solid fa-location-dot" style="color: white;"></i> Ver localização
+                        </button>
+                    </div>
+
+                    <!--Mapa Footer-->
+                    <div v-for="(mapa_footer, index) in mapas_footer" :key="index"
+                        class="animate__animated animate__zoomIn card link-card card-redes-sociais d-flex flex-column align-items-center justify-content-center">
+                        <h6>{{ mapa_footer.titulo }}</h6>
+                        <button class="btn btn-danger" @click="abrirMapaGoogleMaps(mapa_footer.url)">
+                            <i class="fa-solid fa-location-dot" style="color: white;"></i> Ver localização
+                        </button>
                     </div>
 
                     <!-- Video -->
@@ -85,7 +98,7 @@
 
                     <div
                         class="animate__animated animate__zoomIn card link-card card-maps d-flex flex-column align-items-center justify-content-center">
-                        <i class="fa-solid fa-location-dot fa-2x"></i>
+                        <i class="fa-solid fa-link fa-2x"></i>
                     </div>
                     <div
                         class="animate__animated animate__zoomIn card link-card card-links-livres d-flex flex-column align-items-center justify-content-center">
@@ -122,6 +135,9 @@ export default class Usuario extends Vue {
     public imagens: Array<{ imagem: string }> = []
     public imagens_footer: Array<{ imagem: string }> = []
     public videos: Array<{ video_url: string }> = []
+    public mapas: Array<{ mapa_url: string, nome: string }> = []
+    public mapas_footer: Array<{ url: string, titulo: string }> = []
+
     public carregando = true // Variável para controlar o estado de carregamento
 
     created() {
@@ -154,12 +170,14 @@ export default class Usuario extends Vue {
                     this.usuarioEncontrado = true;
 
                     // Atribuindo os dados do perfil retornados
-                    const perfil = response.data.perfil;
-                    const titulos = response.data.titulos;
-                    const notas = response.data.notas;
-                    const videos = response.data.videos || [];
-                    const imagens = response.data.imagens || []; // Recebe as imagens do backend
-                    const imagens_footer = response.data.imagens_footer || [];
+                    const perfil = response.data.perfil
+                    const titulos = response.data.titulos
+                    const notas = response.data.notas
+                    const videos = response.data.videos || []
+                    const imagens = response.data.imagens || []
+                    const imagens_footer = response.data.imagens_footer || []
+                    const mapas = response.data.mapas || []
+                    const mapas_footer = response.data.mapas_footer || []
 
                     if (perfil) {
                         // Lógica para foto de perfil
@@ -169,18 +187,16 @@ export default class Usuario extends Vue {
                         this.descricao = perfil.descricao || '';
                     } else {
                         console.log('Perfil não encontrado.');
-                    }
-
-                    if (titulos) {
+                    } if (titulos) {
                         this.titulos = titulos;
-                    }
-
-                    if (notas) {
+                    } if (notas) {
                         this.notas = notas;
-                    }
-
-                    if (videos) {
+                    } if (videos) {
                         this.videos = videos;
+                    } if (mapas) {
+                        this.mapas = mapas
+                    } if(mapas_footer) {
+                        this.mapas_footer = mapas_footer
                     }
 
                     // Imagens agora são tratadas da mesma forma que a foto de perfil
@@ -213,6 +229,16 @@ export default class Usuario extends Vue {
 
     voltarPaginaAnterior() { // Voltar para a página que estava anteriormente
         this.$router.go(-1);
+    }
+
+    // Método para abrir o Google Maps
+    public abrirMapaGoogleMaps(mapaUrl: string) {
+        // Verificar se o URL é válido antes de tentar abrir
+        if (mapaUrl && mapaUrl.startsWith('https://www.google.com/maps')) {
+            window.open(mapaUrl, '_blank');  // Abre o link em uma nova aba
+        } else {
+            console.error('URL do Google Maps inválido:', mapaUrl);
+        }
     }
 }
 </script>
