@@ -17,8 +17,8 @@
             <div class="col-md-6 mt-5 d-flex flex-column align-items-center text-center d-md-block">
                 <div v-if="usuarioEncontrado"
                     class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center">
-                    <img :src="fotoPerfil || require('@/assets/imgs/default-image.png')" class="img-fluid rounded-circle"
-                        style="width: 150px; height: 150px; object-fit: cover" />
+                    <img :src="fotoPerfil || require('@/assets/imgs/default-image.png')"
+                        class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover" />
                 </div>
 
                 <div v-if="usuarioEncontrado" class="mt-4 animate__animated animate__zoomIn w-100">
@@ -35,13 +35,23 @@
             <!-- Coluna Links -->
             <div v-if="usuarioEncontrado" class="col-md-6 mt-5">
                 <div class="d-flex flex-wrap gap-3 justify-content-between">
-                    <div class="col-md-12 titulo-footer">
-                        <h1>Teste</h1>
+                    <!--Titulos-->
+                    <div v-for="(titulo, index) in titulos" :key="index"
+                        class="animate__animated animate__zoomIn col-md-12">
+                        <h1 class="titulo-footer">{{ titulo.titulo }}</h1>
                     </div>
+
+                    <!--Notas-->
+                    <div v-for="(nota, index) in notas" :key="index"
+                        class="animate__animated animate__zoomIn col-md-12">
+                        <p class="nota-display">{{ nota.nota }}</p>
+                    </div>
+
+                    <!-- Imagens -->
                     <div
                         class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative">
-                        <i class="fa-solid fa-mountain fa-2x"></i>
                     </div>
+
 
                     <div
                         class="animate__animated animate__zoomIn card link-card card-redes-sociais d-flex flex-column align-items-center justify-content-center">
@@ -85,6 +95,9 @@ export default class Usuario extends Vue {
     public fotoPerfil: string | null = null
     public nome: string | null = null
     public descricao: string | null = null
+    public titulos: Array<{ titulo: string }> = []
+    public notas: Array<{ nota: string }> = []
+    public imagens: string | null = null
 
     created() {
         // Obter o nome de usuário da URL
@@ -99,27 +112,40 @@ export default class Usuario extends Vue {
         }
     }
 
-
     public fetchUserData(username: string) {
-
         // Verifica no backend se o usuário existe
         axios
             .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${username}`)
             .then((response) => {
-
                 if (response.data && response.data.usuario) {
                     this.username = username;
                     this.usuarioEncontrado = true;
 
                     // Atribuindo os dados do perfil retornados
                     const perfil = response.data.perfil;
+                    const titulos = response.data.titulos;
+                    const notas = response.data.notas;
+                    const imagens = response.data.imagens;  // Aqui vamos trabalhar com apenas uma imagem
+
                     if (perfil) {
-                        this.fotoPerfil = perfil.foto_perfil ? `data:image/jpeg;base64,${perfil.foto_perfil}` : null;
-                        this.nome = perfil.nome || ''
-                        this.descricao = perfil.descricao || ''
+                        // Lógica para foto de perfil
+                        this.fotoPerfil = perfil.foto_perfil ?
+                            `data:image/jpeg;base64,${perfil.foto_perfil}` : null;
+                        console.log('foto de perfil: ', perfil.foto_perfil);
+                        this.nome = perfil.nome || '';
+                        this.descricao = perfil.descricao || '';
                     } else {
                         console.log('Perfil não encontrado.');
                     }
+
+                    if (titulos) {
+                        this.titulos = titulos;
+                    }
+
+                    if (notas) {
+                        this.notas = notas;
+                    }
+
                 } else {
                     this.usuarioEncontrado = false;
                 }
@@ -134,7 +160,6 @@ export default class Usuario extends Vue {
         this.$router.go(-1)
     }
 }
-
 </script>
 
 <style lang="scss">

@@ -99,6 +99,11 @@
                             </button>
                         </div>
 
+                        <!--Notas footer-->
+                        <NotasFooter :notasFooter="notasFooter" @salvar-nota-footer="salvarNotaFooter"
+                            @salvar-alteracoes-nota-footer="salvarAlteracoesNotaFooter"
+                            @editar-nota-footer="editarNotaFooter" @remover-nota-footer="removerNotaFooter" />
+
                         <!--Inserir imagens-->
                         <div class="animate__animated animate__zoomIn card link-card 
                             card-imagem d-flex flex-column align-items-center justify-content-center 
@@ -157,11 +162,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!--Notas footer-->
-                        <NotasFooter :notasFooter="notasFooter" @salvar-nota-footer="salvarNotaFooter"
-                            @salvar-alteracoes-nota-footer="salvarAlteracoesNotaFooter"
-                            @editar-nota-footer="editarNotaFooter" @remover-nota-footer="removerNotaFooter" />
 
                         <!--Inserir redes sociais-->
                         <div class="animate__animated animate__zoomIn card link-card card-redes-sociais 
