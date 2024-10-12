@@ -13,6 +13,7 @@ export default createStore({
     videoUrl: null as string | null,
     videoId: null as string | null,
     mapaUrl: null as string | null,
+    mapaNome: null as string | null,
     nota: [] as Array<{ id: number; nota: string; usuario_id: string }>,
   },
 
@@ -107,6 +108,14 @@ export default createStore({
       state.mapaUrl = null
     },
 
+    SET_MAPA_NOME(state, mapaNome) {
+      state.mapaNome = mapaNome
+    },
+
+    CLEAR_MAPA_NOME(state) {
+      state.mapaNome = null
+    },
+
     // Define todos os links aleatórios no estado
     SET_LINKS_ALEATORIOS(state, linksAleatorios) {
       state.linksAleatorios = linksAleatorios;
@@ -185,6 +194,7 @@ export default createStore({
       commit('CLEAR_IMAGEM_PERFIL_URL')
       commit('CLEAR_VIDEO_URL')
       commit('CLEAR_MAPA_URL')
+      commit('CLEAR_MAPA_NOME')
       commit('CLEAR_LINKS_ALEATORIOS')
       commit('CLEAR_NOTA')
       localStorage.removeItem('usuario')
@@ -323,6 +333,26 @@ export default createStore({
       }
     },
 
+    // Ação para salvar o mapa no localStorage e Vuex
+    saveMapaNome({ commit, state }, mapaNome) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId && mapaNome) {
+        localStorage.setItem(`mapa_nome_${userId}`, mapaNome); // Salva o mapa no localStorage
+        commit('SET_MAPA_NOME', mapaNome); // Armazena no estado do Vuex
+      }
+    },
+
+    // Carrega o mapa do localStorage
+    loadMapaNome({ commit, state }) {
+      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+      if (userId) {
+        const mapaNome = localStorage.getItem(`mapa_nome_${userId}`);
+        if (mapaNome) {
+          commit('SET_MAPA_NOME', mapaNome);
+        }
+      }
+    },
+
     // Carrega os links aleatórios do localStorage
     loadLinksAleatorios({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
@@ -410,6 +440,7 @@ export default createStore({
     videoUrl: state => state.videoUrl,
     linksAleatorios: state => state.linksAleatorios,
     mapaUrl: state => state.mapaUrl,
+    mapaNome: state => state.mapaNome,
     nota: state => state.nota,
   },
 

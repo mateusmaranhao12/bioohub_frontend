@@ -286,6 +286,8 @@
 
                             <!-- Input para o link do Google Maps e botão para confirmar -->
                             <div v-if="mostrar_input_maps && !mostrar_maps" class="mt-3">
+                                <input v-model="textoLocalizacaoInput" class="form-control mb-2" type="text"
+                                    placeholder="Nome da localização do Google Maps" />
                                 <input v-model="localizacaoInput" class="form-control" type="text"
                                     placeholder="Insira a URL de localização do Google Maps" />
                                 <button class="btn btn-success mt-3" @click="salvarMapaGoogleMaps">
@@ -295,6 +297,7 @@
 
                             <!-- Botão para abrir o link do Google Maps -->
                             <div v-if="mostrar_maps" class="mt-3">
+                                <h6>{{ googleMapsNome }}</h6>
                                 <button class="btn btn-map" @click="abrirMapaGoogleMaps">
                                     <i class="fa-solid fa-location-dot"></i> Ver localização
                                 </button>
@@ -524,6 +527,8 @@ export default class PaginaUsuario extends Vue {
     public mostrar_input_maps = false
     public localizacaoInput = ''
     public googleMapsUrl = ''
+    public googleMapsNome = ''
+    public textoLocalizacaoInput = ''
 
     //links aleatorios
     private adicionandoLinkAleatorio = false
@@ -1399,87 +1404,79 @@ export default class PaginaUsuario extends Vue {
 
     //armazenar o URL do Google Maps no input
     public salvarMapaGoogleMaps() {
-        // Verifica se o input não está vazio
-        if (this.localizacaoInput) {
-            // Usa o link fornecido no input e apenas armazena o valor
-            this.googleMapsUrl = this.localizacaoInput
+        if (this.localizacaoInput && this.textoLocalizacaoInput) {
+            this.googleMapsUrl = this.localizacaoInput;
+            this.googleMapsNome = this.textoLocalizacaoInput; // Nome da localização
 
-            // Marca que o mapa foi configurado, mas ainda não abriu
-            this.mostrar_maps = true
-            console.log(`URL do Google Maps armazenada: ${this.googleMapsUrl}`)
+            this.mostrar_maps = true;
 
-            // Envia o URL do Google Maps para o servidor
-            const userId = sessionStorage.getItem('user_id')
+            const userId = sessionStorage.getItem('user_id');
             if (userId) {
                 axios.post('http://localhost/Projetos/bioohub/backend/api/maps.php', {
                     usuario_id: userId,
-                    mapa_url: this.googleMapsUrl
+                    mapa_url: this.googleMapsUrl,
+                    nome: this.googleMapsNome // Envia o nome da localização também
                 })
                     .then(response => {
-                        console.log("Resposta recebida do servidor:", response.data)
+                        console.log("Resposta recebida do servidor:", response.data);
                         if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
-                            // Exibindo alerta de erro se a resposta indicar erro
-                            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error')
+                            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
                         } else {
-                            // Exibindo alerta de sucesso
-                            this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
+                            this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
 
-                            // Salva o mapa no localStorage
-                            localStorage.setItem(`mapa_${userId}`, this.googleMapsUrl)
+                            // Salva o nome e o mapa no localStorage
+                            localStorage.setItem(`mapa_nome_${userId}`, this.googleMapsNome);
+                            localStorage.setItem(`mapa_${userId}`, this.googleMapsUrl);
 
-                            // Atualiza o Vuex com a URL do mapa
-                            this.$store.commit('SET_MAPA_URL', this.googleMapsUrl)
+                            // Atualiza o Vuex com o nome e URL do mapa
+                            this.$store.commit('SET_MAPA_NOME', this.googleMapsNome);
+                            this.$store.commit('SET_MAPA_URL', this.googleMapsUrl);
                         }
                     })
                     .catch(error => {
-                        console.error("Erro ao salvar o mapa:", error)
-                        // Exibindo alerta de erro genérico em caso de falha na requisição
-                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar o mapa. Tente novamente mais tarde.', 'alert-error')
-                    })
+                        console.error("Erro ao salvar o mapa:", error);
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar o mapa. Tente novamente mais tarde.', 'alert-error');
+                    });
             }
         } else {
-            // Exibe uma mensagem de erro caso o input esteja vazio
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, insira uma URL válida de localização.', 'alert-error')
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, insira o nome e a URL da localização.', 'alert-error');
         }
     }
 
     //remover o mapa
     public removerMaps() {
-        this.mostrar_maps = false
-        this.localizacaoInput = ''
-        this.googleMapsUrl = ''
-        this.mostrar_input_maps = false
-        console.log('Mapa do Google Maps removido')
+        this.mostrar_maps = false;
+        this.localizacaoInput = '';
+        this.textoLocalizacaoInput = '';
+        this.googleMapsUrl = '';
 
-        const userId = sessionStorage.getItem('user_id')
+        const userId = sessionStorage.getItem('user_id');
         if (userId) {
-            // Requisição para remover o mapa do banco de dados
             axios.delete('http://localhost/Projetos/bioohub/backend/api/maps.php', {
                 data: {
                     usuario_id: userId
                 }
             })
                 .then(response => {
-                    console.log("Resposta recebida do servidor:", response.data)
+                    console.log("Resposta recebida do servidor:", response.data);
                     if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
-                        // Exibindo alerta de erro se a resposta indicar erro
-                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error')
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
                     } else {
-                        // Exibindo alerta de sucesso
-                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
+                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
 
-                        // Limpa o mapa no localStorage
-                        localStorage.removeItem(`mapa_${userId}`)
+                        // Remove o nome e o mapa do localStorage
+                        localStorage.removeItem(`mapa_nome_${userId}`);
+                        localStorage.removeItem(`mapa_${userId}`);
 
                         // Limpa o Vuex
-                        this.$store.commit('CLEAR_MAPA_URL')
+                        this.$store.commit('CLEAR_MAPA_NOME');
+                        this.$store.commit('CLEAR_MAPA_URL');
                     }
                 })
                 .catch(error => {
-                    console.error("Erro ao remover o mapa:", error)
-                    // Exibindo alerta de erro genérico em caso de falha na requisição
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o mapa. Tente novamente mais tarde.', 'alert-error')
-                })
+                    console.error("Erro ao remover o mapa:", error);
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o mapa. Tente novamente mais tarde.', 'alert-error');
+                });
         }
     }
 
@@ -1498,22 +1495,22 @@ export default class PaginaUsuario extends Vue {
 
     //carregar mapa existente
     public carregarMapaExistente(userId: string) {
-        // Primeiro tenta pegar o mapa do Vuex
-        const mapaUrl = this.$store.state.mapaUrl
+        const mapaUrl = this.$store.state.mapaUrl;
+        const mapaNome = this.$store.state.mapaNome;
 
-        if (mapaUrl) {
-            // Se houver uma URL do mapa no Vuex, exibe o mapa
-            this.googleMapsUrl = mapaUrl
-            this.mostrar_maps = true
-            console.log(`Mapa carregado para o usuário com ID: ${userId}`)
+        if (mapaUrl && mapaNome) {
+            this.googleMapsUrl = mapaUrl;
+            this.googleMapsNome = mapaNome;
+            this.mostrar_maps = true;
+
         } else {
-            // Se não tiver no Vuex, tenta pegar do localStorage
-            const mapaUrlFromLocalStorage = localStorage.getItem(`mapa_${userId}`)
-            if (mapaUrlFromLocalStorage) {
-                // Se encontrar uma URL no localStorage, exibe o mapa
-                this.googleMapsUrl = mapaUrlFromLocalStorage
-                this.mostrar_maps = true
-                console.log(`Mapa carregado do localStorage para o usuário com ID: ${userId}`)
+            const mapaUrlFromLocalStorage = localStorage.getItem(`mapa_${userId}`);
+            const mapaNomeFromLocalStorage = localStorage.getItem(`mapa_nome_${userId}`);
+
+            if (mapaUrlFromLocalStorage && mapaNomeFromLocalStorage) {
+                this.googleMapsUrl = mapaUrlFromLocalStorage;
+                this.googleMapsNome = mapaNomeFromLocalStorage;
+                this.mostrar_maps = true;
             }
         }
     }
