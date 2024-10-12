@@ -1,6 +1,13 @@
 <template>
     <div class="container pagina-usuario">
-        <div class="row">
+        <!-- Spinner de loading -->
+        <div v-if="carregando" class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Carregando...</span>
+            </div>
+        </div>
+
+        <div v-else class="row">
 
             <!-- Mensagem de erro -->
             <div v-if="!usuarioEncontrado">
@@ -35,32 +42,47 @@
             <!-- Coluna Links -->
             <div v-if="usuarioEncontrado" class="col-md-6 mt-5">
                 <div class="d-flex flex-wrap gap-3 justify-content-between">
-                    <!--Titulos-->
+                    <!-- Titulos -->
                     <div v-for="(titulo, index) in titulos" :key="index"
                         class="animate__animated animate__zoomIn col-md-12">
                         <h1 class="titulo-footer">{{ titulo.titulo }}</h1>
                     </div>
 
-                    <!--Notas-->
+                    <!-- Notas -->
                     <div v-for="(nota, index) in notas" :key="index"
                         class="animate__animated animate__zoomIn col-md-12">
                         <p class="nota-display">{{ nota.nota }}</p>
                     </div>
 
                     <!-- Imagens -->
-                    <div
+                    <div v-for="(imagem, index) in imagens" :key="index"
                         class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative">
+                        <img style="border-radius: 18px;" :src="imagem.imagem" class="img-fluid w-100 h-100" />
                     </div>
 
+                    <!-- Imagens Footer -->
+                    <div v-for="(imagem_footer, index) in imagens_footer" :key="index"
+                        class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative">
+                        <img style="border-radius: 18px;" :src="imagem_footer.imagem" class="img-fluid w-100 h-100" />
+                    </div>
 
                     <div
                         class="animate__animated animate__zoomIn card link-card card-redes-sociais d-flex flex-column align-items-center justify-content-center">
                         <i class="fa-solid fa-globe fa-2x"></i>
                     </div>
-                    <div
+
+                    <!-- Video -->
+                    <div v-if="usuarioEncontrado && videos.length"
                         class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center">
-                        <i class="fa-solid fa-video fa-2x"></i>
+                        <div v-for="(video, index) in videos" :key="index" class="video-container">
+                            <!-- Criando o iframe com o link do YouTube -->
+                            <iframe v-bind:src="'https://www.youtube.com/embed/' + getYouTubeVideoId(video.video_url)"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen class="youtube-iframe"></iframe>
+                        </div>
                     </div>
+
                     <div
                         class="animate__animated animate__zoomIn card link-card card-maps d-flex flex-column align-items-center justify-content-center">
                         <i class="fa-solid fa-location-dot fa-2x"></i>
@@ -97,7 +119,10 @@ export default class Usuario extends Vue {
     public descricao: string | null = null
     public titulos: Array<{ titulo: string }> = []
     public notas: Array<{ nota: string }> = []
-    public imagens: string | null = null
+    public imagens: Array<{ imagem: string }> = []
+    public imagens_footer: Array<{ imagem: string }> = []
+    public videos: Array<{ video_url: string }> = []
+    public carregando = true // Variável para controlar o estado de carregamento
 
     created() {
         // Obter o nome de usuário da URL
@@ -112,11 +137,18 @@ export default class Usuario extends Vue {
         }
     }
 
+    // Método para obter o ID do vídeo a partir da URL do YouTube
+    public getYouTubeVideoId(url: string): string {
+        const videoId = url.split('v=')[1];
+        return videoId ? videoId.split('&')[0] : '';
+    }
+
     public fetchUserData(username: string) {
         // Verifica no backend se o usuário existe
         axios
             .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${username}`)
             .then((response) => {
+                this.carregando = false; // Desabilita o carregamento após a resposta
                 if (response.data && response.data.usuario) {
                     this.username = username;
                     this.usuarioEncontrado = true;
@@ -125,12 +157,13 @@ export default class Usuario extends Vue {
                     const perfil = response.data.perfil;
                     const titulos = response.data.titulos;
                     const notas = response.data.notas;
-                    const imagens = response.data.imagens;  // Aqui vamos trabalhar com apenas uma imagem
+                    const videos = response.data.videos || [];
+                    const imagens = response.data.imagens || []; // Recebe as imagens do backend
+                    const imagens_footer = response.data.imagens_footer || [];
 
                     if (perfil) {
                         // Lógica para foto de perfil
-                        this.fotoPerfil = perfil.foto_perfil ?
-                            `data:image/jpeg;base64,${perfil.foto_perfil}` : null;
+                        this.fotoPerfil = perfil.foto_perfil ? `data:image/jpeg;base64,${perfil.foto_perfil}` : null;
                         console.log('foto de perfil: ', perfil.foto_perfil);
                         this.nome = perfil.nome || '';
                         this.descricao = perfil.descricao || '';
@@ -146,24 +179,59 @@ export default class Usuario extends Vue {
                         this.notas = notas;
                     }
 
+                    if (videos) {
+                        this.videos = videos;
+                    }
+
+                    // Imagens agora são tratadas da mesma forma que a foto de perfil
+                    if (imagens && imagens.length > 0) {
+                        this.imagens = imagens.map((imagem: { imagem: any; }) => ({
+                            imagem: `data:image/jpeg;base64,${imagem.imagem}`,
+                        }));
+                    } else {
+                        console.log('Nenhuma imagem encontrada para este usuário.');
+                    }
+
+                    if (imagens_footer && imagens_footer.length > 0) {
+                        this.imagens_footer = imagens_footer.map((imagem: { imagem: any; }) => ({
+                            imagem: `data:image/jpeg;base64,${imagem.imagem}`,
+                        }));
+                    } else {
+                        console.log('Nenhuma imagem encontrada para este usuário.');
+                    }
+
                 } else {
                     this.usuarioEncontrado = false;
                 }
             })
             .catch((error) => {
+                this.carregando = false; // Desabilita o carregamento mesmo em caso de erro
                 console.error('Erro na requisição:', error);
                 this.usuarioEncontrado = false; // Marca como não encontrado em caso de erro
             });
     }
 
-    voltarPaginaAnterior() { //voltar para a pagina que estava anteriormente
-        this.$router.go(-1)
+    voltarPaginaAnterior() { // Voltar para a página que estava anteriormente
+        this.$router.go(-1);
     }
 }
 </script>
 
 <style lang="scss">
 @import '../scss/pagina_usuario.scss';
+
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 999;
+}
+
+.spinner-border {
+    width: 4rem;
+    height: 4rem;
+}
 
 .btn-error {
     background-color: white;
