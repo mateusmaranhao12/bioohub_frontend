@@ -35,10 +35,12 @@
                 </ul>
             </div>
 
-            <router-link to="/usuario"
+            <!-- Redireciona para a página do usuário usando o valor da prop 'usuario' -->
+            <a :href="`/${usuario}`" target="_blank"
                 class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-visualizar-perfil btn-sm">
                 <i class="fa-solid fa-user"></i>
-            </router-link>
+            </a>
+
         </div>
     </div>
 </template>

@@ -57,7 +57,7 @@
                     <VisualizacoesPerfil />
 
                     <!-- Menu Hamburguer visível em dispositivos menores (abaixo do textarea) -->
-                    <MenuHamburguer @fazer-logout="fazerLogout" />
+                    <MenuHamburguer :email="email" :usuario="usuario" @fazer-logout="fazerLogout" />
 
                 </div>
 

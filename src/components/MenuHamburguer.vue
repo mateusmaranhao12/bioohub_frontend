@@ -44,10 +44,11 @@
                                 </ul>
                             </div>
 
-                            <router-link to="/usuario"
-                                class="animate__animated animate__zoomIn btn btn-visualizar-perfil btn-sm">
+                            <!-- Redireciona para a página do usuário usando o valor da prop 'usuario' -->
+                            <a :href="`/${usuario}`" target="_blank"
+                                class="animate__animated animate__zoomIn botao-visualizar-perfil btn btn-visualizar-perfil btn-sm">
                                 <i class="fa-solid fa-user"></i>
-                            </router-link>
+                            </a>
                         </div>
                     </li>
                 </ul>
@@ -61,6 +62,17 @@ import { defineComponent } from 'vue';
 
 export default defineComponent({
     name: 'MenuHamburguer',
+    props: {
+        email: {
+            type: String,
+            required: true,
+        },
+        usuario: {
+            type: String,
+            required: true,
+        }
+    },
+    
     methods: {
         fazerLogout() {
             this.$emit('fazer-logout')
