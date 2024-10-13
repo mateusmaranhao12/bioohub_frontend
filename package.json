@@ -14,9 +14,11 @@
     "leaflet": "^1.9.4",
     "leaflet-control-geocoder": "^2.4.0",
     "leaflet-geosearch": "^4.0.0",
+    "qrcode.vue": "^3.5.0",
     "vue": "^3.2.13",
     "vue-class-component": "^8.0.0-0",
     "vue-property-decorator": "^9.1.2",
+    "vue-qr": "^4.0.9",
     "vue-router": "^4.0.13",
     "vuex": "^4.0.0"
   },

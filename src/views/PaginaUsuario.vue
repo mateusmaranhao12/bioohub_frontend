@@ -404,6 +404,31 @@
                 </div>
             </div>
 
+            <!-- Modal de Compartilhar -->
+            <div v-if="mostrarModalCompartilhar" class="modal fade show" id="modalCompartilhar" tabindex="-1"
+                aria-labelledby="modalCompartilharLabel" aria-hidden="true" style="display: block;">
+                <div class="modal-backdrop fade show" style="z-index: 1040;"></div>
+                <div class="modal-dialog" style="z-index: 1050;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalCompartilharLabel">Compartilhar</h5>
+                            <button type="button" class="btn-close" aria-label="Close"
+                                @click="fecharModalCompartilhar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>bioohub.me/{{ usuario }}</p>
+                            <!-- Exibir o QR Code -->
+                            <QRCodeVue :value="qrcodeValue()" :size="150" level="H" />
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                @click="fecharModalCompartilhar">Fechar</button>
+                            <button type="button" class="btn btn-primary">Salvar mudanças</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Botões visíveis em dispositivos maiores -->
             <MenuConfig :email="email" :usuario="usuario" @logout="fazerLogout" />
 
@@ -417,7 +442,7 @@
             <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
                 @adicionar-titulo-footer="adicionarTituloFooter" @adicionar-nota-footer="adicionarNotaFooter"
                 @imagem-selecionada-footer="handleImagemFooterSelecionada" @adicionar-mapa-footer="adicionarMapaFooter"
-                class="animate__animated animate__zoomIn" />
+                @abrir-modal-compartilhar="mostrarModalCompartilhar = true" class="animate__animated animate__zoomIn" />
 
             <!-- Inclui os modais -->
             <AlterarSenha />
@@ -456,6 +481,7 @@ import MenuConfig from '@/components/MenuConfig.vue'
 import TitulosFooter from '@/components/TitulosFooter.vue'
 import NotasFooter from '@/components/NotasFooter.vue'
 import LinksFooter from '@/components/LinksFooter.vue'
+import QRCodeVue from 'qrcode.vue';
 
 @Options({
     components: {
@@ -470,11 +496,12 @@ import LinksFooter from '@/components/LinksFooter.vue'
         MenuConfig,
         TitulosFooter,
         NotasFooter,
-        LinksFooter
+        LinksFooter,
+        QRCodeVue
     },
 
     methods: {
-        ...mapActions(['logout']) // Mapeando a ação de logout
+        ...mapActions(['logout']), // Mapeando a ação de logout
     }
 
 })
@@ -558,6 +585,23 @@ export default class PaginaUsuario extends Vue {
     //mapa footer
     public mapasFooter: Array<{ id: number, titulo: string, localizacao: string, editando: boolean, adicionando: boolean }> = [];
     public mapaIndex: number | null = null
+
+    //mostrar modal compartilhar
+    public mostrarModalCompartilhar = false
+
+    //qrcode value
+    qrcodeValue() {
+        return `http://localhost:8080/${this.usuario.toLowerCase()}`;
+    }
+
+    public abrirModalCompartilhar() {
+        this.mostrarModalCompartilhar = true;
+    }
+
+    // Método para fechar o modal
+    public fecharModalCompartilhar() {
+        this.mostrarModalCompartilhar = false;
+    }
 
     // Função para alterar o modo de visualização
     public alterarModoTela(modo: string) {

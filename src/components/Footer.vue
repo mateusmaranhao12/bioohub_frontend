@@ -2,7 +2,7 @@
     <footer class="mb-3 footer d-flex justify-content-center align-items-center">
         <div class="footer-content row">
             <div class="col-md-4">
-                <button class="btn btn-share">Compartilhar</button>
+                <button class="btn btn-share" @click="abrirModalCompartilhar">Compartilhar</button>
             </div>
             <div class="col-md-4 d-flex justify-content-center">
                 <img src="../assets/imgs/link-building.png" @click="adicionarLinkFooter" class="img-footer img-fluid"
@@ -80,6 +80,10 @@ export default class Footer extends Vue {
 
     public mostrarTelaCelular() {
         this.$emit('mudar-tela', 'celular');
+    }
+
+    public abrirModalCompartilhar() {
+        this.$emit('abrir-modal-compartilhar');
     }
 }
 </script>
