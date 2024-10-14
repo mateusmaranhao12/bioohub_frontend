@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { createStore } from 'vuex';
 
 export default createStore({
@@ -19,7 +20,6 @@ export default createStore({
 
   mutations: {
 
-    
     // Define o usuário logado
     SET_USUARIO(state, usuario) {
       state.usuario = usuario;
@@ -89,13 +89,13 @@ export default createStore({
 
     // Define a URL do video
     SET_VIDEO_URL(state, videoUrl) {
-      state.videoUrl = videoUrl
+      state.videoUrl = videoUrl;
     },
 
     // Limpa o video ao fazer logout
     CLEAR_VIDEO_URL(state) {
-      state.videoUrl = null
-      state.videoId = null
+      state.videoUrl = null; // Define um array vazio ao invés de null
+      state.videoId = null;
     },
 
     // Define a URL do mapa
@@ -117,26 +117,26 @@ export default createStore({
     },
 
     // Define todos os links aleatórios no estado
-    SET_LINKS_ALEATORIOS(state, linksAleatorios) {
-      state.linksAleatorios = linksAleatorios;
+    SET_LINKS_ALEATORIOS(state, links) {
+      state.linksAleatorios = links;
     },
 
-    // Adiciona um novo link aleatório à lista
-    ADD_LINK_ALEATORIO(state, linkAleatorio) {
-      state.linksAleatorios.push(linkAleatorio);
+    ADD_LINK_ALEATORIO(state, link) {
+      state.linksAleatorios.push(link);
     },
 
-    // Atualiza um link aleatório existente
-    UPDATE_LINK_ALEATORIO(state, linkAtualizado) {
-      const index = state.linksAleatorios.findIndex(link => link.id === linkAtualizado.id);
+    UPDATE_LINK_ALEATORIO(state, updatedLink) {
+      const index = state.linksAleatorios.findIndex(link => link.id === updatedLink.id);
       if (index !== -1) {
-        state.linksAleatorios.splice(index, 1, linkAtualizado);
+        state.linksAleatorios.splice(index, 1, updatedLink);
       }
     },
 
-    // Remove um link aleatório da lista pelo ID
     DELETE_LINK_ALEATORIO(state, linkId) {
-      state.linksAleatorios = state.linksAleatorios.filter(link => link.id !== linkId);
+      const index = state.linksAleatorios.findIndex(link => link.id === linkId);
+      if (index !== -1) {
+        state.linksAleatorios.splice(index, 1);
+      }
     },
 
     // Limpa os links aleatórios ao fazer logout
@@ -145,8 +145,8 @@ export default createStore({
     },
 
     // Define todas as notas no estado
-    SET_NOTA(state, nota) {
-      state.nota = nota;
+    SET_NOTA(state, notas) {
+      state.nota = Array.isArray(notas) ? notas : [];
     },
 
     // Adiciona uma nova nota à lista
@@ -156,7 +156,7 @@ export default createStore({
 
     // Atualiza uma nota existente
     UPDATE_NOTA(state, nota) {
-      const index = state.nota.findIndex(nota => nota.id === nota.id);
+      const index = state.nota.findIndex(n => n.id === nota.id);
       if (index !== -1) {
         state.nota.splice(index, 1, nota);
       }
@@ -170,7 +170,7 @@ export default createStore({
     // Limpa as notas ao fazer logout
     CLEAR_NOTA(state) {
       state.nota = [];
-    },
+    }
 
   },
 
@@ -208,42 +208,50 @@ export default createStore({
       }
     },
 
-    // Ação para salvar a imagem de perfil no localStorage e Vuex
+    // Ação para salvar a imagem de perfil no Vuex
     saveImagemPerfil({ commit, state }, imagemPerfilUrl) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId && imagemPerfilUrl) {
-        localStorage.setItem(`imagem_${userId}`, imagemPerfilUrl); // Salva a imagem no localStorage
         commit('SET_IMAGEM_PERFIL_URL', imagemPerfilUrl); // Armazena no estado do Vuex
       }
     },
 
-    // Carrega a imagem de perfil do localStorage
-    loadImagemPerfil({ commit, state }) {
-      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
-      if (userId) {
-        const imagemPerfilUrl = localStorage.getItem(`imagem_${userId}`);
-        if (imagemPerfilUrl) {
-          commit('SET_IMAGEM_PERFIL_URL', imagemPerfilUrl);
-        }
-      }
-    },
-
-    // Salva os links no localStorage
+    // Salva os links (agora, provavelmente no backend ou em uma store centralizada)
     saveLinks({ state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+
       if (userId) {
-        localStorage.setItem(`links_${userId}`, JSON.stringify(state.links));
+        // Fazendo a requisição para salvar os links no backend
+        axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', {
+          userId: userId,
+          links: state.links  // Os links estão no estado do Vuex
+        })
+          .then(response => {
+            console.log('Links salvos com sucesso:', response.data);
+          })
+          .catch(error => {
+            console.error('Erro ao salvar os links:', error);
+          });
       }
     },
 
-    // Carrega os links do localStorage e filtra para o usuário logado
+    // Carrega os links do backend e filtra para o usuário logado
     loadLinks({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+
       if (userId) {
-        const links = localStorage.getItem(`links_${userId}`);
-        if (links) {
-          commit('SET_LINKS', JSON.parse(links));
-        }
+        // Fazendo a requisição para o backend para carregar os dados do usuário
+        axios.get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${userId}`)
+          .then(response => {
+            // O backend retornará os dados completos, incluindo os links e outras informações do usuário
+            if (response.data.usuario) {
+              // Comitar os links do backend para o Vuex (ou outro armazenamento)
+              commit('SET_LINKS', response.data.redes_sociais); // Supondo que 'redes_sociais' é o campo com os links no retorno
+            }
+          })
+          .catch(error => {
+            console.error('Erro ao carregar os links:', error);
+          });
       }
     },
 
@@ -273,110 +281,133 @@ export default createStore({
       commit('DELETE_LINK_BY_URL', linkUrl);
     },
 
-    // Carrega as imagens do localStorage
+    // Carrega as imagens 
     saveImagem({ commit, state }, imagemUrl) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId && imagemUrl) {
-        localStorage.setItem(`imagem_${userId}`, imagemUrl); // Salva a imagem no localStorage
-        commit('SET_IMAGEM_URL', imagemUrl); // Armazena no estado do Vuex
+        // Envia a imagem para o backend
+        const dados = {
+          imagem: imagemUrl,
+          usuario_id: userId,
+        };
+
+        axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', dados, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+          .then(response => {
+            commit('SET_IMAGEM_URL', imagemUrl); // Armazena no estado do Vuex
+          })
+          .catch(error => {
+            console.error('Erro ao salvar imagem no backend:', error);
+          });
       }
     },
 
-    // Carrega a imagem do localStorage
+    // Carrega a imagem
     loadImagem({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
+
       if (userId) {
-        const imagemUrl = localStorage.getItem(`imagem_${userId}`);
-        if (imagemUrl) {
-          commit('SET_IMAGEM_URL', imagemUrl);
-        }
+        // Carrega os dados do usuário do backend
+        axios.get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${userId}`)
+          .then(response => {
+            if (response.data.perfil && response.data.perfil.foto_perfil) {
+              const imagemUrl = `data:image/jpeg;base64,${response.data.perfil.foto_perfil}`;
+              commit('SET_IMAGEM_URL', imagemUrl); // Armazena a imagem no Vuex
+            }
+          })
+          .catch(error => {
+            console.error('Erro ao carregar imagem do perfil:', error);
+          });
       }
     },
 
-    // Ação para salvar o video no localStorage e Vuex
+    // Ação para salvar o video no Vuex
     saveVideo({ commit, state }, videoUrl) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId && videoUrl) {
-        localStorage.setItem(`video_${userId}`, videoUrl); // Salva o video no localStorage
         commit('SET_VIDEO_URL', videoUrl); // Armazena no estado do Vuex
       }
     },
 
-    // Carrega o video do localStorage
+    // Carrega o video
     loadVideo({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
-        const videoUrl = localStorage.getItem(`video_${userId}`);
-        if (videoUrl) {
-          commit('SET_VIDEO_URL', videoUrl);
-        }
+        axios
+          .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${userId}`)
+          .then((response) => {
+            const videoUrl = response.data.video_url;
+            if (videoUrl) {
+              commit('SET_VIDEO_URL', videoUrl); // Armazena o vídeo no Vuex
+            }
+          })
+          .catch((error) => {
+            console.error('Erro ao carregar o vídeo do backend:', error);
+          });
       }
     },
 
-    // Ação para salvar o mapa no localStorage e Vuex
+    // Ação para salvar o mapa no Vuex
     saveMapa({ commit, state }, mapaUrl) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId && mapaUrl) {
-        localStorage.setItem(`mapa_${userId}`, mapaUrl); // Salva o mapa no localStorage
         commit('SET_MAPA_URL', mapaUrl); // Armazena no estado do Vuex
       }
     },
 
-    // Carrega o mapa do localStorage
+    // Carrega o mapa diretamente do backend
     loadMapa({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
-        const mapaUrl = localStorage.getItem(`mapa_${userId}`);
-        if (mapaUrl) {
-          commit('SET_MAPA_URL', mapaUrl);
-        }
+        axios
+          .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${userId}`)
+          .then((response) => {
+            const mapaUrl = response.data.mapa_url;  // Obtém a URL do mapa do backend
+            const mapaNome = response.data.mapa_nome; // Obtém o nome do mapa do backend
+
+            if (mapaUrl) {
+              commit('SET_MAPA_URL', mapaUrl);  // Armazena a URL do mapa no Vuex
+            }
+
+            if (mapaNome) {
+              commit('SET_MAPA_NOME', mapaNome);  // Armazena o nome do mapa no Vuex
+            }
+          })
+          .catch((error) => {
+            console.error('Erro ao carregar o mapa do backend:', error);
+          });
       }
     },
 
-    // Ação para salvar o mapa no localStorage e Vuex
-    saveMapaNome({ commit, state }, mapaNome) {
-      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
-      if (userId && mapaNome) {
-        localStorage.setItem(`mapa_nome_${userId}`, mapaNome); // Salva o mapa no localStorage
-        commit('SET_MAPA_NOME', mapaNome); // Armazena no estado do Vuex
-      }
-    },
-
-    // Carrega o mapa do localStorage
-    loadMapaNome({ commit, state }) {
-      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
-      if (userId) {
-        const mapaNome = localStorage.getItem(`mapa_nome_${userId}`);
-        if (mapaNome) {
-          commit('SET_MAPA_NOME', mapaNome);
-        }
-      }
-    },
-
-    // Carrega os links aleatórios do localStorage
+    // Carrega os links aleatórios do backend
     loadLinksAleatorios({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
-        const linksAleatorios = localStorage.getItem(`links_aleatorios_${userId}`);
-        if (linksAleatorios) {
-          commit('SET_LINKS_ALEATORIOS', JSON.parse(linksAleatorios));
-        }
+        axios.get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?usuario_id=${userId}`)
+          .then(response => {
+            // Se os links forem encontrados, armazena no Vuex
+            commit('SET_LINKS_ALEATORIOS', response.data.links_aleatorios);
+          })
+          .catch(error => {
+            console.error('Erro ao carregar links aleatórios:', error);
+          });
       }
     },
 
     // Adiciona um novo link aleatório
-    addLinkAleatorio({ commit, dispatch, state }, linkAleatorio) {
+    addLinkAleatorio({ commit, state }, linkAleatorio) {
       const newId = state.linksAleatorios.length > 0 ? Math.max(...state.linksAleatorios.map(l => l.id)) + 1 : 1;
-      linkAleatorio.usuario_id = state.usuario?.id; // Define o usuário que está adicionando o link
-      linkAleatorio.id = newId; // Atribui o novo ID ao link aleatório
+      linkAleatorio.usuario_id = state.usuario?.id; // Define o usuário
+      linkAleatorio.id = newId; // Atribui o novo ID ao link
       commit('ADD_LINK_ALEATORIO', linkAleatorio);
-      dispatch('saveLinksAleatorios');
     },
 
     // Atualiza um link aleatório existente
-    updateLinkAleatorio({ commit, dispatch }, linkAtualizado) {
+    updateLinkAleatorio({ commit }, linkAtualizado) {
       commit('UPDATE_LINK_ALEATORIO', linkAtualizado);
-      dispatch('saveLinksAleatorios');
     },
 
     // Deleta um link aleatório
@@ -384,52 +415,40 @@ export default createStore({
       commit('DELETE_LINK_ALEATORIO', linkId);
     },
 
-    // Salva os links aleatórios no localStorage
-    saveLinksAleatorios({ state }) {
-      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
-      if (userId) {
-        localStorage.setItem(`links_aleatorios_${userId}`, JSON.stringify(state.linksAleatorios));
-      }
-    },
-
     // Carrega as notas do localStorage
     loadNota({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
-        const nota = localStorage.getItem(`nota_${userId}`);
-        if (nota) {
-          commit('SET_NOTA', JSON.parse(nota))
-        }
+        axios.get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?usuario_id=${userId}`)
+          .then(response => {
+            // Se as notas forem encontradas, armazena no Vuex
+            if (Array.isArray(response.data.notas)) {
+              commit('SET_NOTA', response.data.notas);
+            }
+          })
+          .catch(error => {
+            console.error('Erro ao carregar notas:', error);
+          });
       }
     },
 
     // Adiciona uma nota
-    addNota({ commit, dispatch, state }, nota) {
+    addNota({ commit, state }, nota) {
       const newId = state.nota.length > 0 ? Math.max(...state.nota.map(n => n.id)) + 1 : 1;
       nota.usuario_id = state.usuario?.id;
       nota.id = newId;
-      commit('ADD_NOTA', nota);
-      dispatch('saveNota');
+      commit('ADD_NOTA', nota);  // Adiciona a nota no Vuex
     },
 
     // Atualiza uma nota existente
-    updateNota({ commit, dispatch }, nota) {
+    updateNota({ commit }, nota) {
       commit('UPDATE_NOTA', nota);
-      dispatch('saveNota');
     },
 
     // Deleta uma nota
     deleteNota({ commit }, notaId) {
       commit('DELETE_NOTA', notaId);
-    },
-
-    // Salva as notas no localStorage
-    saveNota({ state }) {
-      const userId = state.usuario?.id || sessionStorage.getItem('user_id');
-      if (userId) {
-        localStorage.setItem(`nota_${userId}`, JSON.stringify(state.nota));
-      }
-    },
+    }
 
   },
 

@@ -91,6 +91,7 @@
                                 </span>
                             </p>
 
+
                             <!-- Botão para salvar nota ou salvar alterações -->
                             <button v-if="botaoSalvarNota" @click="editandoNota ? salvarEdicaoNota() : salvarNota()"
                                 class="btn btn-success mt-2">
@@ -131,9 +132,8 @@
                             </div>
 
                             <!-- Imagem exibida (se disponível) -->
-                            <div v-if="imagemSelecionada" class="w-100 h-100">
-                                <img :src="imagemUrl || undefined" class="img-fluid w-100 h-100"
-                                    style="object-fit: cover;" />
+                            <div v-if="imagemUrl" class="w-100 h-100">
+                                <img :src="imagemUrl" class="img-fluid w-100 h-100" style="object-fit: cover;" />
                             </div>
 
                             <!-- Ícone e texto padrão quando não há imagem -->
@@ -172,11 +172,9 @@
                             <div v-for="link in $store.getters.links" :key="link.id"
                                 class="mt-3 d-flex flex-column align-items-center position-relative">
 
-                                <i v-if="!adicionandoLink && !editandoLink"
-                                    :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
-
-                                <!-- Exibir o nome da rede social -->
-                                <p v-if="!adicionandoLink && !editandoLink" class="mt-2">{{ link.redeSocial }}</p>
+                                <p v-if="!adicionandoLink && !editandoLink">{{ getNomeRedeSocial(link.url) }}</p>
+                                <i :class="`fa-brands fa-${detectarRedeSocial(link.url)} fa-2x`"
+                                    v-if="detectarRedeSocial(link.url) && !adicionandoLink && !editandoLink && !adicionandoLink && !editandoLink"></i>
 
                                 <!-- Deletar link -->
                                 <div v-if="!adicionandoLink && !editandoLink" @click="deletarLink(link.id)"
@@ -349,8 +347,10 @@
                             class="animate__animated animate__zoomIn card link-card card-links-livres d-flex flex-column align-items-center justify-content-center position-relative">
                             <div v-for="linkAleatorio in $store.getters.linksAleatorios" :key="linkAleatorio.id"
                                 class="mt-3 d-flex flex-column align-items-center position-relative">
-                                <i v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
-                                    class="fa-solid fa-link fa-2x"></i>
+                                <p v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio">{{
+                                    getNomeRedeSocial(linkAleatorio.url) }}</p>
+                                <i :class="`fa-brands fa-${detectarRedeSocial(linkAleatorio.url)} fa-2x`"
+                                    v-if="detectarRedeSocial(linkAleatorio.url) && !adicionandoLinkAleatorio && !editandoLinkAleatorio && !adicionandoLinkAleatorio && !editandoLinkAleatorio"></i>
 
                                 <!-- Deletar link -->
                                 <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
@@ -430,12 +430,6 @@
 
             <!-- Botões visíveis em dispositivos maiores -->
             <MenuConfig :email="email" :usuario="usuario" @logout="fazerLogout" />
-
-            <!--<button class="btn btn-danger" @click="limparTodasImagens">Limpar Todas as Imagens</button>-->
-
-            <!--<button class="btn btn-light" @click="clearNotas">Limpar Links</button>-->
-
-            <!--<button @click="limparImagensDePerfil"> Limpar Todas as Imagens de Perfil </button>-->
 
             <!--Foter-->
             <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
@@ -629,109 +623,10 @@ export default class PaginaUsuario extends Vue {
         this.redeSocial = link.redeSocial // Preenche a rede social
     }
 
-    created() {
-        this.$store.dispatch('loadLinks') // Carrega os links do Vuex
-            .then(() => {
-                const links: Link[] = this.$store.getters.links;
-                const linksAleatorios: Link[] = this.$store.getters.linksAleatorios; // Obtém os links aleatórios
-                const nota: Nota[] = this.$store.getters.nota;
-                const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id; // ID do usuário autenticado
-
-                // Filtra os links para mostrar apenas os do usuário logado
-                const userLinks = links.filter(link => link.usuario_id === userId);
-                const userLinksAleatorios = linksAleatorios.filter(link => link.usuario_id === userId); // Filtra links aleatórios
-                const userNota = nota.filter(nota => nota.usuario_id === userId);
-
-                if (userLinks.length > 0) {
-                    console.log("Links do usuário carregados:", userLinks);
-                } else {
-                    console.log("Nenhum link encontrado para o usuário com ID:", userId);
-                }
-
-                if (userLinksAleatorios.length > 0) {
-                    console.log("Links aleatórios do usuário carregados:", userLinksAleatorios);
-                } else {
-                    console.log("Nenhum link aleatório encontrado para o usuário com ID:", userId);
-                }
-
-                if (userNota.length > 0) {
-                    console.log("Notas do usuário carregados:", userNota);
-                } else {
-                    console.log("Nenhuma nota encontrada para o usuário com ID:", userId);
-                }
-
-                // Adiciona links do localStorage se necessário
-                if (!userLinks.length) {
-                    const linksString = localStorage.getItem(`links_${userId}`);
-                    const linksFromLocalStorage = JSON.parse(linksString ? linksString : '[]');
-                    const userLinksFromLocalStorage: Link[] = linksFromLocalStorage.filter((link: Link) => link.usuario_id === userId);
-
-                    if (userLinksFromLocalStorage.length > 0) {
-                        userLinksFromLocalStorage.forEach((link: Link) => {
-                            this.$store.commit('ADD_LINK', link);
-                        });
-                        console.log("Links adicionados do localStorage:", userLinksFromLocalStorage);
-                    } else {
-                        console.log("Nenhum link encontrado no localStorage para o usuário com ID:", userId);
-                    }
-                }
-
-                // Adiciona links aleatórios do localStorage se necessário
-                if (!userLinksAleatorios.length) {
-                    const linksAleatoriosString = localStorage.getItem(`links_aleatorios_${userId}`);
-                    const linksAleatoriosFromLocalStorage = JSON.parse(linksAleatoriosString ? linksAleatoriosString : '[]');
-                    const userLinksAleatoriosFromLocalStorage: Link[] = linksAleatoriosFromLocalStorage.filter((link: Link) => link.usuario_id === userId);
-
-                    if (userLinksAleatoriosFromLocalStorage.length > 0) {
-                        userLinksAleatoriosFromLocalStorage.forEach((link: Link) => {
-                            this.$store.commit('ADD_LINK_ALEATORIO', link); // Certifique-se de ter essa mutação
-                        });
-                        console.log("Links aleatórios adicionados do localStorage:", userLinksAleatoriosFromLocalStorage);
-                    } else {
-                        console.log("Nenhum link aleatório encontrado no localStorage para o usuário com ID:", userId);
-                    }
-                }
-
-                // Adiciona notas do localStorage se necessário
-                if (!userNota.length) {
-                    const notasString = localStorage.getItem(`nota_${userId}`);
-                    const notasFromLocalStorage = JSON.parse(notasString ? notasString : '[]');
-                    const userNotasFromLocalStorage: Nota[] = notasFromLocalStorage.filter((nota: Nota) => nota.usuario_id === userId);
-
-                    if (userNotasFromLocalStorage.length > 0) {
-                        userNotasFromLocalStorage.forEach((nota: Nota) => {
-                            this.$store.commit('ADD_NOTA', nota); // Certifique-se de ter essa mutação
-                        });
-                        console.log('Notas adicionadas do localStorage:', userNotasFromLocalStorage);
-                    } else {
-                        console.log('Nenhuma nota encontrada no localStorage para o usuário com ID:', userId);
-                    }
-                }
-
-                // Aqui, pegue a nota mais recente ou a nota que deseja exibir
-                const notaSalva = this.$store.getters.nota.find((n: Nota) => n.usuario_id === userId);
-                if (notaSalva) {
-                    this.notaSalva = notaSalva; // Atribua a nota carregada à variável notaSalva
-                    this.nota = notaSalva.nota; // Supondo que a propriedade com o texto da nota seja `nota`
-                }
-
-                // Chama a função para carregar notas existentes
-                this.carregarNotasExistentes(userId); // Chama a função para carregar notas
-
-                // Carrega a imagem do usuário e o vídeo existente
-                this.carregarImagemExistente(userId);
-                this.carregarVideoExistente(userId);
-                this.carregarMapaExistente(userId);
-                this.carregarLinksFooterDoLocalStorage()
-                this.carregarNotasFooterDoLocalStorage()
-                this.carregarTitulosFooterDoLocalStorage()
-                this.carregarImagensFooterDoLocalStorage()
-                this.carregarMapasDoLocalStorage()
-
-            })
-            .catch((error: any) => {
-                console.error('Erro ao carregar links:', error);
-            });
+    // Função para retornar o nome da rede social
+    public getNomeRedeSocial(url: string): string {
+        const nome = this.detectarRedeSocial(url);
+        return nome ? nome.charAt(0).toUpperCase() + nome.slice(1) : '';
     }
 
     // Adicionar link
@@ -762,11 +657,11 @@ export default class PaginaUsuario extends Vue {
             try {
                 const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', dados)
                 if (response.data.success) {
-                    const novoLinkComId: Link = {
+                    const novoLinkComId = {
                         url: this.novoLink,
                         redeSocial,
-                        id: response.data.links && response.data.links.length > 0 ? response.data.links[0].id : this.gerarId(), // Use o ID retornado pelo backend ou gera um novo
-                        usuario_id: usuarioId, // Usar o ID validado
+                        id: response.data.links && response.data.links.length > 0 ? response.data.links[0].id : this.gerarId(),
+                        usuario_id: usuarioId,
                     }
 
                     this.mostrarMensagemAlerta('fa-solid fa-check-circle', `Link de ${redeSocial} adicionado com sucesso!`, 'alert-sucesso')
@@ -787,7 +682,6 @@ export default class PaginaUsuario extends Vue {
 
     // Editar link
     public async editarLink() {
-        // Verifica se linkId é válido
         if (this.linkId === null) {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro: ID do link não encontrado.', 'alert-error')
             return
@@ -799,14 +693,12 @@ export default class PaginaUsuario extends Vue {
             return // Encerra se não houver ID do usuário
         }
 
-        // Verifica se o novo link é válido
         const regex = /^(ftp|http|https):\/\/[^ "]+$/
         if (this.novoLink.trim() === '' || !regex.test(this.novoLink)) {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Tente novamente.', 'alert-error')
             return
         }
 
-        // Detecta a nova rede social com base no novo link
         const novaRedeSocial = this.detectarRedeSocial(this.novoLink)
         if (!novaRedeSocial) {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Por favor, insira um link de rede social válido.', 'alert-error')
@@ -823,14 +715,14 @@ export default class PaginaUsuario extends Vue {
             if (response.data.success) {
                 this.mostrarMensagemAlerta('fa-solid fa-check-circle', response.data.message, 'alert-sucesso')
 
-                const linkEditado: Link = {
+                const linkEditado = {
                     url: this.novoLink,
-                    redeSocial: novaRedeSocial, // Atualiza a rede social detectada
-                    id: this.linkId, // O ID permanece o mesmo
-                    usuario_id: usuarioId // Usar o ID validado
+                    redeSocial: novaRedeSocial,
+                    id: this.linkId,
+                    usuario_id: usuarioId
                 }
-                this.$store.commit('UPDATE_LINK', linkEditado)
 
+                this.$store.commit('UPDATE_LINK', linkEditado)
                 this.$store.dispatch('saveLinks')
 
                 this.editandoLink = false
@@ -847,7 +739,6 @@ export default class PaginaUsuario extends Vue {
     public async deletarLink(id: number) {
         const usuarioId = sessionStorage.getItem('user_id') // Obter o usuário ID
 
-        // Verifica se o id está definido
         if (id === undefined || id === null) {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do link não definido.', 'alert-error')
             return
@@ -859,22 +750,19 @@ export default class PaginaUsuario extends Vue {
         }
 
         try {
-            // Realizar a requisição DELETE
             const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/deletar_links.php', { data: dados })
 
             if (response.data.success) {
-                // Remove o link do Vuex pelo ID
                 this.$store.commit('DELETE_LINK_BY_ID', id)
                 this.$store.dispatch('saveLinks')
 
-                // Mostrar mensagem de sucesso
                 this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link deletado com sucesso!', 'alert-sucesso')
-                this.redeSocial = '' // Limpar o campo de rede social
-                this.linkParaRedirecionar = null // Resetar o link para redirecionar
+                this.redeSocial = ''
+                this.linkParaRedirecionar = null
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error('Erro ao deletar link:', error)
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao deletar link.', 'alert-error')
         }
@@ -966,33 +854,132 @@ export default class PaginaUsuario extends Vue {
     $store: any // Tipagem do Vuex store
 
     mounted() {
-        // Recupera a mensagem do sessionStorage
-        const mensagem = sessionStorage.getItem('mensagem_alerta')
-        if (mensagem) {
-            const alertData = JSON.parse(mensagem)
-            this.mensagem_alerta = alertData // Define a mensagem de alerta
-            sessionStorage.removeItem('mensagem_alerta') // Remove a mensagem após exibi-la
-
-            this.mostrarMensagemAlerta(alertData.icone, alertData.mensagem, alertData.status)
-        }
 
         // Recupera o usuário, email e ID do sessionStorage
-        this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || ''
-        this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || ''
-        const userId = sessionStorage.getItem('user_id')
-        console.log('User ID:', userId)
+        this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || '';
+        this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || '';
+        const userId = sessionStorage.getItem('user_id');
+        console.log('User ID:', userId);
 
-        // Carregar os dados do perfil do localStorage
-        const perfilData = localStorage.getItem(`perfil_${userId}`)
-        if (perfilData) {
-            const perfil = JSON.parse(perfilData)
-            this.nome = perfil.nome || ''
-            this.bio = perfil.descricao || ''
-            this.selectedImage = perfil.foto_perfil || null
-
-            // Atualiza o Vuex com os dados do perfil carregados
-            this.$store.commit('UPDATE_PERFIL', perfil)
+        // Carrega os dados do backend
+        if (this.usuario) {
+            this.carregarDadosBackend(this.usuario);
         }
+
+        // Verifica se a URL do vídeo está no Vuex após carregar
+        this.$nextTick(() => {
+
+            const storedVideoUrl = this.$store.state.videoUrl; // Obtém o URL do vídeo do Vuex
+            console.log("Video URL armazenada no Vuex:", storedVideoUrl);
+
+            if (storedVideoUrl && storedVideoUrl.length > 0) {
+                const videoUrl = storedVideoUrl[0].video_url; // Acessa a URL diretamente
+                const videoId = this.getYouTubeVideoId(videoUrl); // Extração do ID com o método simplificado
+                if (videoId) {
+                    this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+                    this.mostrar_video_youtube = true;
+                    console.log("ID do vídeo extraído no mounted:", videoId);
+                } else {
+                    console.log('Não foi possível encontrar o ID do vídeo.');
+                }
+            }
+
+            const mapaUrl = this.$store.state.mapaUrl;
+            const mapaNome = this.$store.state.mapaNome;
+
+            if (mapaUrl && mapaNome) {
+                this.googleMapsUrl = mapaUrl;
+                this.googleMapsNome = mapaNome;
+                this.mostrar_maps = true;
+                console.log("Localização carregada do Vuex:", mapaUrl, mapaNome);
+            }
+
+        });
+    }
+
+    // Carregar dados diretamente do backend
+    public carregarDadosBackend(username: string) {
+        axios
+            .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${username}`)
+            .then((response) => {
+                const dados = response.data;
+
+                // Atualiza os dados de perfil
+                const perfil = dados.perfil || {};
+                this.nome = perfil.nome || '';
+                this.bio = perfil.descricao || '';
+                this.selectedImage = perfil.foto_perfil ? `data:image/jpeg;base64,${perfil.foto_perfil}` : null;
+
+                // Atualiza os dados no Vuex
+                this.$store.commit('UPDATE_PERFIL', perfil);
+
+                // Carrega os links de redes sociais
+                if (dados.redes_sociais) {
+                    this.$store.commit('SET_LINKS', dados.redes_sociais);
+                }
+
+                // Carregar links aleatórios diretamente do backend
+                if (dados.links_aleatorios && dados.links_aleatorios.length > 0) {
+                    this.$store.commit('SET_LINKS_ALEATORIOS', dados.links_aleatorios); // Atualiza Vuex com os links aleatórios
+                }
+
+                if (dados.notas && dados.notas.length > 0) {
+                    this.$store.commit('SET_NOTA', dados.notas); // Atualiza Vuex com as notas
+                }
+
+                // Carrega as imagens
+                if (dados.imagens && dados.imagens.length > 0) {
+                    const imagens = dados.imagens.map((imagem: { imagem: any }) => `data:image/jpeg;base64,${imagem.imagem}`);
+                    this.$store.commit('SET_IMAGEM_URL', imagens);
+                    this.imagemUrl = imagens[0] || null;
+                    this.imagemSelecionada = true;
+                }
+
+                // Carrega os vídeos
+                if (dados.videos && dados.videos.length > 0) {
+                    console.log("Vídeos recebidos do backend:", dados.videos);
+                    this.$store.commit('SET_VIDEO_URL', dados.videos); // Atualiza Vuex com os vídeos
+
+                    // Verifica se a URL do vídeo está disponível após o Vuex ser atualizado
+                    this.$nextTick(() => {
+                        const videoUrl = dados.videos[0].video_url;
+                        const videoId = this.getYouTubeVideoId(videoUrl); // Extração do ID
+                        if (videoId) {
+                            this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+                            this.mostrar_video_youtube = true;
+                            console.log("ID do vídeo extraído do backend:", videoId);
+                        }
+                    });
+                }
+
+                // Carrega os dados do mapa
+                if (dados.mapas && dados.mapas.length > 0) {
+                    const mapa = dados.mapas[0]; // Acessa o primeiro mapa da lista (ajuste conforme necessário)
+
+                    if (mapa.mapa_url && mapa.nome) {
+                        this.googleMapsUrl = mapa.mapa_url;
+                        this.googleMapsNome = mapa.nome;
+                        this.mostrar_maps = true;
+
+                        // Atualiza o Vuex com o nome e URL do mapa
+                        this.$store.commit('SET_MAPA_NOME', this.googleMapsNome);
+                        this.$store.commit('SET_MAPA_URL', this.googleMapsUrl);
+                    }
+                }
+
+                if (dados.notas && dados.notas.length > 0) {
+                    this.$store.commit('SET_NOTA', dados.notas); // Atualiza o Vuex com as notas
+                    const notas = this.$store.getters.notas; // Agora acessa as notas do Vuex após o commit
+                    console.log('Notas recuperadas do Vuex:', notas);
+                    console.log('Notas após commit no Vuex:', dados.notas);
+                }
+
+
+
+            })
+            .catch((error) => {
+                console.error('Erro ao carregar dados do backend:', error);
+            });
     }
 
     // Logout 
@@ -1046,16 +1033,14 @@ export default class PaginaUsuario extends Vue {
         // Acessa o ID do usuário do Vuex ou sessionStorage
         const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id');
 
-        console.log("ID do usuário:", userId); // Verifica se o ID está correto
-
         if (!userId) {
-            console.error("ID do usuário não encontrado."); // Log se o ID não estiver disponível
-            this.salvandoAlteracoes = false; // Desativar antes de retornar
-            return; // Não prosseguir se o ID não estiver disponível
+            console.error("ID do usuário não encontrado.");
+            this.salvandoAlteracoes = false;
+            return;
         }
 
         const perfil: any = {
-            usuario_id: userId, // ID do usuário vindo do Vuex ou sessionStorage
+            usuario_id: userId,
         };
 
         // Adiciona os campos somente se não estiverem vazios
@@ -1074,41 +1059,33 @@ export default class PaginaUsuario extends Vue {
             console.warn('Imagem não está em formato Base64 ou não foi selecionada.');
         }
 
-        console.log("Dados do perfil a serem salvos:", perfil); // Log dos dados do perfil
+        console.log("Dados do perfil a serem salvos:", perfil);
 
-        // Faz a requisição apenas se houver pelo menos um campo a ser salvo
-        if (Object.keys(perfil).length > 1) {
-            axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', perfil)
-                .then(response => {
-                    this.editandoNome = false;
-                    this.editandoBio = false;
-                    console.log('Perfil salvo com sucesso:', response.data);
+        // Faz a requisição para salvar o perfil no backend
+        axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', perfil)
+            .then(response => {
+                this.editandoNome = false;
+                this.editandoBio = false;
+                console.log('Perfil salvo com sucesso:', response.data);
 
-                    // Persistir os dados no localStorage
-                    localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil));
-
-                    // Atualizar o Vuex com os dados do perfil
-                    this.$store.commit('UPDATE_PERFIL', perfil); // Supondo que você tenha uma mutação UPDATE_PERFIL no Vuex
-                })
-                .catch(error => {
-                    console.error('Erro ao salvar o perfil:', error.response.data); // Log do erro detalhado
-                })
-                .finally(() => {
-                    this.salvandoAlteracoes = false; // Desativar ao finalizar a requisição
-                });
-        } else {
-            console.warn('Nenhum dado para salvar.');
-            this.salvandoAlteracoes = false; // Desativar se não houver dados
-        }
+                // Atualizar o Vuex com os dados do perfil
+                this.$store.commit('UPDATE_PERFIL', perfil);
+            })
+            .catch(error => {
+                console.error('Erro ao salvar o perfil:', error.response?.data || error.message);
+            })
+            .finally(() => {
+                this.salvandoAlteracoes = false; // Desativar ao finalizar a requisição
+            });
     }
 
     // Método para remover a imagem de perfil
     public removerImagemPerfil() {
-        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id')
+        const userId = this.$store.getters.usuario?.id || sessionStorage.getItem('user_id');
 
         if (!userId) {
-            console.error("ID do usuário não encontrado.")
-            return
+            console.error("ID do usuário não encontrado.");
+            return;
         }
 
         axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', {
@@ -1116,51 +1093,19 @@ export default class PaginaUsuario extends Vue {
             acao: 'removerImagemPerfil',
         })
             .then(response => {
-                console.log('Imagem de perfil removida com sucesso:', response.data)
+                console.log('Imagem de perfil removida com sucesso:', response.data);
 
-                this.selectedImage = null
-                this.imagemPerfilUrl = null
-                this.imagemPerfilSelecionada = false // Agora permite selecionar uma nova imagem
+                this.selectedImage = null;
+                this.imagemPerfilUrl = null;
+                this.imagemPerfilSelecionada = false; // Agora permite selecionar uma nova imagem
 
-                this.$store.commit('UPDATE_PERFIL', { usuario_id: userId, foto_perfil: null })
-
-                const perfilItem = localStorage.getItem(`perfil_${userId}`)
-                if (perfilItem) {
-                    const perfil = JSON.parse(perfilItem)
-                    if (perfil && perfil.foto_perfil) {
-                        perfil.foto_perfil = null
-                        localStorage.setItem(`perfil_${userId}`, JSON.stringify(perfil))
-                    }
-                }
+                // Atualizar o Vuex com os dados do perfil
+                this.$store.commit('UPDATE_PERFIL', { usuario_id: userId, foto_perfil: null });
             })
             .catch(error => {
-                console.error('Erro ao remover a imagem de perfil:', error.response?.data || error.message)
-            })
+                console.error('Erro ao remover a imagem de perfil:', error.response?.data || error.message);
+            });
     }
-
-    /*public limparImagensDePerfil() {
-        // Percorre todas as chaves do localStorage
-        for (let i = 0; i < localStorage.length; i++) {
-            const chave = localStorage.key(i);
-
-            // Verifica se a chave está relacionada ao perfil (começa com 'perfil_')
-            if (chave && chave.startsWith('perfil_')) {
-                const perfilItem = localStorage.getItem(chave);
-
-                if (perfilItem) {
-                    const perfil = JSON.parse(perfilItem);
-
-                    // Se existir uma imagem de perfil, remove apenas o campo `foto_perfil`
-                    if (perfil && perfil.foto_perfil) {
-                        delete perfil.foto_perfil;
-                        localStorage.setItem(chave, JSON.stringify(perfil));
-                    }
-                }
-            }
-        }
-
-        console.log("Todas as imagens de perfil foram removidas do localStorage.");
-    } */
 
     // Alterna o estado de edição do nome
     public editarNome() {
@@ -1220,9 +1165,6 @@ export default class PaginaUsuario extends Vue {
                 this.imagemUrl = imagemBase64; // Carrega a URL da imagem para exibição
                 this.imagemSelecionada = true; // Indica que a imagem foi selecionada
 
-                // Armazena a imagem no localStorage para persistência
-                this.$store.dispatch('saveImagem', this.imagemUrl);
-
                 // Ativa o spinner enquanto o arquivo está sendo enviado para o servidor
                 this.loading = true;
 
@@ -1251,114 +1193,74 @@ export default class PaginaUsuario extends Vue {
 
     //remover imagem
     public removerImagem(): void {
-        const userId = sessionStorage.getItem('user_id')
+        const userId = sessionStorage.getItem('user_id');
 
         if (userId) {
             axios.delete('http://localhost/Projetos/bioohub/backend/api/imagens.php', {
                 data: { usuario_id: userId }
             })
                 .then(response => {
-                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
-                    this.imagemSelecionada = false
-                    this.imagemUrl = null
-
-                    // Remove a imagem do localStorage
-                    localStorage.removeItem(`imagem_${userId}`)
+                    this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+                    this.imagemSelecionada = false;
+                    this.imagemUrl = null;
                 })
                 .catch(error => {
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error')
-                    console.log(error)
-                })
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover imagem', 'alert-error');
+                    console.log(error);
+                });
         } else {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do usuario nao encontrado', 'alert-error')
-        }
-    }
-
-    //carregar imagem existente
-    public carregarImagemExistente(userId: string | null): void {
-        if (userId) {
-            // Tenta carregar a imagem da API
-            axios.get(`http://localhost/Projetos/bioohub/backend/api/imagens.php?usuario_id=${userId}`)
-                .then(response => {
-                    if (response.data.imagem) {
-                        this.imagemUrl = response.data.imagem // Define a URL da imagem retornada do backend
-                        this.imagemSelecionada = true
-
-                        // Armazena no localStorage para persistir após F5
-                        if (userId && this.imagemUrl) { // Certifica-se de que userId não é null
-                            localStorage.setItem(`imagem_${userId}`, this.imagemUrl)
-                            console.log('Imagem carregada do backend e armazenada no localStorage')
-                        }
-
-                    } else {
-                        // Se não houver imagem no backend, tenta carregar do localStorage
-                        const imagemLocalStorage = localStorage.getItem(`imagem_${userId}`)
-                        if (imagemLocalStorage) {
-                            this.imagemUrl = imagemLocalStorage
-                            this.imagemSelecionada = true
-                            console.log('Imagem carregada do localStorage')
-                        } else {
-                            console.log('Nenhuma imagem encontrada no backend ou localStorage')
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar a imagem do backend:', error)
-                    // Carregar do localStorage se houver erro no backend
-                    const imagemLocalStorage = localStorage.getItem(`imagem_${userId}`)
-                    if (imagemLocalStorage) {
-                        this.imagemUrl = imagemLocalStorage
-                        this.imagemSelecionada = true
-                        console.log('Imagem carregada do localStorage após falha no backend')
-                    }
-                })
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID do usuario nao encontrado', 'alert-error');
         }
     }
 
     // Função para mostrar o vídeo no iframe
     public mostrarVideo() {
-        const videoId = this.extrairIdDoYoutube(this.videoUrlInput)
-        const userId = sessionStorage.getItem('user_id')
+        if (!this.videoUrlInput || !this.videoUrlInput.trim()) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, insira um link de vídeo do YouTube.', 'alert-error');
+            return; // Sai da função se não houver link
+        }
+
+        // Adiciona um console log para verificar a URL recebida
+        console.log("URL fornecida para extrair ID do YouTube:", this.videoUrlInput);
+
+        const videoId = this.getYouTubeVideoId(this.videoUrlInput); // Usa a função simplificada
+
+        // Verifica se o videoId foi extraído corretamente
+        if (videoId) {
+            console.log("ID extraído:", videoId);
+        } else {
+            console.error("Erro ao extrair o ID do vídeo.");
+        }
+
+        const userId = sessionStorage.getItem('user_id');
 
         if (videoId && userId) {
-            this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`
-            this.mostrar_video_youtube = true
+            this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+            this.mostrar_video_youtube = true;
 
-            // Verificando o conteúdo antes de enviar
-            console.log("Enviando requisição com os seguintes dados:", {
-                usuario_id: userId,
-                video_url: this.videoUrlInput
-            })
-
-            // Requisição para adicionar o vídeo no banco de dados
+            // Envia a URL do vídeo para o backend
             axios.post('http://localhost/Projetos/bioohub/backend/api/videos.php', {
                 usuario_id: userId,
                 video_url: this.videoUrlInput
             })
                 .then(response => {
-                    console.log("Resposta recebida do servidor:", response.data)
+                    console.log("Resposta recebida do servidor:", response.data);
                     if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
-                        // Exibindo alerta de erro se a resposta indicar erro
-                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error')
+                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
                     } else {
                         // Atualizando o Vuex com o URL do vídeo
-                        this.$store.commit('SET_VIDEO_URL', this.videoUrlInput)
-
-                        //salvar video no localStorage
-                        const userId = sessionStorage.getItem('user_id')
-                        localStorage.setItem(`videoUrl_${userId}`, this.videoUrlInput)
+                        this.$store.commit('SET_VIDEO_URL', this.videoUrlInput);
 
                         // Exibindo alerta de sucesso
-                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso')
+                        this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
                     }
                 })
                 .catch(error => {
-                    console.error("Erro ao adicionar o vídeo:", error)
-                    // Exibindo alerta de erro genérico em caso de falha na requisição
-                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar o vídeo. Tente novamente mais tarde.', 'alert-error')
-                })
+                    console.error("Erro ao adicionar o vídeo:", error);
+                    this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar o vídeo. Tente novamente mais tarde.', 'alert-error');
+                });
         } else {
-            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Por favor, insira um link de vídeo do YouTube válido.', 'alert-error')
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Link inválido. Por favor, insira um link de vídeo do YouTube válido.', 'alert-error');
         }
     }
 
@@ -1377,14 +1279,10 @@ export default class PaginaUsuario extends Vue {
         })
             .then(response => {
                 if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
-                    // Exibindo alerta de erro se a resposta indicar erro
                     this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
                 } else {
                     // Limpando o estado do vídeo no Vuex
                     this.$store.commit('CLEAR_VIDEO_URL');
-
-                    // Remove o vídeo do localStorage
-                    localStorage.removeItem(`videoUrl_${userId}`); // Usando a chave correta
 
                     // Limpando inputs e link do youtube após sucesso
                     this.videoUrlIframe = null;
@@ -1397,55 +1295,23 @@ export default class PaginaUsuario extends Vue {
             })
             .catch(error => {
                 console.error("Erro ao remover o vídeo:", error);
-                // Exibindo alerta de erro genérico em caso de falha na requisição
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o vídeo. Tente novamente mais tarde.', 'alert-error');
             });
     }
 
-    // Carregar vídeo do YouTube existente
-    public carregarVideoExistente(userId: string) {
-        // Primeiro tenta pegar do Vuex
-        const videoUrl = this.$store.state.videoUrl;
-
-        if (videoUrl) {
-            // Se houver um vídeo URL no Vuex, exibe no iframe
-            const videoId = this.extrairIdDoYoutube(videoUrl);
-            if (videoId) {
-                this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
-                this.mostrar_video_youtube = true;
-                console.log(`Vídeo carregado para o usuário com ID: ${userId}`);
-            }
-        } else {
-            // Se não tiver no Vuex, tenta pegar do localStorage
-            const videoUrlFromLocalStorage = localStorage.getItem(`videoUrl_${userId}`);
-            if (videoUrlFromLocalStorage) {
-                const videoId = this.extrairIdDoYoutube(videoUrlFromLocalStorage);
-                if (videoId) {
-                    this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
-                    this.mostrar_video_youtube = true;
-                    console.log(`Vídeo carregado do localStorage para o usuário com ID: ${userId}`);
-                }
-            } else {
-                // Se não houver vídeo no Vuex nem no localStorage, certifique-se de que não está mostrando vídeo
-                this.videoUrlIframe = null;
-                this.mostrar_video_youtube = false;
-            }
-        }
+    // Método mais simples para obter o ID do vídeo do YouTube
+    public getYouTubeVideoId(url: string): string {
+        const videoId = url.split('v=')[1];
+        return videoId ? videoId.split('&')[0] : '';
     }
 
-    // Função para extrair o ID do vídeo do link do YouTube
-    public extrairIdDoYoutube(url: string): string | null {
-        const regExp = /^.*(youtu.be\/|v\/|\/u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-        const match = url.match(regExp)
-        return (match && match[2].length === 11) ? match[2] : null
-    }
 
     //mostrar input de inserir video do youtube
     public mostrarInputVideo() {
         this.mostrar_input_video = true
     }
 
-    //armazenar o URL do Google Maps no input
+    // Armazenar o URL do Google Maps no input
     public salvarMapaGoogleMaps() {
         if (this.localizacaoInput && this.textoLocalizacaoInput) {
             this.googleMapsUrl = this.localizacaoInput;
@@ -1467,10 +1333,6 @@ export default class PaginaUsuario extends Vue {
                         } else {
                             this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
 
-                            // Salva o nome e o mapa no localStorage
-                            localStorage.setItem(`mapa_nome_${userId}`, this.googleMapsNome);
-                            localStorage.setItem(`mapa_${userId}`, this.googleMapsUrl);
-
                             // Atualiza o Vuex com o nome e URL do mapa
                             this.$store.commit('SET_MAPA_NOME', this.googleMapsNome);
                             this.$store.commit('SET_MAPA_URL', this.googleMapsUrl);
@@ -1486,7 +1348,7 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    //remover o mapa
+    // Remover o mapa
     public removerMaps() {
         this.mostrar_maps = false;
         this.localizacaoInput = '';
@@ -1506,10 +1368,6 @@ export default class PaginaUsuario extends Vue {
                         this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
                     } else {
                         this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
-
-                        // Remove o nome e o mapa do localStorage
-                        localStorage.removeItem(`mapa_nome_${userId}`);
-                        localStorage.removeItem(`mapa_${userId}`);
 
                         // Limpa o Vuex
                         this.$store.commit('CLEAR_MAPA_NOME');
@@ -1533,28 +1391,6 @@ export default class PaginaUsuario extends Vue {
         } else {
             // Exibe uma mensagem de erro caso o URL não tenha sido salvo
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, configure uma localização primeiro.', 'alert-error')
-        }
-    }
-
-    //carregar mapa existente
-    public carregarMapaExistente(userId: string) {
-        const mapaUrl = this.$store.state.mapaUrl;
-        const mapaNome = this.$store.state.mapaNome;
-
-        if (mapaUrl && mapaNome) {
-            this.googleMapsUrl = mapaUrl;
-            this.googleMapsNome = mapaNome;
-            this.mostrar_maps = true;
-
-        } else {
-            const mapaUrlFromLocalStorage = localStorage.getItem(`mapa_${userId}`);
-            const mapaNomeFromLocalStorage = localStorage.getItem(`mapa_nome_${userId}`);
-
-            if (mapaUrlFromLocalStorage && mapaNomeFromLocalStorage) {
-                this.googleMapsUrl = mapaUrlFromLocalStorage;
-                this.googleMapsNome = mapaNomeFromLocalStorage;
-                this.mostrar_maps = true;
-            }
         }
     }
 
@@ -1603,25 +1439,12 @@ export default class PaginaUsuario extends Vue {
                 this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link adicionado com sucesso!', 'alert-sucesso') // Alerta de sucesso
                 this.adicionandoLinkAleatorio = false
 
-                // Salva os links no localStorage
-                this.salvarLinksAleatoriosNoLocalStorage(dados.usuario_id)
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
             }
         } catch (error) {
             console.error('Erro ao adicionar link:', error)
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link', 'alert-error')
-        }
-    }
-
-    //salvar links aleatorios no localStorage
-    private salvarLinksAleatoriosNoLocalStorage(usuarioId: string | null) {
-        if (usuarioId) {
-            const linksAleatorios = this.$store.getters.linksAleatorios // Obtém os links aleatórios do Vuex
-            console.log('Links a serem salvos no LocalStorage:', JSON.parse(JSON.stringify(linksAleatorios))) // Converte para JSON para visualização
-            localStorage.setItem(`links_aleatorios_${usuarioId}`, JSON.stringify(linksAleatorios)) // Salva no localStorage
-        } else {
-            console.error('Usuário ID é null.')
         }
     }
 
@@ -1645,9 +1468,6 @@ export default class PaginaUsuario extends Vue {
                 this.$store.commit('UPDATE_LINK_ALEATORIO', linkEditado)
                 this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link atualizado com sucesso!', 'alert-sucesso') // Alerta de sucesso
                 this.editandoLinkAleatorio = false
-
-                // Salva os links no localStorage
-                this.salvarLinksAleatoriosNoLocalStorage(dados.usuario_id)
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
             }
@@ -1670,8 +1490,6 @@ export default class PaginaUsuario extends Vue {
                 this.$store.commit('DELETE_LINK_ALEATORIO', id)
                 this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link removido com sucesso!', 'alert-sucesso') // Alerta de sucesso
 
-                // Salva os links no localStorage
-                this.salvarLinksAleatoriosNoLocalStorage(dados.usuario_id)
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error')
             }
@@ -1727,7 +1545,6 @@ export default class PaginaUsuario extends Vue {
                 };
 
                 this.$store.commit('ADD_NOTA', novaNota);
-                this.atualizarNotasLocalStorage(userId); // Atualiza localStorage imediatamente
 
                 // Atualiza a interface
                 this.notaSalva = novaNota;
@@ -1772,7 +1589,6 @@ export default class PaginaUsuario extends Vue {
             });
             if (response.data.success) {
                 this.$store.dispatch('deleteNota', id);
-                this.atualizarNotasLocalStorage(usuarioId); // Atualiza localStorage imediatamente
 
                 this.mostrarMensagemAlerta('fa-solid fa-check', response.data.message, 'alert-sucesso');
 
@@ -1811,9 +1627,6 @@ export default class PaginaUsuario extends Vue {
                 this.notaSalva = notaEditada;
                 this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Nota editada com sucesso!', 'alert-sucesso');
 
-                // Atualiza o localStorage
-                this.atualizarNotasLocalStorage(userId);
-
                 this.nota = '';
                 this.botaoSalvarNota = false;
                 this.editandoNota = false;
@@ -1823,35 +1636,6 @@ export default class PaginaUsuario extends Vue {
         } catch (error) {
             console.error('Erro ao editar a nota:', error);
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar alterações', 'alert-error');
-        }
-    }
-
-    private atualizarNotasLocalStorage(usuarioId: string | null) {
-        if (usuarioId) {
-            const notas = this.$store.state.nota;
-            console.log('Notas a serem salvas no LocalStorage:', JSON.parse(JSON.stringify(notas)));
-            localStorage.setItem(`nota_${usuarioId}`, JSON.stringify(notas));
-        } else {
-            console.error('Usuário ID é null.');
-        }
-    }
-
-    public carregarNotasExistentes(userId: string) {
-        // Primeiro tenta pegar as notas do Vuex
-        const carregarNotas = this.$store.state.nota;
-
-        if (carregarNotas && carregarNotas.length > 0) {
-            // Se houver notas no Vuex, exibe as notas
-            this.nota = carregarNotas;
-            console.log(`Notas carregadas do Vuex para o usuário com ID: ${userId}`);
-        } else {
-            // Se não tiver no Vuex, tenta pegar do localStorage
-            const notasDoLocalStorage = localStorage.getItem(`nota_${userId}`);
-            if (notasDoLocalStorage) {
-                // Se encontrar notas no localStorage, exibe as notas
-                this.nota = JSON.parse(notasDoLocalStorage);
-                console.log(`Notas carregadas do localStorage para o usuário com ID: ${userId}`);
-            }
         }
     }
 
@@ -1974,16 +1758,6 @@ export default class PaginaUsuario extends Vue {
             }
         } catch (error) {
             console.error('Erro ao conectar ao servidor:', error);
-        }
-    }
-
-    private carregarLinksFooterDoLocalStorage() {
-        const usuario_id = sessionStorage.getItem('user_id');
-        if (usuario_id) {
-            const linksString = localStorage.getItem(`linksFooter_${usuario_id}`);
-            if (linksString) {
-                this.linksFooter = JSON.parse(linksString);
-            }
         }
     }
 
@@ -2503,17 +2277,6 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    //carregar mapas no localStorage
-    private carregarMapasDoLocalStorage() {
-        const usuario_id = sessionStorage.getItem('user_id');
-        if (usuario_id) {
-            const mapasSalvos = localStorage.getItem(`mapasFooter_${usuario_id}`);
-            if (mapasSalvos) {
-                this.mapasFooter = JSON.parse(mapasSalvos);
-            }
-        }
-    }
-
     // Mostrar mensagem de alerta
     private mostrarMensagemAlerta(icone: string, mensagem: string, status: string) {
         this.mensagem_alerta = { icone, mensagem, status }
@@ -2521,39 +2284,6 @@ export default class PaginaUsuario extends Vue {
             this.mensagem_alerta = null
         }, 5000)
     }
-
-    //caso precise limpar localStorage
-    /*clearNotas() {
-        const userId = sessionStorage.getItem('user_id'); // Pega o ID do usuário atual
-        if (userId) {
-            // Limpa as notas no localStorage
-            localStorage.removeItem(`nota_${userId}`); // Ajuste a chave conforme necessário
-
-            // Limpa as notas no Vuex
-            this.$store.commit('CLEAR_NOTA'); // Você deve ter uma mutação para limpar as notas
-
-            console.log('localStorage das notas foi limpo.');
-        }
-    } */
-
-    // Limpar imagem do localStorage
-    /* public limparTodasImagens(): void {
-        // Itera sobre todas as chaves do localStorage
-        for (let i = localStorage.length - 1; i >= 0; i--) {
-            const chave = localStorage.key(i);
-
-            // Verifica se a chave começa com 'imagem_' (indicando que é uma imagem)
-            if (chave && chave.startsWith('imagem_')) {
-                localStorage.removeItem(chave); // Remove a chave do localStorage
-                console.log(`Imagem removida: ${chave}`);
-            }
-        }
-
-        this.imagemUrl = null; // Limpa a URL da imagem na variável, se aplicável
-        this.mostrarMensagemAlerta('fa-solid fa-check', 'Todas as imagens foram limpas do localStorage.', 'alert-sucesso');
-        console.log('Todas as imagens foram limpas do localStorage.');
-    }*/
-
 }
 </script>
 

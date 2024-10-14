@@ -21,18 +21,19 @@
             </div>
 
             <!-- Coluna Dados -->
-            <div class="col-md-6 mt-5 d-flex flex-column align-items-center text-center d-md-block">
-                <div v-if="usuarioEncontrado"
+            <div v-if="usuarioEncontrado"
+                class="col-md-6 mt-5 d-flex flex-column align-items-center text-center d-md-block">
+                <div
                     class="animate__animated animate__zoomIn avatar-circle d-flex flex-column justify-content-center align-items-center">
                     <img :src="fotoPerfil || require('@/assets/imgs/default-image.png')"
                         class="img-fluid rounded-circle" style="width: 150px; height: 150px; object-fit: cover" />
                 </div>
 
-                <div v-if="usuarioEncontrado" class="mt-4 animate__animated animate__zoomIn w-100">
+                <div class="mt-4 animate__animated animate__zoomIn w-100">
                     <h2 class="text-start text-md-start text-center">{{ nome }}</h2>
                 </div>
 
-                <div v-if="usuarioEncontrado" class="mt-2 animate__animated animate__zoomIn w-100">
+                <div class="mt-2 animate__animated animate__zoomIn w-100">
                     <p class="text-start text-md-start text-center" style="color: rgb(190, 190, 190)">
                         {{ descricao }}
                     </p>
@@ -206,57 +207,37 @@ export default class Usuario extends Vue {
                     this.usuarioEncontrado = true;
 
                     // Atribuindo os dados do perfil retornados
-                    const perfil = response.data.perfil
-                    const titulos = response.data.titulos
-                    const notas = response.data.notas
-                    const videos = response.data.videos || []
-                    const imagens = response.data.imagens || []
-                    const imagens_footer = response.data.imagens_footer || []
-                    const mapas = response.data.mapas || []
-                    const mapas_footer = response.data.mapas_footer || []
-                    const redes_sociais = response.data.redes_sociais || []
-                    const links_aleatorios = response.data.links_aleatorios || []
+                    const perfil = response.data.perfil;
+                    const titulos = response.data.titulos;
+                    const notas = response.data.notas;
+                    const videos = response.data.videos || [];
+                    const imagens = response.data.imagens || [];
+                    const imagens_footer = response.data.imagens_footer || [];
+                    const mapas = response.data.mapas || [];
+                    const mapas_footer = response.data.mapas_footer || [];
+                    const redes_sociais = response.data.redes_sociais || [];
+                    const links_aleatorios = response.data.links_aleatorios || [];
 
+                    // Verifica se há algum dado importante (links, imagens, vídeos, etc.)
                     if (perfil) {
-                        // Lógica para foto de perfil
                         this.fotoPerfil = perfil.foto_perfil ? `data:image/jpeg;base64,${perfil.foto_perfil}` : null;
-                        console.log('foto de perfil: ', perfil.foto_perfil);
                         this.nome = perfil.nome || '';
                         this.descricao = perfil.descricao || '';
-                    } else {
-                        console.log('Perfil não encontrado.');
-                    } if (titulos) {
-                        this.titulos = titulos;
-                    } if (notas) {
-                        this.notas = notas;
-                    } if (videos) {
-                        this.videos = videos;
-                    } if (mapas) {
-                        this.mapas = mapas
-                    } if (mapas_footer) {
-                        this.mapas_footer = mapas_footer
-                    } if (redes_sociais) {
-                        this.redes_sociais = redes_sociais
-                    } if (links_aleatorios) {
-                        this.links_aleatorios = links_aleatorios
                     }
 
-                    // Imagens agora são tratadas da mesma forma que a foto de perfil
-                    if (imagens && imagens.length > 0) {
-                        this.imagens = imagens.map((imagem: { imagem: any; }) => ({
-                            imagem: `data:image/jpeg;base64,${imagem.imagem}`,
-                        }));
-                    } else {
-                        console.log('Nenhuma imagem encontrada para este usuário.');
-                    }
+                    // Atualiza os outros dados do perfil
+                    this.titulos = titulos || [];
+                    this.notas = notas || [];
+                    this.videos = videos;
+                    this.imagens = imagens.map((img: { imagem: any }) => ({ imagem: `data:image/jpeg;base64,${img.imagem}` })) || [];
+                    this.imagens_footer = imagens_footer.map((img: { imagem: any }) => ({ imagem: `data:image/jpeg;base64,${img.imagem}` })) || [];
+                    this.mapas = mapas || [];
+                    this.mapas_footer = mapas_footer || [];
+                    this.redes_sociais = redes_sociais || [];
+                    this.links_aleatorios = links_aleatorios || [];
 
-                    if (imagens_footer && imagens_footer.length > 0) {
-                        this.imagens_footer = imagens_footer.map((imagem: { imagem: any; }) => ({
-                            imagem: `data:image/jpeg;base64,${imagem.imagem}`,
-                        }));
-                    } else {
-                        console.log('Nenhuma imagem encontrada para este usuário.');
-                    }
+                    // Define que o usuário foi encontrado se houver dados relevantes
+                    this.usuarioEncontrado = Boolean(this.fotoPerfil || this.nome || this.descricao || this.imagens.length || this.videos.length || this.links_aleatorios.length || this.redes_sociais.length || this.mapas.length);
 
                 } else {
                     this.usuarioEncontrado = false;
