@@ -2127,14 +2127,20 @@ export default class PaginaUsuario extends Vue {
             return;
         }
 
+        // Verifique se o id é válido
+        if (!id || id === undefined) {
+            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'ID da imagem inválido', 'alert-error');
+            return;
+        }
+
         // Log para verificar o ID do usuário e o ID da imagem
         console.log(`Remover imagem: Usuario ID: ${usuario_id}, Imagem ID: ${id}`);
 
         try {
             const response = await axios.delete('https://bioohub.me/src/backend/api/imagens_footer.php', {
-                params: {
+                data: {
                     usuario_id: usuario_id,  // Passa o ID do usuário
-                    imagem_id: id  // Passa o ID da imagem que será removida
+                    id: id  // Passa o ID da imagem a ser removida
                 }
             });
 
