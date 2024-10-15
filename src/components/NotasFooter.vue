@@ -4,6 +4,9 @@
 
             <div v-if="nota.adicionando">
                 <textarea class="form-control textarea" v-model="nota.texto"></textarea>
+                <button class="btn btn-secondary me-2 mt-2" @click="emitCancelarNotaFooter(index)">
+                    <i class="fa-solid fa-arrow-left"></i> Cancelar
+                </button>
                 <button class="btn btn-success mt-2" @click="emitSalvarNotaFooter(index)">
                     <i class="fa-solid fa-check"></i>
                 </button>
@@ -54,9 +57,13 @@ export default {
         emitEditarNotaFooter(index) {
             this.$emit('editar-nota-footer', index);
         },
-        
+
         emitRemoverNotaFooter(index) {
             this.$emit('remover-nota-footer', index);
+        },
+
+        emitCancelarNotaFooter(index) {
+            this.$emit('cancelar-nota-footer', index);
         }
     }
 };

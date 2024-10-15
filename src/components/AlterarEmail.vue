@@ -23,7 +23,7 @@
                         <div v-if="mensagemFeedback" :class="`text-${feedbackTipo}`">{{ mensagemFeedback }}</div>
                     </form>
                     <div v-else>
-                        <p class="alert alert-success text-center">E-mail alterado com sucesso!</p>
+                        <p class="alert alert-sucesso text-center">E-mail alterado com sucesso!</p>
                     </div>
                 </div>
                 <div class="modal-footer">

@@ -378,6 +378,8 @@ export default class Usuario extends Vue {
             return 'reddit';
         } else if (/portfolio/.test(url)) {
             return 'portfolio';
+        } else if (/https?:\/\/(x\.com\/[^/]+|www\.x\.com\/[^/]+).*/.test(url)) {
+            return 'x-twitter'
         } else {
             return null; // Genérico se não for reconhecida
         }

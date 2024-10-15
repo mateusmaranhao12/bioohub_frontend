@@ -61,7 +61,7 @@
                     </div>
 
                     <!--Numero de visualizacoes-->
-                    <VisualizacoesPerfil />
+                    <!--<VisualizacoesPerfil />-->
 
                     <!-- Menu Hamburguer visível em dispositivos menores (abaixo do textarea) -->
                     <MenuHamburguer :email="email" :usuario="usuario" @fazer-logout="fazerLogout" />
@@ -75,7 +75,8 @@
                         <!-- Título -->
                         <TitulosFooter :titulosFooter="titulosFooter" @salvar-titulo-footer="salvarTituloFooter"
                             @salvar-alteracoes-titulo-footer="salvarAlteracoesTituloFooter"
-                            @editar-titulo-footer="editarTituloFooter" @remover-titulo-footer="removerTituloFooter" />
+                            @editar-titulo-footer="editarTituloFooter" @remover-titulo-footer="removerTituloFooter"
+                            @cancelar-titulo-footer="cancelarTituloFooter" />
 
                         <!--Inserir nota-->
                         <div class="animate__animated animate__zoomIn">
@@ -110,7 +111,8 @@
                         <!--Notas footer-->
                         <NotasFooter :notasFooter="notasFooter" @salvar-nota-footer="salvarNotaFooter"
                             @salvar-alteracoes-nota-footer="salvarAlteracoesNotaFooter"
-                            @editar-nota-footer="editarNotaFooter" @remover-nota-footer="removerNotaFooter" />
+                            @editar-nota-footer="editarNotaFooter" @remover-nota-footer="removerNotaFooter"
+                            @cancelar-nota-footer="cancelarNotaFooter" />
 
                         <!--Inserir imagens-->
                         <div class="animate__animated animate__zoomIn card link-card 
@@ -232,9 +234,10 @@
                             </div>
                         </div>
 
-                        <!--Inserir videos-->
+                        <!--Inserir vídeos-->
                         <div
                             class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center position-relative">
+
                             <!-- Ícone de adicionar vídeo (fa-plus) -->
                             <div class="plus-icon position-absolute" v-if="!mostrar_input_video">
                                 <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputVideo"></i>
@@ -248,6 +251,12 @@
                             <i v-if="!mostrar_input_video && !mostrar_video_youtube"
                                 class="fa-solid fa-video fa-2x"></i>
                             <p v-if="!mostrar_input_video && !mostrar_video_youtube" class="mt-2">Adicionar vídeo</p>
+
+                            <!-- Botão de desfazer (Ctrl + Z) -->
+                            <div v-if="mostrar_input_video && !videoUrlIframe" @click="desfazerAlteracaoVideo"
+                                class="plus-icon position-absolute" style="top: 10px; left: 10px;">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </div>
 
                             <!-- Input para o link do YouTube e botão para confirmar -->
                             <div v-if="mostrar_input_video && !mostrar_video_youtube" class="mt-3">
@@ -267,9 +276,10 @@
                             </div>
                         </div>
 
-                        <!--Inserir localizacao-->
+                        <!--Inserir localização-->
                         <div
                             class="animate__animated animate__zoomIn card link-card card-maps d-flex flex-column align-items-center justify-content-center position-relative">
+
                             <!-- Ícone de adicionar localização (fa-plus) -->
                             <div class="plus-icon position-absolute" v-if="!mostrar_input_maps">
                                 <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputMaps"></i>
@@ -283,6 +293,15 @@
                             <i v-if="!mostrar_input_maps && !mostrar_maps"
                                 class="fa-solid fa-map-location-dot fa-2x"></i>
                             <p v-if="!mostrar_input_maps && !mostrar_maps" class="mt-2">Adicionar localização</p>
+
+                            <!-- Botão de desfazer (Ctrl + Z) -->
+                            <div v-if="mostrar_input_maps && !mostrar_maps" @click="desfazerAlteracaoMaps"
+                                class="plus-icon position-absolute" style="top: 10px; left: 10px;">
+                                <button class="btn btn-danger btn-sm">
+                                    <i class="fa-solid fa-arrow-left"></i>
+                                </button>
+                            </div>
+
 
                             <!-- Input para o link do Google Maps e botão para confirmar -->
                             <div v-if="mostrar_input_maps && !mostrar_maps" class="mt-3">
@@ -303,6 +322,7 @@
                                 </button>
                             </div>
                         </div>
+
 
                         <!-- Lista de mapas footer -->
                         <div v-for="(mapa, index) in mapasFooter" :key="index"
@@ -349,10 +369,15 @@
                             class="animate__animated animate__zoomIn card link-card card-links-livres d-flex flex-column align-items-center justify-content-center position-relative">
                             <div v-for="linkAleatorio in $store.getters.linksAleatorios" :key="linkAleatorio.id"
                                 class="mt-3 d-flex flex-column align-items-center position-relative">
-                                <p v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio">{{
-                                    getNomeRedeSocial(linkAleatorio.url) }}</p>
+
+                                <p v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio">
+                                    {{ getNomeRedeSocial(linkAleatorio.url) }}
+                                </p>
                                 <i :class="`fa-brands fa-${detectarRedeSocial(linkAleatorio.url)} fa-2x`"
-                                    v-if="detectarRedeSocial(linkAleatorio.url) && !adicionandoLinkAleatorio && !editandoLinkAleatorio && !adicionandoLinkAleatorio && !editandoLinkAleatorio"></i>
+                                    v-if="detectarRedeSocial(linkAleatorio.url) && !adicionandoLinkAleatorio && !editandoLinkAleatorio">
+                                </i>
+                                <i v-else-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
+                                    class="fa-solid fa-link fa-2x mb-2"></i>
 
                                 <!-- Deletar link -->
                                 <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
@@ -368,6 +393,7 @@
                                     <i class="fa-solid fa-pencil-alt"></i>
                                 </div>
 
+                                <!-- Botão para redirecionar -->
                                 <button v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio"
                                     @click="redirecionarParaLinkAleatorio(linkAleatorio)"
                                     class="btn btn-secondary btn-sm mt-2">
@@ -375,6 +401,7 @@
                                 </button>
                             </div>
 
+                            <!-- Ícone de adicionar link, quando não há links -->
                             <div v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
                                 @click="iniciarAdicaoLinkAleatorio" class="plus-icon position-absolute"
                                 style="top: 10px; right: 10px;">
@@ -386,6 +413,7 @@
                             <p v-if="!adicionandoLinkAleatorio && !editandoLinkAleatorio && !$store.getters.linksAleatorios.length"
                                 class="mt-2">Adicionar link</p>
 
+                            <!-- Exibição de input e botões para adicionar ou editar o link -->
                             <div v-if="adicionandoLinkAleatorio || editandoLinkAleatorio"
                                 class="w-100 d-flex flex-column align-items-center">
                                 <i v-if="editandoLinkAleatorio" @click="cancelarEdicaoLinkAleatorio"
@@ -406,7 +434,8 @@
                         <LinksFooter :linksFooter="linksFooter" :detectarRedeSocial="detectarRedeSocial"
                             :getNomeRedeSocial="getNomeRedeSocial" @salvar-link-footer="salvarLinkFooter"
                             @salvar-alteracoes-link-footer="salvarAlteracoesLinkFooter"
-                            @editar-link-footer="editarLinkFooter" @remover-link-footer="removerLinkFooter" />
+                            @editar-link-footer="editarLinkFooter" @remover-link-footer="removerLinkFooter"
+                            @cancelar-link-footer="cancelarLinkFooter" />
 
                     </div>
                 </div>
@@ -835,10 +864,17 @@ export default class PaginaUsuario extends Vue {
     }
 
     // Função para retornar o nome da rede social
-    public getNomeRedeSocial(url: string): string {
+    public getNomeRedeSocial(url: string, redeSocial?: string): string {
+        // Usa o campo redeSocial se já estiver definido (para links)
+        if (redeSocial) {
+            return redeSocial.charAt(0).toUpperCase() + redeSocial.slice(1);
+        }
+
+        // Caso contrário, chama detectarRedeSocial
         const nome = this.detectarRedeSocial(url);
         return nome ? nome.charAt(0).toUpperCase() + nome.slice(1) : '';
     }
+
 
     // Adicionar link
     public async adicionarLink() {
@@ -1039,6 +1075,8 @@ export default class PaginaUsuario extends Vue {
             return 'discord'
         } else if (/https?:\/\/(www\.)?reddit\.com\/r\/[^/]+/.test(url)) {
             return 'reddit'
+        } else if (/https?:\/\/(x\.com\/[^/]+|www\.x\.com\/[^/]+).*/.test(url)) {
+            return 'x-twitter'
         } else {
             return null // Retorna null como icone generico se não for reconhecida
         }
@@ -1382,11 +1420,27 @@ export default class PaginaUsuario extends Vue {
     }
 
     // Método mais simples para obter o ID do vídeo do YouTube
-    public getYouTubeVideoId(url: string): string {
-        const videoId = url.split('v=')[1];
-        return videoId ? videoId.split('&')[0] : '';
+    getYouTubeVideoId(url: string): string | null {
+        if (!url) {
+            // Se a URL for undefined ou vazia, retorna null ou algum valor default
+            return null;
+        }
+
+        const videoId = url.split('v=')[1]?.split('&')[0]; // Assume que o parâmetro "v=" está na URL
+
+        return videoId || null; // Retorna o ID ou null se não encontrar
     }
 
+
+    public desfazerAlteracaoVideo() {
+        if (this.mostrar_input_video) {
+            this.videoUrlInput = ''; // Limpar input de vídeo
+            this.mostrar_input_video = false; // Fechar o input
+        } else if (this.mostrar_video_youtube) {
+            this.videoUrlIframe = ''; // Limpar vídeo exibido
+            this.mostrar_video_youtube = false; // Fechar vídeo
+        }
+    }
 
     //mostrar input de inserir video do youtube
     public mostrarInputVideo() {
@@ -1460,6 +1514,16 @@ export default class PaginaUsuario extends Vue {
                     console.error("Erro ao remover o mapa:", error);
                     this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover o mapa. Tente novamente mais tarde.', 'alert-error');
                 });
+        }
+    }
+
+    public desfazerAlteracaoMaps() {
+        if (this.mostrar_input_maps) {
+            this.textoLocalizacaoInput = '';
+            this.localizacaoInput = '';
+            this.mostrar_input_maps = false;
+        } else if (this.mostrar_maps) {
+            this.mostrar_maps = false;
         }
     }
 
@@ -1825,6 +1889,13 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+    public cancelarLinkFooter(index: number) {
+        const link = this.linksFooter[index];
+        if (link.adicionando) {
+            this.linksFooter.splice(index, 1);  // Remove o link da lista
+        }
+    }
+
     // Função para exibir o textarea
     public adicionarNotaFooter() {
         this.notasFooter.push({
@@ -1919,6 +1990,18 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
+    public cancelarNotaFooter(index: number) {
+        const nota = this.notasFooter[index];
+
+        if (nota.adicionando) {
+            // Se for um título novo (adicionando), remove o título
+            this.notasFooter.splice(index, 1);
+        } else {
+            // Caso contrário, apenas cancela a edição
+            nota.editando = false;
+        }
+    }
+
     // Função para exibir o input para adicionar título
     public adicionarTituloFooter() {
         this.titulosFooter.push({
@@ -2007,6 +2090,18 @@ export default class PaginaUsuario extends Vue {
             }
         } catch (error) {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
+        }
+    }
+
+    public cancelarTituloFooter(index: number) {
+        const titulo = this.titulosFooter[index];
+
+        if (titulo.adicionando) {
+            // Se for um título novo (adicionando), remove o título
+            this.titulosFooter.splice(index, 1);
+        } else {
+            // Caso contrário, apenas cancela a edição
+            titulo.editando = false;
         }
     }
 

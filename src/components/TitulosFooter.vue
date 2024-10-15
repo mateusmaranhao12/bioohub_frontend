@@ -3,14 +3,19 @@
         class="col-md-12 animate__animated animate__zoomIn titulo-footer">
         <div v-if="titulo.adicionando">
             <input class="form-control" v-model="titulo.titulo" placeholder="Digite o título" />
+            <button class="btn btn-secondary me-2 mt-2" @click="emitCancelarTituloFooter(index)">
+                <i class="fa-solid fa-arrow-left"></i> Cancelar
+            </button>
             <button class="btn btn-success mt-2" @click="emitSalvarTituloFooter(index)">
-                <i class="fa-solid fa-check"></i>
+                <i class="fa-solid fa-check"></i> Salvar
             </button>
         </div>
 
         <div v-if="titulo.editando">
-            <!-- Input de título quando editando -->
             <input class="form-control" v-model="titulo.titulo" placeholder="Editar título" />
+            <button class="btn btn-secondary me-2 mt-2" @click="emitCancelarTituloFooter(index)">
+                <i class="fa-solid fa-arrow-left"></i> Cancelar
+            </button>
             <button class="btn btn-success mt-2" @click="emitSalvarAlteracoesTituloFooter(index)">
                 <i class="fa-solid fa-check"></i> Salvar alterações
             </button>
@@ -39,10 +44,9 @@ export default {
         }
     },
 
-    emits: ['salvar-titulo-footer', 'salvar-alteracoes-titulo-footer', 'editar-titulo-footer', 'remover-titulo-footer'],
+    emits: ['salvar-titulo-footer', 'salvar-alteracoes-titulo-footer', 'editar-titulo-footer', 'remover-titulo-footer', 'cancelar-titulo-footer'],
 
     methods: {
-
         emitSalvarTituloFooter(index) {
             this.$emit('salvar-titulo-footer', index);
         },
@@ -54,9 +58,13 @@ export default {
         emitEditarTituloFooter(index) {
             this.$emit('editar-titulo-footer', index);
         },
-        
+
         emitRemoverTituloFooter(index) {
             this.$emit('remover-titulo-footer', index);
+        },
+
+        emitCancelarTituloFooter(index) {
+            this.$emit('cancelar-titulo-footer', index);
         }
     }
 };
