@@ -2127,6 +2127,9 @@ export default class PaginaUsuario extends Vue {
             return;
         }
 
+        // Log para verificar o ID do usuário e o ID da imagem
+        console.log(`Remover imagem: Usuario ID: ${usuario_id}, Imagem ID: ${id}`);
+
         try {
             const response = await axios.delete('https://bioohub.me/src/backend/api/imagens_footer.php', {
                 params: {
@@ -2134,6 +2137,8 @@ export default class PaginaUsuario extends Vue {
                     imagem_id: id  // Passa o ID da imagem que será removida
                 }
             });
+
+            console.log('Resposta do servidor:', response.data);
 
             if (response.data.mensagem === 'Imagem removida com sucesso') {
                 // Remove a imagem localmente
@@ -2143,6 +2148,8 @@ export default class PaginaUsuario extends Vue {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover a imagem', 'alert-error');
             }
         } catch (error) {
+            // Log para erro na requisição
+            console.error('Erro na requisição:', error);
             this.mostrarMensagemAlerta('fa-solid fa-xmark', 'Erro ao conectar ao servidor', 'alert-error');
         }
     }
