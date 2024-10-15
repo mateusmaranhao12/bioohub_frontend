@@ -69,7 +69,7 @@ export default class AlterarUsuario extends Vue {
                 novoUsuario: this.novoUsuario,
             }
 
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/alterar_dados.php', data, {
+            const response = await axios.post('https://bioohub.me/src/backend/api/alterar_dados.php', data, {
                 headers: {
                     'Content-Type': 'application/json' // Certificando-se de que os dados são enviados como JSON
                 }

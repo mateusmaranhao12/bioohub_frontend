@@ -87,15 +87,15 @@
                             <button class="btn btn-secondary">Criar conta</button>
                         </div>
 
-                        <div class="mt-3 mb-3">
+                        <!--<div class="mt-3 mb-3">
                             <h6>Ou</h6>
-                        </div>
+                        </div>-->
 
-                        <div class="d-grid gap-2 mt-2 mb-2">
+                        <!--<div class="d-grid gap-2 mt-2 mb-2">
                             <button class="btn btn-primary" @click.prevent="cadastroComGoogle()">
                                 <i class="fa-brands fa-google"></i> Cadastre-se com o Google
                             </button>
-                        </div>
+                        </div>-->
                     </form>
                 </div>
 
@@ -199,7 +199,7 @@ export default class Cadastro extends Vue {
                 senha: this.usuarios.senha
             })
 
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
+            const response = await axios.post('https://bioohub.me/src/backend/api/cadastrar_usuario.php', {
                 usuario: this.usuarios.usuario,
                 email: this.usuarios.email,
                 senha: this.usuarios.senha
@@ -275,7 +275,7 @@ export default class Cadastro extends Vue {
                 }
 
                 // Verificação se o usuário ou e-mail já existe
-                axios.post('http://localhost/Projetos/bioohub/backend/api/verificar_usuario.php', {
+                axios.post('https://bioohub.me/src/backend/api/verificar_usuario.php', {
                     usuario: this.usuarios.usuario,
                     email: this.usuarios.email
                 })
@@ -339,9 +339,9 @@ export default class Cadastro extends Vue {
         }
     }
 
-    public cadastroComGoogle() {
+    /*public cadastroComGoogle() {
         console.log('cadastro com google')
-    }
+    } */
 
     //validar email
     public validarEmail(email: string): boolean {
