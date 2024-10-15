@@ -1,13 +1,13 @@
 <template>
+    <!-- Links do footer -->
     <div v-for="(link, index) in linksFooter" :key="index"
         class="animate__animated animate__zoomIn card link-card card-links-footer d-flex flex-column align-items-center justify-content-center position-relative"
         style="overflow: hidden;">
 
         <i v-if="link.redeSocial" style="color: darkgreen" :class="`fa-brands fa-${link.redeSocial} fa-2x`"></i>
-
         <i v-else class="fa-solid fa-link fa-2x"></i>
 
-        <p>{{ link.redeSocial }}</p>
+        <p >{{ link.redeSocial }}</p>
 
         <input v-if="link.adicionando || link.editando" v-model="link.url" type="text" class="form-control mt-2"
             placeholder="Insira o link" />
@@ -45,6 +45,16 @@ export default {
     props: {
         linksFooter: {
             type: Array,
+            required: true
+        },
+
+        detectarRedeSocial: {
+            type: Function,
+            required: true
+        },
+
+        getNomeRedeSocial: {
+            type: Function,
             required: true
         }
     },

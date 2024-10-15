@@ -7,7 +7,14 @@
                 <Alerta :mensagem_alerta="mensagem_alerta" />
             </div>
 
-            <div class="row">
+            <!-- Spinner de carregando os dados -->
+            <div v-if="carregando" class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Carregando...</span>
+                </div>
+            </div>
+
+            <div v-else class="row">
                 <!-- Coluna Dados -->
                 <div class="col-md-6 mt-5">
 
@@ -225,11 +232,6 @@
                             </div>
                         </div>
 
-                        <!--Links do footer-->
-                        <LinksFooter :linksFooter="linksFooter" @salvar-link-footer="salvarLinkFooter"
-                            @salvar-alteracoes-link-footer="salvarAlteracoesLinkFooter"
-                            @editar-link-footer="editarLinkFooter" @remover-link-footer="removerLinkFooter" />
-
                         <!--Inserir videos-->
                         <div
                             class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center position-relative">
@@ -321,7 +323,7 @@
                             <!-- Mostrar o botão de visualizar localização apenas quando não estiver editando ou adicionando -->
                             <div class="card-body" v-if="!mapa.editando && !mapa.adicionando">
                                 <h6>{{ mapa.titulo }}</h6>
-                                <button class="btn btn-danger" @click="verLocalizacao(mapa.localizacao)">Ver
+                                <button class="btn btn-danger" @click="verLocalizacao(mapa.url)">Ver
                                     Localização</button>
                             </div>
 
@@ -329,7 +331,7 @@
                             <div v-if="mapa.adicionando || mapa.editando" class="form-group mt-5">
                                 <input type="text" v-model="mapa.titulo" placeholder="Título do mapa"
                                     class="form-control mb-2">
-                                <input type="text" v-model="mapa.localizacao" placeholder="URL do Google Maps"
+                                <input type="text" v-model="mapa.url" placeholder="URL do Google Maps"
                                     class="form-control mb-2">
 
                                 <!-- Botão para salvar alterações ou o novo mapa -->
@@ -400,6 +402,12 @@
                             </div>
                         </div>
 
+                        <!--Links do footer-->
+                        <LinksFooter :linksFooter="linksFooter" :detectarRedeSocial="detectarRedeSocial"
+                            :getNomeRedeSocial="getNomeRedeSocial" @salvar-link-footer="salvarLinkFooter"
+                            @salvar-alteracoes-link-footer="salvarAlteracoesLinkFooter"
+                            @editar-link-footer="editarLinkFooter" @remover-link-footer="removerLinkFooter" />
+
                     </div>
                 </div>
             </div>
@@ -429,10 +437,10 @@
             </div>
 
             <!-- Botões visíveis em dispositivos maiores -->
-            <MenuConfig :email="email" :usuario="usuario" @logout="fazerLogout" />
+            <MenuConfig v-if="!carregando" :email="email" :usuario="usuario" @logout="fazerLogout" />
 
             <!--Foter-->
-            <Footer @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
+            <Footer v-if="!carregando" @mudar-tela="alterarModoTela" @adicionar-link-footer="adicionarLinkFooter"
                 @adicionar-titulo-footer="adicionarTituloFooter" @adicionar-nota-footer="adicionarNotaFooter"
                 @imagem-selecionada-footer="handleImagemFooterSelecionada" @adicionar-mapa-footer="adicionarMapaFooter"
                 @abrir-modal-compartilhar="mostrarModalCompartilhar = true" class="animate__animated animate__zoomIn" />
@@ -532,7 +540,7 @@ export default class PaginaUsuario extends Vue {
     public imagemSelecionada = false
     public imagemUrl: string | null = null
 
-    //spinner de loading
+    //spinner de loading na imagem
     public loading = false
 
     //Link de video
@@ -566,21 +574,224 @@ export default class PaginaUsuario extends Vue {
     public linksFooter: Array<{ id: number, url: string, salvo: boolean, editando: boolean, adicionando: boolean, redeSocial: string; }> = []
 
     //nota footer
-    public notasFooter: Array<{ id: number, texto: string, editando: boolean, adicionando: boolean }> = [];
+    public notasFooter: Array<{ id: number, texto: string, editando: boolean, adicionando: boolean, salvo: boolean }> = [];
     public mostrandoNotaFooter = false
 
     //titulo footer
-    public titulosFooter: Array<{ id: number, titulo: string, editando: boolean, adicionando: boolean }> = [];
+    public titulosFooter: Array<{ id: number, titulo: string, editando: boolean, adicionando: boolean, salvo: boolean }> = [];
 
     //imagem footer
     public imagensFooter: Array<{ id: number, imagem: string }> = []
 
     //mapa footer
-    public mapasFooter: Array<{ id: number, titulo: string, localizacao: string, editando: boolean, adicionando: boolean }> = [];
+    public mapasFooter: Array<{ id: number, titulo: string, url: string, editando: boolean, adicionando: boolean, salvo: boolean }> = [];
     public mapaIndex: number | null = null
 
     //mostrar modal compartilhar
     public mostrarModalCompartilhar = false
+
+    //carregar dados
+    carregando = true
+
+    mounted() {
+
+        // Recupera o usuário, email e ID do sessionStorage
+        this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || '';
+        this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || '';
+        const userId = sessionStorage.getItem('user_id');
+        console.log('User ID:', userId);
+
+        // Carrega os dados do backend
+        if (this.usuario) {
+            this.carregarDadosBackend(this.usuario);
+        }
+
+        // Verifica se a URL do vídeo está no Vuex após carregar
+        this.$nextTick(() => {
+
+            const storedVideoUrl = this.$store.state.videoUrl; // Obtém o URL do vídeo do Vuex
+            console.log("Video URL armazenada no Vuex:", storedVideoUrl);
+
+            if (storedVideoUrl && storedVideoUrl.length > 0) {
+                const videoUrl = storedVideoUrl[0].video_url; // Acessa a URL diretamente
+                const videoId = this.getYouTubeVideoId(videoUrl); // Extração do ID com o método simplificado
+                if (videoId) {
+                    this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+                    this.mostrar_video_youtube = true;
+                    console.log("ID do vídeo extraído no mounted:", videoId);
+                } else {
+                    console.log('Não foi possível encontrar o ID do vídeo.');
+                }
+            }
+
+            const mapaUrl = this.$store.state.mapaUrl;
+            const mapaNome = this.$store.state.mapaNome;
+
+            if (mapaUrl && mapaNome) {
+                this.googleMapsUrl = mapaUrl;
+                this.googleMapsNome = mapaNome;
+                this.mostrar_maps = true;
+                console.log("Localização carregada do Vuex:", mapaUrl, mapaNome);
+            }
+
+        });
+    }
+
+    // Carregar dados diretamente do backend
+    public carregarDadosBackend(username: string) {
+        axios
+            .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${username}`)
+            .then((response) => {
+                this.carregando = false
+                const dados = response.data;
+
+                console.log('Dados recebidos do backend:', dados)
+                // Atualiza os dados de perfil
+                const perfil = dados.perfil || {};
+                this.nome = perfil.nome || '';
+                this.bio = perfil.descricao || '';
+                this.selectedImage = perfil.foto_perfil ? `data:image/jpeg;base64,${perfil.foto_perfil}` : null;
+
+                // Atualiza os dados no Vuex
+                this.$store.commit('UPDATE_PERFIL', perfil);
+
+                // Carrega os links de redes sociais
+                if (dados.redes_sociais) {
+                    this.$store.commit('SET_LINKS', dados.redes_sociais);
+                }
+
+                // Carregar links aleatórios diretamente do backend
+                if (dados.links_aleatorios && dados.links_aleatorios.length > 0) {
+                    this.$store.commit('SET_LINKS_ALEATORIOS', dados.links_aleatorios); // Atualiza Vuex com os links aleatórios
+                }
+
+                // Carrega os links do footer separadamente
+                if (dados.links_footer && dados.links_footer.length > 0) {
+                    this.linksFooter = dados.links_footer.map((link: any) => {
+                        const redeSocialDetectada = this.detectarRedeSocial(link.url); // Detecta a rede social com base na URL
+                        return {
+                            id: link.id,
+                            url: link.url,
+                            salvo: true,
+                            editando: false,
+                            adicionando: false,
+                            redeSocial: link.rede_social || redeSocialDetectada // Usa o valor retornado do backend ou detecta
+                        };
+                    });
+                }
+
+                // Carrega as notas do footer separadamente
+                if (dados.notas_footer && dados.notas_footer.length > 0) {
+                    this.notasFooter = dados.notas_footer.map((nota: any) => {
+                        console.log('Nota footer recebida: ', nota)
+                        return {
+                            id: nota.id,
+                            texto: nota.nota,
+                            salvo: true,
+                            editando: false,
+                            adicionando: false
+                        };
+                    });
+                }
+
+                if (dados.titulos && dados.titulos.length > 0) {
+                    this.titulosFooter = dados.titulos.map((titulo: any) => {
+                        console.log('Título do footer recebido:', titulo); // Verifique os dados recebidos
+                        return {
+                            id: titulo.id,
+                            titulo: titulo.titulo,
+                            salvo: true,
+                            editando: false,
+                            adicionando: false
+                        };
+                    });
+                    console.log('Títulos carregados:', this.titulosFooter); // Verifique a lista de títulos
+                }
+
+                if (dados.notas && dados.notas.length > 0) {
+                    this.$store.commit('SET_NOTA', dados.notas); // Atualiza Vuex com as notas
+                }
+
+                // Carrega as imagens
+                if (dados.imagens && dados.imagens.length > 0) {
+                    const imagens = dados.imagens.map((imagem: { imagem: any }) => `data:image/jpeg;base64,${imagem.imagem}`);
+                    this.$store.commit('SET_IMAGEM_URL', imagens);
+                    this.imagemUrl = imagens[0] || null;
+                    this.imagemSelecionada = true;
+                }
+
+                // Carrega os vídeos
+                if (dados.videos && dados.videos.length > 0) {
+                    console.log("Vídeos recebidos do backend:", dados.videos);
+                    this.$store.commit('SET_VIDEO_URL', dados.videos); // Atualiza Vuex com os vídeos
+
+                    // Verifica se a URL do vídeo está disponível após o Vuex ser atualizado
+                    this.$nextTick(() => {
+                        const videoUrl = dados.videos[0].video_url;
+                        const videoId = this.getYouTubeVideoId(videoUrl); // Extração do ID
+                        if (videoId) {
+                            this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
+                            this.mostrar_video_youtube = true;
+                            console.log("ID do vídeo extraído do backend:", videoId);
+                        }
+                    });
+                }
+
+                // Carrega os dados do mapa
+                if (dados.mapas && dados.mapas.length > 0) {
+                    const mapa = dados.mapas[0]; // Acessa o primeiro mapa da lista (ajuste conforme necessário)
+
+                    if (mapa.mapa_url && mapa.nome) {
+                        this.googleMapsUrl = mapa.mapa_url;
+                        this.googleMapsNome = mapa.nome;
+                        this.mostrar_maps = true;
+
+                        // Atualiza o Vuex com o nome e URL do mapa
+                        this.$store.commit('SET_MAPA_NOME', this.googleMapsNome);
+                        this.$store.commit('SET_MAPA_URL', this.googleMapsUrl);
+                    }
+                }
+
+                // Carregar notas e atualizar `notaSalva`
+                if (dados.notas && dados.notas.length > 0) {
+                    this.$store.commit('SET_NOTA', dados.notas); // Atualiza Vuex com as notas
+                    this.notaSalva = dados.notas[0] || null; // Atualiza notaSalva com a primeira nota, ou null se não houver
+
+                    if (this.notaSalva) {
+                        this.nota = this.notaSalva.nota; // Atualiza o campo de texto da nota com o conteúdo da nota salva
+                    }
+                }
+
+                //Carregar imagens Footer
+                if (dados.imagens_footer && dados.imagens_footer.length > 0) {
+                    this.imagensFooter = dados.imagens_footer.map((imagem: any) => ({
+                        id: imagem.id,
+                        imagem: `data:image/jpeg;base64,${imagem.imagem}`,
+                    }));
+                }
+
+                //Carregar mapas Footer
+                if (dados.mapas_footer && dados.mapas_footer.length > 0) {
+                    this.mapasFooter = dados.mapas_footer.map((mapa: any) => {
+                        console.log('Título do footer recebido:', mapa); // Verifique os dados recebidos
+                        return {
+                            id: mapa.id,
+                            titulo: mapa.titulo,
+                            url: mapa.url,
+                            editando: false,
+                            adicionando: false,
+                            salvo: true
+                        };
+                    });
+                    console.log('Mapas carregados:', this.mapasFooter); // Verifique a lista de mapas
+                }
+
+            })
+            .catch((error) => {
+                this.carregando = false
+                console.error('Erro ao carregar dados do backend:', error);
+            });
+    }
 
     //qrcode value
     qrcodeValue() {
@@ -852,136 +1063,6 @@ export default class PaginaUsuario extends Vue {
     // Mapeando ações do Vuex
     private logout!: () => Promise<void>
     $store: any // Tipagem do Vuex store
-
-    mounted() {
-
-        // Recupera o usuário, email e ID do sessionStorage
-        this.usuario = this.$store.getters.usuario?.usuario || sessionStorage.getItem('user_name') || '';
-        this.email = this.$store.getters.usuario?.email || sessionStorage.getItem('user_email') || '';
-        const userId = sessionStorage.getItem('user_id');
-        console.log('User ID:', userId);
-
-        // Carrega os dados do backend
-        if (this.usuario) {
-            this.carregarDadosBackend(this.usuario);
-        }
-
-        // Verifica se a URL do vídeo está no Vuex após carregar
-        this.$nextTick(() => {
-
-            const storedVideoUrl = this.$store.state.videoUrl; // Obtém o URL do vídeo do Vuex
-            console.log("Video URL armazenada no Vuex:", storedVideoUrl);
-
-            if (storedVideoUrl && storedVideoUrl.length > 0) {
-                const videoUrl = storedVideoUrl[0].video_url; // Acessa a URL diretamente
-                const videoId = this.getYouTubeVideoId(videoUrl); // Extração do ID com o método simplificado
-                if (videoId) {
-                    this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
-                    this.mostrar_video_youtube = true;
-                    console.log("ID do vídeo extraído no mounted:", videoId);
-                } else {
-                    console.log('Não foi possível encontrar o ID do vídeo.');
-                }
-            }
-
-            const mapaUrl = this.$store.state.mapaUrl;
-            const mapaNome = this.$store.state.mapaNome;
-
-            if (mapaUrl && mapaNome) {
-                this.googleMapsUrl = mapaUrl;
-                this.googleMapsNome = mapaNome;
-                this.mostrar_maps = true;
-                console.log("Localização carregada do Vuex:", mapaUrl, mapaNome);
-            }
-
-        });
-    }
-
-    // Carregar dados diretamente do backend
-    public carregarDadosBackend(username: string) {
-        axios
-            .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${username}`)
-            .then((response) => {
-                const dados = response.data;
-
-                // Atualiza os dados de perfil
-                const perfil = dados.perfil || {};
-                this.nome = perfil.nome || '';
-                this.bio = perfil.descricao || '';
-                this.selectedImage = perfil.foto_perfil ? `data:image/jpeg;base64,${perfil.foto_perfil}` : null;
-
-                // Atualiza os dados no Vuex
-                this.$store.commit('UPDATE_PERFIL', perfil);
-
-                // Carrega os links de redes sociais
-                if (dados.redes_sociais) {
-                    this.$store.commit('SET_LINKS', dados.redes_sociais);
-                }
-
-                // Carregar links aleatórios diretamente do backend
-                if (dados.links_aleatorios && dados.links_aleatorios.length > 0) {
-                    this.$store.commit('SET_LINKS_ALEATORIOS', dados.links_aleatorios); // Atualiza Vuex com os links aleatórios
-                }
-
-                if (dados.notas && dados.notas.length > 0) {
-                    this.$store.commit('SET_NOTA', dados.notas); // Atualiza Vuex com as notas
-                }
-
-                // Carrega as imagens
-                if (dados.imagens && dados.imagens.length > 0) {
-                    const imagens = dados.imagens.map((imagem: { imagem: any }) => `data:image/jpeg;base64,${imagem.imagem}`);
-                    this.$store.commit('SET_IMAGEM_URL', imagens);
-                    this.imagemUrl = imagens[0] || null;
-                    this.imagemSelecionada = true;
-                }
-
-                // Carrega os vídeos
-                if (dados.videos && dados.videos.length > 0) {
-                    console.log("Vídeos recebidos do backend:", dados.videos);
-                    this.$store.commit('SET_VIDEO_URL', dados.videos); // Atualiza Vuex com os vídeos
-
-                    // Verifica se a URL do vídeo está disponível após o Vuex ser atualizado
-                    this.$nextTick(() => {
-                        const videoUrl = dados.videos[0].video_url;
-                        const videoId = this.getYouTubeVideoId(videoUrl); // Extração do ID
-                        if (videoId) {
-                            this.videoUrlIframe = `https://www.youtube.com/embed/${videoId}`;
-                            this.mostrar_video_youtube = true;
-                            console.log("ID do vídeo extraído do backend:", videoId);
-                        }
-                    });
-                }
-
-                // Carrega os dados do mapa
-                if (dados.mapas && dados.mapas.length > 0) {
-                    const mapa = dados.mapas[0]; // Acessa o primeiro mapa da lista (ajuste conforme necessário)
-
-                    if (mapa.mapa_url && mapa.nome) {
-                        this.googleMapsUrl = mapa.mapa_url;
-                        this.googleMapsNome = mapa.nome;
-                        this.mostrar_maps = true;
-
-                        // Atualiza o Vuex com o nome e URL do mapa
-                        this.$store.commit('SET_MAPA_NOME', this.googleMapsNome);
-                        this.$store.commit('SET_MAPA_URL', this.googleMapsUrl);
-                    }
-                }
-
-                // Carregar notas e atualizar `notaSalva`
-                if (dados.notas && dados.notas.length > 0) {
-                    this.$store.commit('SET_NOTA', dados.notas); // Atualiza Vuex com as notas
-                    this.notaSalva = dados.notas[0] || null; // Atualiza notaSalva com a primeira nota, ou null se não houver
-
-                    if (this.notaSalva) {
-                        this.nota = this.notaSalva.nota; // Atualiza o campo de texto da nota com o conteúdo da nota salva
-                    }
-                }
-
-            })
-            .catch((error) => {
-                console.error('Erro ao carregar dados do backend:', error);
-            });
-    }
 
     // Logout 
     public fazerLogout() {
@@ -1663,7 +1744,7 @@ export default class PaginaUsuario extends Vue {
         link.redeSocial = this.detectarRedeSocial(link.url) ?? ''; // Usando coalescência nula
 
         try {
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links_aleatorios.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links_footer.php', {
                 usuario_id: usuario_id,
                 url: link.url,
             });
@@ -1678,24 +1759,12 @@ export default class PaginaUsuario extends Vue {
                     adicionando: false,
                 };
 
-                // Salva os links atualizados no localStorage
-                this.salvarLinksFooterNoLocalStorage();
-
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Link adicionado com sucesso', 'alert-sucesso');
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar link', 'alert-error');
             }
         } catch (error) {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
-        }
-    }
-
-    //salvar link footer no localstorage
-    private salvarLinksFooterNoLocalStorage() {
-        const usuario_id = sessionStorage.getItem('user_id');
-        if (usuario_id) {
-            const linksUsuario = this.linksFooter.map(link => ({ ...link, usuario_id }));
-            localStorage.setItem(`linksFooter_${usuario_id}`, JSON.stringify(linksUsuario));
         }
     }
 
@@ -1714,7 +1783,7 @@ export default class PaginaUsuario extends Vue {
         link.redeSocial = this.detectarRedeSocial(link.url) ?? '';  // Usando coalescência nula
 
         try {
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_links_aleatorios.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_links_footer.php', {
                 usuario_id: usuario_id,
                 id: link.id,
                 url: link.url,
@@ -1723,9 +1792,6 @@ export default class PaginaUsuario extends Vue {
             if (response.data.success) {
                 this.linksFooter[index].salvo = true;
                 this.linksFooter[index].editando = false;
-
-                // Salva os links atualizados no localStorage
-                this.salvarLinksFooterNoLocalStorage();
 
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Alterações salvas com sucesso!', 'alert-sucesso');
             } else {
@@ -1742,16 +1808,13 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/deletar_links_aleatorios.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/deletar_links_footer.php', {
                 usuario_id: usuario_id,
                 id: link.id,
             });
 
             if (response.data.success) {
                 this.linksFooter.splice(index, 1);
-
-                // Salva os links atualizados no localStorage para o usuário
-                this.salvarLinksFooterNoLocalStorage();
 
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Link removido com sucesso!', 'alert-sucesso');
             } else {
@@ -1762,32 +1825,14 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    // Função para carregar as notas do localStorage
-    public carregarNotasFooterDoLocalStorage() {
-        const usuario_id = sessionStorage.getItem('user_id');
-
-        // Verifica se há notas no localStorage e se correspondem ao usuario_id
-        const notasSalvas = localStorage.getItem(`notasFooter_${usuario_id}`);
-        if (notasSalvas) {
-            this.notasFooter = JSON.parse(notasSalvas);
-        }
-    }
-
-    // Função para salvar as notas no localStorage
-    public salvarNotasFooterNoLocalStorage() {
-        const usuario_id = sessionStorage.getItem('user_id');
-
-        // Salva as notas associadas ao usuario_id no localStorage
-        localStorage.setItem(`notasFooter_${usuario_id}`, JSON.stringify(this.notasFooter));
-    }
-
     // Função para exibir o textarea
     public adicionarNotaFooter() {
         this.notasFooter.push({
             id: -1,
             texto: '',
             editando: false,
-            adicionando: true
+            adicionando: true,
+            salvo: false
         });
     }
 
@@ -1796,8 +1841,10 @@ export default class PaginaUsuario extends Vue {
         const nota = this.notasFooter[index];
         const usuario_id = sessionStorage.getItem('user_id');
 
+        console.log('Salvando nota:', nota)
+
         try {
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_nota.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_nota_footer.php', {
                 usuario_id: usuario_id,
                 nota: nota.texto,
             });
@@ -1808,9 +1855,8 @@ export default class PaginaUsuario extends Vue {
                     id: response.data.nota.id,  // Atualiza o id retornado do backend
                     editando: false,
                     adicionando: false,
+                    salvo: true
                 };
-
-                this.salvarNotasFooterNoLocalStorage()
 
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Nota adicionada com sucesso', 'alert-sucesso');
             } else {
@@ -1832,7 +1878,7 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_nota.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_nota_footer.php', {
                 usuario_id: usuario_id,
                 id: nota.id,  // Agora usa o id da nota
                 nota: nota.texto,
@@ -1840,7 +1886,6 @@ export default class PaginaUsuario extends Vue {
 
             if (response.data.success) {
                 this.notasFooter[index].editando = false;
-                this.salvarNotasFooterNoLocalStorage()
 
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Alterações salvas com sucesso', 'alert-sucesso');
             } else {
@@ -1857,16 +1902,13 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/remover_nota.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/remover_nota_footer.php', {
                 usuario_id: usuario_id,
                 id: nota.id,  // Usa o id da nota para remover
             });
 
             if (response.data.success) {
                 this.notasFooter.splice(index, 1);  // Remove a nota localmente
-
-                // Atualiza as notas no localStorage após a remoção
-                this.salvarNotasFooterNoLocalStorage();
 
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Nota removida com sucesso', 'alert-sucesso');
             } else {
@@ -1877,32 +1919,14 @@ export default class PaginaUsuario extends Vue {
         }
     }
 
-    // Função para carregar os títulos do localStorage
-    public carregarTitulosFooterDoLocalStorage() {
-        const usuario_id = sessionStorage.getItem('user_id');
-
-        // Verifica se há títulos no localStorage e se correspondem ao usuario_id
-        const titulosSalvos = localStorage.getItem(`titulosFooter_${usuario_id}`);
-        if (titulosSalvos) {
-            this.titulosFooter = JSON.parse(titulosSalvos);
-        }
-    }
-
-    // Função para salvar os títulos no localStorage
-    public salvarTitulosFooterNoLocalStorage() {
-        const usuario_id = sessionStorage.getItem('user_id');
-
-        // Salva os títulos associados ao usuario_id no localStorage
-        localStorage.setItem(`titulosFooter_${usuario_id}`, JSON.stringify(this.titulosFooter));
-    }
-
     // Função para exibir o input para adicionar título
     public adicionarTituloFooter() {
         this.titulosFooter.push({
             id: Date.now(), // ID temporário baseado no timestamp
             titulo: '',
             editando: false,
-            adicionando: true
+            adicionando: true,
+            salvo: false
         });
     }
 
@@ -1923,10 +1947,10 @@ export default class PaginaUsuario extends Vue {
                     ...titulo,
                     id: response.data.titulo.id,  // Atualiza o id do backend
                     adicionando: false,
+                    editando: false,
+                    salvo: true
                 };
 
-                // Salva os títulos no localStorage
-                this.salvarTitulosFooterNoLocalStorage();
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Título adicionado com sucesso', 'alert-sucesso');
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao adicionar título', 'alert-error');
@@ -1955,7 +1979,6 @@ export default class PaginaUsuario extends Vue {
 
             if (response.data.success) {
                 this.titulosFooter[index].editando = false;  // Finaliza a edição
-                this.salvarTitulosFooterNoLocalStorage(); // Salva no localStorage
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Alterações salvas com sucesso', 'alert-sucesso');
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao editar título', 'alert-error');
@@ -1978,7 +2001,6 @@ export default class PaginaUsuario extends Vue {
 
             if (response.data.success) {
                 this.titulosFooter.splice(index, 1);  // Remove o título localmente
-                this.salvarTitulosFooterNoLocalStorage(); // Atualiza o localStorage
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Título removido com sucesso', 'alert-sucesso');
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover título', 'alert-error');
@@ -1987,19 +2009,6 @@ export default class PaginaUsuario extends Vue {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao conectar ao servidor', 'alert-error');
         }
     }
-
-    // Função para carregar as imagens armazenadas no localStorage
-    public carregarImagensFooterDoLocalStorage() {
-        const usuario_id = sessionStorage.getItem('user_id');  // Obtém o ID do usuário logado
-        const imagensSalvas = localStorage.getItem('imagensFooter');
-        if (imagensSalvas) {
-            // Parse o JSON do localStorage
-            const todasImagens = JSON.parse(imagensSalvas);
-            // Filtra as imagens pelo usuário logado
-            this.imagensFooter = todasImagens.filter((imagem: { usuario_id: string }) => imagem.usuario_id === usuario_id);
-        }
-    }
-
 
     // Função para inserir imagem
     public async handleImagemFooterSelecionada(file: File) {
@@ -2031,7 +2040,6 @@ export default class PaginaUsuario extends Vue {
                     usuario_id: usuario_id  // Associa a imagem ao usuário logado
                 };
                 this.imagensFooter.push(novaImagem);
-                this.salvarImagensFooterDoLocalStorage();  // Salva as imagens no localStorage
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Imagem inserida com sucesso', 'alert-sucesso');
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao inserir a imagem', 'alert-error');
@@ -2040,20 +2048,6 @@ export default class PaginaUsuario extends Vue {
         } catch (error) {
             this.mostrarMensagemAlerta('fa-solid fa-xmark', 'Erro ao conectar ao servidor', 'alert-error');
         }
-    }
-
-    // Função para salvar as imagens no localStorage
-    public salvarImagensFooterDoLocalStorage() {
-        // Obtém todas as imagens atuais do localStorage
-        const todasImagens = localStorage.getItem('imagensFooter') ? JSON.parse(localStorage.getItem('imagensFooter')!) : [];
-
-        // Remove qualquer imagem anterior do mesmo usuário antes de adicionar as novas
-        const usuario_id = sessionStorage.getItem('user_id');
-        const imagensFiltradas = todasImagens.filter((imagem: { usuario_id: string }) => imagem.usuario_id !== usuario_id);
-
-        // Adiciona as novas imagens do usuário
-        const novasImagens = [...imagensFiltradas, ...this.imagensFooter];
-        localStorage.setItem('imagensFooter', JSON.stringify(novasImagens));
     }
 
     // Função auxiliar para converter a imagem para base64
@@ -2089,7 +2083,6 @@ export default class PaginaUsuario extends Vue {
             if (response.data.mensagem === 'Imagem removida com sucesso') {
                 // Remove a imagem localmente
                 this.imagensFooter = this.imagensFooter.filter(imagem => imagem.id !== id);
-                this.salvarImagensFooterDoLocalStorage();  // Salva as imagens no localStorage após a remoção
                 this.mostrarMensagemAlerta('fa-solid fa-check', 'Imagem removida com sucesso', 'alert-sucesso');
             } else {
                 this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao remover a imagem', 'alert-error');
@@ -2110,9 +2103,10 @@ export default class PaginaUsuario extends Vue {
         this.mapasFooter.push({
             id: Date.now(),  // Gerando um ID temporário com Date.now()
             titulo: '',
-            localizacao: '',
+            url: '',
             editando: false,
-            adicionando: true
+            adicionando: true,
+            salvo: false
         });
     }
 
@@ -2128,13 +2122,13 @@ export default class PaginaUsuario extends Vue {
 
         console.log('ID do mapa (antes de salvar no banco):', mapa.id);
         console.log('Título do mapa:', mapa.titulo);
-        console.log('URL do mapa:', mapa.localizacao);
+        console.log('URL do mapa:', mapa.url);
 
-        if (mapa.titulo && this.validarLocalizacao(mapa.localizacao)) {
+        if (mapa.titulo && this.validarLocalizacao(mapa.url)) {
             axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_mapa_footer.php', {
                 usuario_id: usuario_id,
                 titulo: mapa.titulo,
-                url: mapa.localizacao
+                url: mapa.url
             })
                 .then(response => {
                     if (response.data.success) {
@@ -2142,9 +2136,7 @@ export default class PaginaUsuario extends Vue {
                         mapa.id = response.data.id;
                         mapa.adicionando = false;
                         mapa.editando = false;
-
-                        // Salva os mapas atualizados no localStorage
-                        this.salvarMapasNoLocalStorage();
+                        mapa.salvo = true;
 
                         this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Mapa adicionado com sucesso!', 'alert-sucesso');
                         console.log('ID do mapa após salvar:', mapa.id);
@@ -2186,19 +2178,16 @@ export default class PaginaUsuario extends Vue {
             return;
         }
 
-        if (mapa.titulo && this.validarLocalizacao(mapa.localizacao)) {
+        if (mapa.titulo && this.validarLocalizacao(mapa.url)) {
             axios.post('http://localhost/Projetos/bioohub/backend/api/editar_mapa_footer.php', {
                 usuario_id: usuario_id,
                 id: mapa.id,  // O id agora é o real após a resposta do servidor
                 titulo: mapa.titulo,
-                url: mapa.localizacao
+                url: mapa.url
             })
                 .then(response => {
                     if (response.data.success) {
                         mapa.editando = false;
-
-                        // Salva os mapas atualizados no localStorage
-                        this.salvarMapasNoLocalStorage();
 
                         this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Alterações salvas com sucesso!', 'alert-sucesso');
                     } else {
@@ -2251,9 +2240,6 @@ export default class PaginaUsuario extends Vue {
                     // Remove o mapa do array local após sucesso no servidor
                     this.mapasFooter.splice(index, 1);
 
-                    // Atualiza o localStorage com os novos mapas
-                    this.salvarMapasNoLocalStorage();
-
                     this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Mapa removido com sucesso!', 'alert-sucesso');
                 } else {
                     this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.message, 'alert-error');
@@ -2268,14 +2254,6 @@ export default class PaginaUsuario extends Vue {
     // Função para visualizar a localização no Google Maps
     public verLocalizacao(localizacao: string) {
         window.open(localizacao, '_blank');
-    }
-
-    // Função para salvar os mapas no localStorage
-    private salvarMapasNoLocalStorage() {
-        const usuario_id = sessionStorage.getItem('user_id');
-        if (usuario_id) {
-            localStorage.setItem(`mapasFooter_${usuario_id}`, JSON.stringify(this.mapasFooter));
-        }
     }
 
     // Mostrar mensagem de alerta

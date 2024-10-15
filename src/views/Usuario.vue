@@ -55,6 +55,12 @@
                         <p class="nota-display">{{ nota.nota }}</p>
                     </div>
 
+                    <!-- Notas Footer -->
+                    <div v-for="(nota, index) in notas_footer" :key="index"
+                        class="animate__animated animate__zoomIn col-md-12">
+                        <p class="nota-display">{{ nota.nota }}</p>
+                    </div>
+
                     <!-- Imagens -->
                     <div v-for="(imagem, index) in imagens" :key="index"
                         class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative">
@@ -133,6 +139,24 @@
                             Ir para o link
                         </button>
                     </div>
+
+                    <!--Links Footer-->
+                    <div v-for="(link, index) in links_footer" :key="index" class="animate__animated animate__zoomIn card link-card card-links-livres 
+                        d-flex flex-column align-items-center justify-content-center">
+
+                        <!-- Exibe o nome da rede social -->
+                        <p class="mt-2">{{ getNomeRedeSocial(link.url) }}</p>
+
+                        <!-- Exibe o ícone da rede social -->
+                        <i :class="`fa-brands fa-${detectarRedeSocial(link.url)} fa-2x`"
+                            v-if="detectarRedeSocial(link.url)"></i>
+                        <i class="fa-solid fa-link fa-2x" v-else></i>
+
+                        <!-- Botão para abrir o link da rede social -->
+                        <button @click="abrirLink(link.url)" class="btn btn-dark mt-3">
+                            Ir para o link
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -161,6 +185,7 @@ export default class Usuario extends Vue {
     public descricao: string | null = null
     public titulos: Array<{ titulo: string }> = []
     public notas: Array<{ nota: string }> = []
+    public notas_footer: Array<{ nota: string }> = []
     public imagens: Array<{ imagem: string }> = []
     public imagens_footer: Array<{ imagem: string }> = []
     public videos: Array<{ video_url: string }> = []
@@ -168,6 +193,7 @@ export default class Usuario extends Vue {
     public mapas_footer: Array<{ url: string, titulo: string }> = []
     public redes_sociais: Array<{ url: string }> = []
     public links_aleatorios: Array<{ url: string }> = []
+    public links_footer: Array<{ url: string }> = []
 
     public carregando = true // Variável para controlar o estado de carregamento
 
@@ -207,16 +233,18 @@ export default class Usuario extends Vue {
                     this.usuarioEncontrado = true;
 
                     // Atribuindo os dados do perfil retornados
-                    const perfil = response.data.perfil;
-                    const titulos = response.data.titulos;
-                    const notas = response.data.notas;
-                    const videos = response.data.videos || [];
-                    const imagens = response.data.imagens || [];
-                    const imagens_footer = response.data.imagens_footer || [];
-                    const mapas = response.data.mapas || [];
-                    const mapas_footer = response.data.mapas_footer || [];
-                    const redes_sociais = response.data.redes_sociais || [];
-                    const links_aleatorios = response.data.links_aleatorios || [];
+                    const perfil = response.data.perfil
+                    const titulos = response.data.titulos
+                    const notas = response.data.notas
+                    const videos = response.data.videos || []
+                    const imagens = response.data.imagens || []
+                    const imagens_footer = response.data.imagens_footer || []
+                    const mapas = response.data.mapas || []
+                    const mapas_footer = response.data.mapas_footer || []
+                    const redes_sociais = response.data.redes_sociais || []
+                    const links_aleatorios = response.data.links_aleatorios || []
+                    const links_footer = response.data.links_footer || []
+                    const notas_footer = response.data.notas_footer || []
 
                     // Verifica se há algum dado importante (links, imagens, vídeos, etc.)
                     if (perfil) {
@@ -226,18 +254,32 @@ export default class Usuario extends Vue {
                     }
 
                     // Atualiza os outros dados do perfil
-                    this.titulos = titulos || [];
-                    this.notas = notas || [];
-                    this.videos = videos;
-                    this.imagens = imagens.map((img: { imagem: any }) => ({ imagem: `data:image/jpeg;base64,${img.imagem}` })) || [];
-                    this.imagens_footer = imagens_footer.map((img: { imagem: any }) => ({ imagem: `data:image/jpeg;base64,${img.imagem}` })) || [];
-                    this.mapas = mapas || [];
-                    this.mapas_footer = mapas_footer || [];
-                    this.redes_sociais = redes_sociais || [];
-                    this.links_aleatorios = links_aleatorios || [];
+                    this.titulos = titulos || []
+                    this.notas = notas || []
+                    this.videos = videos
+                    this.imagens = imagens.map((img: { imagem: any }) => ({ imagem: `data:image/jpeg;base64,${img.imagem}` })) || []
+                    this.imagens_footer = imagens_footer.map((img: { imagem: any }) => ({ imagem: `data:image/jpeg;base64,${img.imagem}` })) || []
+                    this.mapas = mapas || []
+                    this.mapas_footer = mapas_footer || []
+                    this.redes_sociais = redes_sociais || []
+                    this.links_aleatorios = links_aleatorios || []
+                    this.links_footer = links_footer || []
+                    this.notas_footer = notas_footer || []
 
                     // Define que o usuário foi encontrado se houver dados relevantes
-                    this.usuarioEncontrado = Boolean(this.fotoPerfil || this.nome || this.descricao || this.imagens.length || this.videos.length || this.links_aleatorios.length || this.redes_sociais.length || this.mapas.length);
+                    this.usuarioEncontrado =
+                        Boolean(
+                            this.fotoPerfil ||
+                            this.nome ||
+                            this.descricao ||
+                            this.imagens.length ||
+                            this.videos.length ||
+                            this.links_aleatorios.length ||
+                            this.redes_sociais.length ||
+                            this.mapas.length ||
+                            this.links_footer.length ||
+                            this.notas_footer.length
+                        );
 
                 } else {
                     this.usuarioEncontrado = false;
