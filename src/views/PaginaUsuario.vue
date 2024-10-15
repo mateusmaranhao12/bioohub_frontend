@@ -2129,7 +2129,7 @@ export default class PaginaUsuario extends Vue {
 
         try {
             const response = await axios.delete('https://bioohub.me/src/backend/api/imagens_footer.php', {
-                data: {
+                params: {
                     usuario_id: usuario_id,  // Passa o ID do usuário
                     imagem_id: id  // Passa o ID da imagem que será removida
                 }
@@ -2146,6 +2146,7 @@ export default class PaginaUsuario extends Vue {
             this.mostrarMensagemAlerta('fa-solid fa-xmark', 'Erro ao conectar ao servidor', 'alert-error');
         }
     }
+
 
     // Validação da URL do Google Maps (regex simples para verificar se é um link válido)
     private validarLocalizacao(localizacao: string): boolean {
