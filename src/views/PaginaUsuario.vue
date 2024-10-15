@@ -967,14 +967,15 @@ export default class PaginaUsuario extends Vue {
                     }
                 }
 
+                // Carregar notas e atualizar `notaSalva`
                 if (dados.notas && dados.notas.length > 0) {
-                    this.$store.commit('SET_NOTA', dados.notas); // Atualiza o Vuex com as notas
-                    const notas = this.$store.getters.notas; // Agora acessa as notas do Vuex após o commit
-                    console.log('Notas recuperadas do Vuex:', notas);
-                    console.log('Notas após commit no Vuex:', dados.notas);
+                    this.$store.commit('SET_NOTA', dados.notas); // Atualiza Vuex com as notas
+                    this.notaSalva = dados.notas[0] || null; // Atualiza notaSalva com a primeira nota, ou null se não houver
+
+                    if (this.notaSalva) {
+                        this.nota = this.notaSalva.nota; // Atualiza o campo de texto da nota com o conteúdo da nota salva
+                    }
                 }
-
-
 
             })
             .catch((error) => {
