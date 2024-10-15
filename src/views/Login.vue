@@ -30,11 +30,11 @@
                         <h6 class="animate__animated animate__zoomIn">Ou</h6>
                     </div>
 
-                    <div class="animate__animated animate__zoomIn d-grid gap-2 mt-2">
+                    <!--<div class="animate__animated animate__zoomIn d-grid gap-2 mt-2">
                         <button type="button" class="animate__animated animate__zoomIn btn btn-primary">
                             <i class="fa-brands fa-google"></i> Log in com Google
                         </button>
-                    </div>
+                    </div>-->
 
                     <div class="animate__animated animate__zoomIn d-flex justify-content-start">
                         <router-link to="/cadastro"
