@@ -45,19 +45,37 @@
     </div>
 </template>
 
-
 <script lang="ts">
-export default {
+import { defineComponent, PropType } from 'vue';
+
+export default defineComponent({
     props: {
-        mostrar_input_maps: Boolean,
-        mostrar_maps: Boolean,
-        localizacaoInput: String,
-        googleMapsUrl: String,
-        googleMapsNome: String,
-        textoLocalizacaoInput: String
+        mostrar_input_maps: {
+            type: Boolean,
+            required: true
+        },
+        mostrar_maps: {
+            type: Boolean,
+            required: true
+        },
+        localizacaoInput: {
+            type: String,
+            required: true
+        },
+        googleMapsUrl: {
+            type: String,
+            required: true
+        },
+        googleMapsNome: {
+            type: String,
+            required: true
+        },
+        textoLocalizacaoInput: {
+            type: String,
+            required: true
+        }
     },
     methods: {
-        // Emitir eventos para funções em PaginaUsuario.vue
         emitirMostrarInputMaps() {
             this.$emit('mostrarInputMaps');
         },
@@ -74,5 +92,5 @@ export default {
             this.$emit('abrirMapaGoogleMaps');
         }
     }
-}
+});
 </script>
