@@ -218,8 +218,22 @@ export default class Usuario extends Vue {
 
     // Método para obter o ID do vídeo a partir da URL do YouTube
     public getYouTubeVideoId(url: string): string {
-        const videoId = url.split('v=')[1];
-        return videoId ? videoId.split('&')[0] : '';
+        let videoId = '';
+
+        // Verifica se o link é encurtado (https://youtu.be/dT2owtxkU8k)
+        if (url.includes('youtu.be/')) {
+            videoId = url.split('youtu.be/')[1].split('?')[0];
+        }
+        // Verifica se o link é do formato completo (https://www.youtube.com/watch?v=dT2owtxkU8k)
+        else if (url.includes('youtube.com/watch?v=')) {
+            videoId = url.split('v=')[1].split('&')[0];
+        }
+        // Verifica se o link é do YouTube Mobile (https://m.youtube.com/watch?v=...)
+        else if (url.includes('m.youtube.com/watch?v=')) {
+            videoId = url.split('v=')[1].split('&')[0];
+        }
+        // Se não conseguir extrair o vídeo ID, retorna uma string vazia
+        return videoId ? videoId : '';
     }
 
     public fetchUserData(username: string) {
@@ -298,13 +312,17 @@ export default class Usuario extends Vue {
 
     // Método para abrir o Google Maps
     public abrirMapaGoogleMaps(mapaUrl: string) {
-        // Verificar se o URL é válido antes de tentar abrir
-        if (mapaUrl && mapaUrl.startsWith('https://www.google.com/maps')) {
-            window.open(mapaUrl, '_blank');  // Abre o link em uma nova aba
+        // Verifica se é um URL válido do Google Maps (formato encurtado ou completo)
+        const isValidGoogleMapsUrl = mapaUrl.startsWith('https://www.google.com/maps') || mapaUrl.startsWith('https://maps.app.goo.gl');
+
+        // Se for válido, abre o mapa em uma nova aba
+        if (isValidGoogleMapsUrl) {
+            window.open(mapaUrl, '_blank');
         } else {
             console.error('URL do Google Maps inválido:', mapaUrl);
         }
     }
+
 
     public abrirLink(url: string) {
         if (url && url.startsWith('http')) {
