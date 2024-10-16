@@ -1,4 +1,3 @@
-<!-- InserirNotas.vue -->
 <template>
     <div class="animate__animated animate__zoomIn">
         <!-- Textarea para adicionar ou editar nota -->
