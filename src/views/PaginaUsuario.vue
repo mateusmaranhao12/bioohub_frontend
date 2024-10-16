@@ -95,23 +95,7 @@
                             @removerImagem="removerImagem" />
 
                         <!--Imagem footer selecionada-->
-                        <div v-for="imagem in imagensFooter" :key="imagem.id"
-                            class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative"
-                            style="overflow: hidden; height: 100%;">
-
-                            <div class="card-body" style="position: relative; padding: 0; height: 100%;">
-
-                                <!-- Imagem exibida -->
-                                <img :src="imagem.imagem" alt="Imagem escolhida" class="img-fluid"
-                                    style="object-fit: cover; width: 100%; height: 100%;" />
-
-                                <!-- Botão de Remover Imagem -->
-                                <div class="plus-icon position-absolute" @click="removerImagemFooter(imagem.id)"
-                                    style="cursor: pointer;">
-                                    <i class="fa-solid fa-trash"></i>
-                                </div>
-                            </div>
-                        </div>
+                        <ImagemFooter :imagensFooter="imagensFooter" @remover-imagem="removerImagemFooter" />
 
                         <!--Inserir redes sociais-->
                         <div class="animate__animated animate__zoomIn card link-card card-redes-sociais 
@@ -176,46 +160,11 @@
                         </div>
 
                         <!--Inserir vídeos-->
-                        <div
-                            class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center position-relative">
-
-                            <!-- Ícone de adicionar vídeo (fa-plus) -->
-                            <div class="plus-icon position-absolute" v-if="!mostrar_input_video">
-                                <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputVideo"></i>
-                            </div>
-
-                            <!-- Ícone de remover vídeo -->
-                            <div class="plus-icon position-absolute" v-if="videoUrlIframe && mostrar_video_youtube">
-                                <i class="fa-solid fa-trash" @click="() => removerVideo(videoId)"></i>
-                            </div>
-
-                            <i v-if="!mostrar_input_video && !mostrar_video_youtube"
-                                class="fa-solid fa-video fa-2x"></i>
-                            <p v-if="!mostrar_input_video && !mostrar_video_youtube" class="mt-2">Adicionar vídeo</p>
-
-                            <!-- Botão de desfazer (Ctrl + Z) -->
-                            <div v-if="mostrar_input_video && !videoUrlIframe" @click="desfazerAlteracaoVideo"
-                                class="plus-icon position-absolute" style="top: 10px; left: 10px;">
-                                <i class="fa-solid fa-arrow-left"></i>
-                            </div>
-
-                            <!-- Input para o link do YouTube e botão para confirmar -->
-                            <div v-if="mostrar_input_video && !mostrar_video_youtube" class="mt-3">
-                                <input v-model="videoUrlInput" class="form-control" type="text"
-                                    placeholder="Insira o link do vídeo do YouTube" />
-
-                                <!-- Botão success com ícone fa-check -->
-                                <button class="btn btn-success mt-3" @click="mostrarVideo">
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                            </div>
-
-                            <!-- Iframe para exibir o vídeo, será exibido abaixo do card -->
-                            <div v-if="videoUrlIframe && mostrar_video_youtube">
-                                <iframe :src="videoUrlIframe" width="300px" height="360px" frameborder="0"
-                                    allowfullscreen></iframe>
-                            </div>
-                        </div>
+                        <InserirVideoYoutube :videoUrlIframe="videoUrlIframe"
+                            :mostrar_video_youtube="mostrar_video_youtube" :mostrar_input_video="mostrar_input_video"
+                            :videoUrlInput="videoUrlInput" @mostrarInputVideo="mostrarInputVideo"
+                            @mostrarVideo="mostrarVideo" @removerVideo="removerVideo"
+                            @desfazerAlteracaoVideo="desfazerAlteracaoVideo" @update:videoUrlInput="videoUrlInput = $event" />
 
                         <!--Inserir localização-->
                         <div
@@ -263,7 +212,6 @@
                                 </button>
                             </div>
                         </div>
-
 
                         <!-- Lista de mapas footer -->
                         <div v-for="(mapa, index) in mapasFooter" :key="index"
@@ -455,6 +403,8 @@ import LinksFooter from '@/components/LinksFooter.vue'
 import QRCodeVue from 'qrcode.vue';
 import InserirNotas from '@/components/InserirNotas.vue'
 import InserirImagens from '@/components/InserirImagens.vue'
+import ImagemFooter from '@/components/ImagemFooter.vue'
+import InserirVideoYoutube from '@/components/InserirVideoYoutube.vue'
 
 @Options({
     components: {
@@ -472,7 +422,9 @@ import InserirImagens from '@/components/InserirImagens.vue'
         LinksFooter,
         QRCodeVue,
         InserirNotas,
-        InserirImagens
+        InserirImagens,
+        ImagemFooter,
+        InserirVideoYoutube
     },
 
     methods: {
@@ -2123,7 +2075,6 @@ export default class PaginaUsuario extends Vue {
             this.mostrarMensagemAlerta('fa-solid fa-xmark', 'Erro ao conectar ao servidor', 'alert-error');
         }
     }
-
 
     // Validação da URL do Google Maps (para links de desktop e celular)
     private validarLocalizacao(localizacao: string): boolean {
