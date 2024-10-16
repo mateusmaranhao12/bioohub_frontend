@@ -164,54 +164,18 @@
                             :mostrar_video_youtube="mostrar_video_youtube" :mostrar_input_video="mostrar_input_video"
                             :videoUrlInput="videoUrlInput" @mostrarInputVideo="mostrarInputVideo"
                             @mostrarVideo="mostrarVideo" @removerVideo="removerVideo"
-                            @desfazerAlteracaoVideo="desfazerAlteracaoVideo" @update:videoUrlInput="videoUrlInput = $event" />
+                            @desfazerAlteracaoVideo="desfazerAlteracaoVideo"
+                            @update:videoUrlInput="videoUrlInput = $event" />
 
                         <!--Inserir localização-->
-                        <div
-                            class="animate__animated animate__zoomIn card link-card card-maps d-flex flex-column align-items-center justify-content-center position-relative">
-
-                            <!-- Ícone de adicionar localização (fa-plus) -->
-                            <div class="plus-icon position-absolute" v-if="!mostrar_input_maps">
-                                <i class="fa-solid fa-plus" style="color: black;" @click="mostrarInputMaps"></i>
-                            </div>
-
-                            <!-- Ícone de remover localização -->
-                            <div class="plus-icon position-absolute" v-if="mostrar_maps">
-                                <i class="fa-solid fa-trash" @click="removerMaps"></i>
-                            </div>
-
-                            <i v-if="!mostrar_input_maps && !mostrar_maps"
-                                class="fa-solid fa-map-location-dot fa-2x"></i>
-                            <p v-if="!mostrar_input_maps && !mostrar_maps" class="mt-2">Adicionar localização</p>
-
-                            <!-- Botão de desfazer (Ctrl + Z) -->
-                            <div v-if="mostrar_input_maps && !mostrar_maps" @click="desfazerAlteracaoMaps"
-                                class="plus-icon position-absolute" style="top: 10px; left: 10px;">
-                                <button class="btn btn-danger btn-sm">
-                                    <i class="fa-solid fa-arrow-left"></i>
-                                </button>
-                            </div>
-
-
-                            <!-- Input para o link do Google Maps e botão para confirmar -->
-                            <div v-if="mostrar_input_maps && !mostrar_maps" class="mt-3">
-                                <input v-model="textoLocalizacaoInput" class="form-control mb-2" type="text"
-                                    placeholder="Nome da localização do Google Maps" />
-                                <input v-model="localizacaoInput" class="form-control" type="text"
-                                    placeholder="Insira a URL de localização do Google Maps" />
-                                <button class="btn btn-success mt-3" @click="salvarMapaGoogleMaps">
-                                    <i class="fa-solid fa-check"></i> Salvar Localização
-                                </button>
-                            </div>
-
-                            <!-- Botão para abrir o link do Google Maps -->
-                            <div v-if="mostrar_maps" class="mt-3">
-                                <h6>{{ googleMapsNome }}</h6>
-                                <button class="btn btn-map" @click="abrirMapaGoogleMaps">
-                                    <i class="fa-solid fa-location-dot"></i> Ver localização
-                                </button>
-                            </div>
-                        </div>
+                        <InserirMapa :mostrar_maps="mostrar_maps" :mostrar_input_maps="mostrar_input_maps"
+                            :textoLocalizacaoInput="textoLocalizacaoInput" :localizacaoInput="localizacaoInput"
+                            :googleMapsUrl="googleMapsUrl" :googleMapsNome="googleMapsNome"
+                            @mostrarInputMaps="mostrarInputMaps" @removerMaps="removerMaps"
+                            @desfazerAlteracaoMaps="desfazerAlteracaoMaps" @salvarMapaGoogleMaps="salvarMapaGoogleMaps"
+                            @abrirMapaGoogleMaps="abrirMapaGoogleMaps"
+                            @update:textoLocalizacaoInput="textoLocalizacaoInput = $event"
+                            @update:localizacaoInput="localizacaoInput = $event" />
 
                         <!-- Lista de mapas footer -->
                         <div v-for="(mapa, index) in mapasFooter" :key="index"
@@ -405,6 +369,7 @@ import InserirNotas from '@/components/InserirNotas.vue'
 import InserirImagens from '@/components/InserirImagens.vue'
 import ImagemFooter from '@/components/ImagemFooter.vue'
 import InserirVideoYoutube from '@/components/InserirVideoYoutube.vue'
+import InserirMapa from '@/components/InserirMapa.vue'
 
 @Options({
     components: {
@@ -424,7 +389,8 @@ import InserirVideoYoutube from '@/components/InserirVideoYoutube.vue'
         InserirNotas,
         InserirImagens,
         ImagemFooter,
-        InserirVideoYoutube
+        InserirVideoYoutube,
+        InserirMapa
     },
 
     methods: {
