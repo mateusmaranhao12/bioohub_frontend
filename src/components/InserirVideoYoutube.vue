@@ -37,23 +37,25 @@
 </template>
 
 <script lang="ts">
-export default {
+import { defineComponent, PropType } from 'vue';
+
+export default defineComponent({
     name: 'InserirVideoYoutube',
     props: {
         videoUrlIframe: {
-            type: String,
+            type: String as PropType<string>,
             default: ''
         },
         mostrar_video_youtube: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             default: false
         },
         mostrar_input_video: {
-            type: Boolean,
+            type: Boolean as PropType<boolean>,
             default: false
         },
         videoUrlInput: {
-            type: String,
+            type: String as PropType<string>,
             default: ''
         }
     },
@@ -113,5 +115,5 @@ export default {
             return videoId || null;
         }
     }
-}
+});
 </script>
