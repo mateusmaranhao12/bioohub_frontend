@@ -1,5 +1,5 @@
 <template>
-    <div v-for="imagem in imagensFooter" :key="imagem.id"
+    <div v-for="(imagem, index) in imagensFooter" :key="index"
         class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative"
         style="overflow: hidden; height: 100%;">
 
@@ -10,8 +10,7 @@
                 style="object-fit: cover; width: 100%; height: 100%;" />
 
             <!-- Botão de Remover Imagem -->
-            <div class="plus-icon position-absolute" @click="$emit('remover-imagem', imagem.id)"
-                style="cursor: pointer;">
+            <div class="plus-icon position-absolute" @click="$emit('remover-imagem', index)" style="cursor: pointer;">
                 <i class="fa-solid fa-trash"></i>
             </div>
         </div>
