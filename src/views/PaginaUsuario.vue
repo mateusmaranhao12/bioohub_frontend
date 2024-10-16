@@ -1321,7 +1321,7 @@ export default class PaginaUsuario extends Vue {
             return; // Sai da função se não houver link
         }
 
-        const videoId = this.getYouTubeVideoId(this.videoUrlInput); // Usa a função simplificada
+        const videoId = this.getYouTubeVideoId(this.videoUrlInput); // Usa a função robusta de validação de URL
 
         const userId = sessionStorage.getItem('user_id');
 
@@ -1388,18 +1388,28 @@ export default class PaginaUsuario extends Vue {
             });
     }
 
-    // Método mais simples para obter o ID do vídeo do YouTube
+    // Método mais robusto para obter o ID do vídeo do YouTube, considerando URLs curtas, mobile e padrão
     getYouTubeVideoId(url: string): string | null {
         if (!url) {
-            // Se a URL for undefined ou vazia, retorna null ou algum valor default
-            return null;
+            return null; // Retorna null se a URL for inválida ou vazia
         }
 
-        const videoId = url.split('v=')[1]?.split('&')[0]; // Assume que o parâmetro "v=" está na URL
+        let videoId = null;
+
+        // Verificar se é uma URL curta (youtu.be)
+        const shortUrlMatch = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+        if (shortUrlMatch && shortUrlMatch[1]) {
+            videoId = shortUrlMatch[1];
+        }
+
+        // Verificar URLs padrão ou mobile (youtube.com)
+        const fullUrlMatch = url.match(/(youtube\.com\/(watch\?v=|embed\/|v\/|shorts\/)|m\.youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/);
+        if (fullUrlMatch && fullUrlMatch[3]) {
+            videoId = fullUrlMatch[3];
+        }
 
         return videoId || null; // Retorna o ID ou null se não encontrar
     }
-
 
     public desfazerAlteracaoVideo() {
         if (this.mostrar_input_video) {
@@ -1419,33 +1429,38 @@ export default class PaginaUsuario extends Vue {
     // Armazenar o URL do Google Maps no input
     public salvarMapaGoogleMaps() {
         if (this.localizacaoInput && this.textoLocalizacaoInput) {
-            this.googleMapsUrl = this.localizacaoInput;
-            this.googleMapsNome = this.textoLocalizacaoInput; // Nome da localização
+            // Chama a função para validar o link do Google Maps
+            if (this.validarLocalizacao(this.localizacaoInput)) {
+                this.googleMapsUrl = this.localizacaoInput;
+                this.googleMapsNome = this.textoLocalizacaoInput; // Nome da localização
 
-            this.mostrar_maps = true;
+                this.mostrar_maps = true;
 
-            const userId = sessionStorage.getItem('user_id');
-            if (userId) {
-                axios.post('https://bioohub.me/src/backend/api/maps.php', {
-                    usuario_id: userId,
-                    mapa_url: this.googleMapsUrl,
-                    nome: this.googleMapsNome // Envia o nome da localização também
-                })
-                    .then(response => {
-                        if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
-                            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
-                        } else {
-                            this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
-
-                            // Atualiza o Vuex com o nome e URL do mapa
-                            this.$store.commit('SET_MAPA_NOME', this.googleMapsNome);
-                            this.$store.commit('SET_MAPA_URL', this.googleMapsUrl);
-                        }
+                const userId = sessionStorage.getItem('user_id');
+                if (userId) {
+                    axios.post('https://bioohub.me/src/backend/api/maps.php', {
+                        usuario_id: userId,
+                        mapa_url: this.googleMapsUrl,
+                        nome: this.googleMapsNome // Envia o nome da localização também
                     })
-                    .catch(error => {
-                        console.error("Erro ao salvar o mapa:", error);
-                        this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar o mapa. Tente novamente mais tarde.', 'alert-error');
-                    });
+                        .then(response => {
+                            if (response.data.mensagem === "Dados inválidos" || response.data.mensagem === "ID do usuário não fornecido") {
+                                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', response.data.mensagem, 'alert-error');
+                            } else {
+                                this.mostrarMensagemAlerta('fa-solid fa-check', response.data.mensagem, 'alert-sucesso');
+
+                                // Atualiza o Vuex com o nome e URL do mapa
+                                this.$store.commit('SET_MAPA_NOME', this.googleMapsNome);
+                                this.$store.commit('SET_MAPA_URL', this.googleMapsUrl);
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Erro ao salvar o mapa:", error);
+                            this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Erro ao salvar o mapa. Tente novamente mais tarde.', 'alert-error');
+                        });
+                }
+            } else {
+                this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, insira uma URL válida do Google Maps.', 'alert-error');
             }
         } else {
             this.mostrarMensagemAlerta('fa-solid fa-exclamation-circle', 'Por favor, insira o nome e a URL da localização.', 'alert-error');
@@ -2161,11 +2176,12 @@ export default class PaginaUsuario extends Vue {
     }
 
 
-    // Validação da URL do Google Maps (regex simples para verificar se é um link válido)
+    // Validação da URL do Google Maps (para links de desktop e celular)
     private validarLocalizacao(localizacao: string): boolean {
-        const regex = /^(https?:\/\/)?(www\.)?(google\.com\/maps|maps\.google\.com).+/i;
+        const regex = /^(https?:\/\/)?(www\.)?(google\.com\/maps|maps\.google\.com|maps\.app\.goo\.gl).+/i;
         return regex.test(localizacao);
     }
+
 
     // Função para adicionar um novo mapa
     public adicionarMapaFooter() {
