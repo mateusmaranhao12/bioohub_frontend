@@ -1,5 +1,7 @@
 <template>
-    <nav class="navbar navbar-expand-lg navbar-light d-md-none mt-3">
+    <!-- Navbar para o modo celular ou para quando a tela for menor em computadores -->
+    <nav
+    :class="{'d-md-none': modoTela === 'computador'}" class="navbar navbar-expand-lg navbar-light mt-3">
         <div class="container-fluid">
             <button class="animate__animated animate__zoomIn navbar-toggler mb-3" type="button"
                 data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
@@ -67,12 +69,18 @@ export default defineComponent({
             type: String,
             required: true,
         },
+
         usuario: {
+            type: String,
+            required: true,
+        },
+
+        modoTela: {
             type: String,
             required: true,
         }
     },
-    
+
     methods: {
         fazerLogout() {
             this.$emit('fazer-logout')

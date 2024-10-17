@@ -234,6 +234,7 @@
             padding: 20px;
 
             i {
+
                 .fa-save,
                 .fa-pencil-alt,
                 .fa-check,
@@ -279,8 +280,6 @@
             }
 
             iframe {
-                width: 300px;
-                height: 360px;
                 border-radius: 18px;
             }
 
@@ -314,13 +313,17 @@
 
     }
 
-    .icon-editar-nota, .icon-editar-titulo, .icon-editar-mapa {
+    .icon-editar-nota,
+    .icon-editar-titulo,
+    .icon-editar-mapa {
         background: none;
         color: blue;
         padding: 10px;
     }
 
-    .icon-remover-nota, .icon-remover-titulo, .icon-remover-mapa {
+    .icon-remover-nota,
+    .icon-remover-titulo,
+    .icon-remover-mapa {
         background: none;
         color: rgb(175, 0, 0);
         padding: 10px;
@@ -366,3 +369,17 @@
     letter-spacing: 0.1rem;
     font-weight: 700;
 }
+
+.container-celular {
+    width: 100%;
+    max-width: 380px;
+    margin: 0 auto;
+    padding: 0 15px;
+    display: $flex;
+    flex-direction: column;
+    justify-content: $center;
+    align-items: $center;
+    border: 2px dotted $black;
+    border-radius: 20px;
+}
+

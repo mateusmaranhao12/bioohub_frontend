@@ -31,7 +31,8 @@
 
         <!-- Iframe para exibir o vídeo -->
         <div v-if="videoUrlIframe && mostrar_video_youtube">
-            <iframe :src="videoUrlIframe" width="300px" height="360px" frameborder="0" allowfullscreen></iframe>
+            <iframe :src="videoUrlIframe" :width="iframeWidth" :height="iframeHeight" frameborder="0"
+                allowfullscreen></iframe>
         </div>
     </div>
 </template>
@@ -57,6 +58,18 @@ export default defineComponent({
         videoUrlInput: {
             type: String as PropType<string>,
             default: ''
+        },
+        modoTela: {
+            type: String as PropType<string>, // Define a prop para o modo de tela (celular/computador)
+            default: 'computador' // Define o valor padrão como 'computador'
+        }
+    },
+    computed: {
+        iframeWidth(): string {
+            return this.modoTela === 'celular' ? '100%' : '300px';
+        },
+        iframeHeight(): string {
+            return this.modoTela === 'celular' ? '200px' : '360px';
         }
     },
     methods: {
