@@ -96,7 +96,8 @@
                         class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center">
                         <div v-for="(video, index) in videos" :key="index" class="video-container">
                             <!-- Criando o iframe com o link do YouTube -->
-                            <iframe v-bind:src="'https://www.youtube.com/embed/' + getYouTubeVideoId(video.video_url)"
+                            <iframe style="height: 360px; width: 300px;"
+                                v-bind:src="'https://www.youtube.com/embed/' + getYouTubeVideoId(video.video_url)"
                                 frameborder="0"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowfullscreen class="youtube-iframe"></iframe>
@@ -202,10 +203,8 @@ export default class Usuario extends Vue {
         const username = this.$route.params.username;
 
         if (typeof username === 'string') {
-            console.log('Nome de usuário:', username);
             this.fetchUserData(username); // Chama a função com uma string válida
         } else {
-            console.log('Nome de usuário não encontrado ou é inválido.');
             this.usuarioEncontrado = false;
         }
 
@@ -239,7 +238,7 @@ export default class Usuario extends Vue {
     public fetchUserData(username: string) {
         // Verifica no backend se o usuário existe
         axios
-            .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${username}`)
+            .get(`https://bioohub.me/src/backend/api/usuario.php?username=${username}`)
             .then((response) => {
                 this.carregando = false; // Desabilita o carregamento após a resposta
                 if (response.data && response.data.usuario) {
