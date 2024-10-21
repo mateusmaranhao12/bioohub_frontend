@@ -63,19 +63,19 @@
 
                     <!-- Imagens -->
                     <div v-for="(imagem, index) in imagens" :key="index"
-                        class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative">
+                        class="col-md-12 animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative">
                         <img style="border-radius: 18px;" :src="imagem.imagem" class="img-fluid w-100 h-100" />
                     </div>
 
                     <!-- Imagens Footer -->
                     <div v-for="(imagem_footer, index) in imagens_footer" :key="index"
-                        class="animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative">
+                        class="col-md-12 animate__animated animate__zoomIn card link-card card-imagem d-flex flex-column align-items-center justify-content-center position-relative">
                         <img style="border-radius: 18px;" :src="imagem_footer.imagem" class="img-fluid w-100 h-100" />
                     </div>
 
                     <!-- Mapa -->
                     <div v-for="(mapa, index) in mapas" :key="index"
-                        class="animate__animated animate__zoomIn card link-card card-redes-sociais d-flex flex-column align-items-center justify-content-center">
+                        class="col-md-12 animate__animated animate__zoomIn card link-card card-redes-sociais d-flex flex-column align-items-center justify-content-center">
                         <h6>{{ mapa.nome }}</h6>
                         <button class="btn btn-danger" @click="abrirMapaGoogleMaps(mapa.mapa_url)">
                             <i class="fa-solid fa-location-dot" style="color: white;"></i> Ver localização
@@ -84,7 +84,7 @@
 
                     <!--Mapa Footer-->
                     <div v-for="(mapa_footer, index) in mapas_footer" :key="index"
-                        class="animate__animated animate__zoomIn card link-card card-redes-sociais d-flex flex-column align-items-center justify-content-center">
+                        class="col-md-12 animate__animated animate__zoomIn card link-card card-redes-sociais d-flex flex-column align-items-center justify-content-center">
                         <h6>{{ mapa_footer.titulo }}</h6>
                         <button class="btn btn-danger" @click="abrirMapaGoogleMaps(mapa_footer.url)">
                             <i class="fa-solid fa-location-dot" style="color: white;"></i> Ver localização
@@ -93,7 +93,7 @@
 
                     <!-- Video -->
                     <div v-if="usuarioEncontrado && videos.length"
-                        class="animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center">
+                        class="col-md-12 animate__animated animate__zoomIn card link-card card-video d-flex flex-column align-items-center justify-content-center">
                         <div v-for="(video, index) in videos" :key="index" class="video-container">
                             <!-- Criando o iframe com o link do YouTube -->
                             <iframe style="height: 360px; width: 300px;"
@@ -105,7 +105,7 @@
                     </div>
 
                     <!--Redes Sociais-->
-                    <div v-for="(rede_social, index) in redes_sociais" :key="index" class="animate__animated animate__zoomIn card link-card card-redes-sociais 
+                    <div v-for="(rede_social, index) in redes_sociais" :key="index" class="col-md-12 animate__animated animate__zoomIn card link-card card-redes-sociais 
                         d-flex flex-column align-items-center justify-content-center">
 
                         <!-- Exibe o nome da rede social -->
@@ -124,7 +124,7 @@
                     </div>
 
                     <!--Links aleatorios-->
-                    <div v-for="(link, index) in links_aleatorios" :key="index" class="animate__animated animate__zoomIn card link-card card-links-livres 
+                    <div v-for="(link, index) in links_aleatorios" :key="index" class="col-md-12 animate__animated animate__zoomIn card link-card card-links-livres 
                         d-flex flex-column align-items-center justify-content-center">
 
                         <!-- Exibe o nome da rede social -->
@@ -142,7 +142,7 @@
                     </div>
 
                     <!--Links Footer-->
-                    <div v-for="(link, index) in links_footer" :key="index" class="animate__animated animate__zoomIn card link-card card-links-livres 
+                    <div v-for="(link, index) in links_footer" :key="index" class="col-md-12 animate__animated animate__zoomIn card link-card card-links-livres 
                         d-flex flex-column align-items-center justify-content-center">
 
                         <!-- Exibe o nome da rede social -->
@@ -238,7 +238,7 @@ export default class Usuario extends Vue {
     public fetchUserData(username: string) {
         // Verifica no backend se o usuário existe
         axios
-            .get(`https://bioohub.me/src/backend/api/usuario.php?username=${username}`)
+            .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${username}`)
             .then((response) => {
                 this.carregando = false; // Desabilita o carregamento após a resposta
                 if (response.data && response.data.usuario) {
