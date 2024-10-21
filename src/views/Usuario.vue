@@ -238,7 +238,7 @@ export default class Usuario extends Vue {
     public fetchUserData(username: string) {
         // Verifica no backend se o usuário existe
         axios
-            .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${username}`)
+            .get(`https://bioohub.me/src/backend/api/usuario.php?username=${username}`)
             .then((response) => {
                 this.carregando = false; // Desabilita o carregamento após a resposta
                 if (response.data && response.data.usuario) {
