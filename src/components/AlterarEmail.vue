@@ -85,7 +85,7 @@ export default class AlterarEmail extends Vue {
                 novoEmail: this.novoEmail,
             }
 
-            const response = await axios.post('https://bioohub.me/src/backend/api/alterar_dados.php', data, {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/alterar_dados.php', data, {
                 headers: {
                     'Content-Type': 'application/json',
                 },

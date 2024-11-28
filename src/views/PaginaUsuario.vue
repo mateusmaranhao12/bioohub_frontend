@@ -526,7 +526,7 @@ export default class PaginaUsuario extends Vue {
     // Carregar dados diretamente do backend
     public carregarDadosBackend(username: string) {
         axios
-            .get(`https://bioohub.me/src/backend/api/usuario.php?username=${username}`)
+            .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${username}`)
             .then((response) => {
                 this.carregando = false
                 const dados = response.data;
@@ -754,7 +754,7 @@ export default class PaginaUsuario extends Vue {
             }
 
             try {
-                const response = await axios.post('https://bioohub.me/src/backend/api/adicionar_links.php', dados)
+                const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', dados)
                 if (response.data.success) {
                     const novoLinkComId = {
                         url: this.novoLink,
@@ -810,7 +810,7 @@ export default class PaginaUsuario extends Vue {
         }
 
         try {
-            const response = await axios.put('https://bioohub.me/src/backend/api/editar_links.php', dados)
+            const response = await axios.put('http://localhost/Projetos/bioohub/backend/api/editar_links.php', dados)
             if (response.data.success) {
                 this.mostrarMensagemAlerta('fa-solid fa-check-circle', response.data.message, 'alert-sucesso')
 
@@ -849,7 +849,7 @@ export default class PaginaUsuario extends Vue {
         }
 
         try {
-            const response = await axios.delete('https://bioohub.me/src/backend/api/deletar_links.php', { data: dados })
+            const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/deletar_links.php', { data: dados })
 
             if (response.data.success) {
                 this.$store.commit('DELETE_LINK_BY_ID', id)
@@ -1030,7 +1030,7 @@ export default class PaginaUsuario extends Vue {
         }
 
         // Faz a requisição para salvar o perfil no backend
-        axios.post('https://bioohub.me/src/backend/api/perfil.php', perfil)
+        axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', perfil)
             .then(response => {
                 this.editandoNome = false;
                 this.editandoBio = false;
@@ -1056,7 +1056,7 @@ export default class PaginaUsuario extends Vue {
             return;
         }
 
-        axios.post('https://bioohub.me/src/backend/api/perfil.php', {
+        axios.post('http://localhost/Projetos/bioohub/backend/api/perfil.php', {
             usuario_id: userId,
             acao: 'removerImagemPerfil',
         })
@@ -1137,7 +1137,7 @@ export default class PaginaUsuario extends Vue {
                 this.loading = true;
 
                 // Upload para o backend com JSON
-                axios.post('https://bioohub.me/src/backend/api/imagens.php', dados, {
+                axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', dados, {
                     headers: {
                         'Content-Type': 'application/json', // Alterado para JSON
                     },
@@ -1163,7 +1163,7 @@ export default class PaginaUsuario extends Vue {
         const userId = sessionStorage.getItem('user_id');
 
         if (userId) {
-            axios.delete('https://bioohub.me/src/backend/api/imagens.php', {
+            axios.delete('http://localhost/Projetos/bioohub/backend/api/imagens.php', {
                 data: { usuario_id: userId }
             })
                 .then(response => {
@@ -1195,7 +1195,7 @@ export default class PaginaUsuario extends Vue {
             this.mostrar_video_youtube = true;
 
             // Envia a URL do vídeo para o backend
-            axios.post('https://bioohub.me/src/backend/api/videos.php', {
+            axios.post('http://localhost/Projetos/bioohub/backend/api/videos.php', {
                 usuario_id: userId,
                 video_url: this.videoUrlInput
             })
@@ -1225,7 +1225,7 @@ export default class PaginaUsuario extends Vue {
         const userId = sessionStorage.getItem('user_id') || this.$store.state.usuario?.id;
 
         // Requisição para remover o vídeo do banco de dados
-        axios.delete('https://bioohub.me/src/backend/api/videos.php', {
+        axios.delete('http://localhost/Projetos/bioohub/backend/api/videos.php', {
             data: {
                 usuario_id: userId,
                 video_id: videoId // Enviando o ID do vídeo a ser removido
@@ -1303,7 +1303,7 @@ export default class PaginaUsuario extends Vue {
 
                 const userId = sessionStorage.getItem('user_id');
                 if (userId) {
-                    axios.post('https://bioohub.me/src/backend/api/maps.php', {
+                    axios.post('http://localhost/Projetos/bioohub/backend/api/maps.php', {
                         usuario_id: userId,
                         mapa_url: this.googleMapsUrl,
                         nome: this.googleMapsNome // Envia o nome da localização também
@@ -1341,7 +1341,7 @@ export default class PaginaUsuario extends Vue {
 
         const userId = sessionStorage.getItem('user_id');
         if (userId) {
-            axios.delete('https://bioohub.me/src/backend/api/maps.php', {
+            axios.delete('http://localhost/Projetos/bioohub/backend/api/maps.php', {
                 data: {
                     usuario_id: userId
                 }
@@ -1417,7 +1417,7 @@ export default class PaginaUsuario extends Vue {
         }
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/adicionar_links_aleatorios.php', dados)
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links_aleatorios.php', dados)
             if (response.data.success) {
                 const novoLinkComId = {
                     url: this.novoLinkAleatorio,
@@ -1447,7 +1447,7 @@ export default class PaginaUsuario extends Vue {
         }
 
         try {
-            const response = await axios.put('https://bioohub.me/src/backend/api/editar_links_aleatorios.php', dados)
+            const response = await axios.put('http://localhost/Projetos/bioohub/backend/api/editar_links_aleatorios.php', dados)
             if (response.data.success) {
                 const linkEditado = {
                     url: this.novoLinkAleatorio,
@@ -1475,7 +1475,7 @@ export default class PaginaUsuario extends Vue {
         }
 
         try {
-            const response = await axios.delete('https://bioohub.me/src/backend/api/deletar_links_aleatorios.php', { data: dados })
+            const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/deletar_links_aleatorios.php', { data: dados })
             if (response.data.success) {
                 this.$store.commit('DELETE_LINK_ALEATORIO', id)
                 this.mostrarMensagemAlerta('fa-solid fa-check-circle', 'Link removido com sucesso!', 'alert-sucesso') // Alerta de sucesso
@@ -1524,7 +1524,7 @@ export default class PaginaUsuario extends Vue {
         };
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/adicionar_nota.php', notaObj);
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_nota.php', notaObj);
 
             if (response.data.success) {
                 const novaNota: Nota = {
@@ -1571,7 +1571,7 @@ export default class PaginaUsuario extends Vue {
         const usuarioId = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/remover_nota.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/remover_nota.php', {
                 id: id,
                 usuario_id: usuarioId
             });
@@ -1614,7 +1614,7 @@ export default class PaginaUsuario extends Vue {
         };
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/editar_nota.php', notaEditada);
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_nota.php', notaEditada);
             if (response.data.success) {
                 this.$store.commit('UPDATE_NOTA', notaEditada);
                 this.notaSalva = notaEditada;
@@ -1654,7 +1654,7 @@ export default class PaginaUsuario extends Vue {
         link.redeSocial = this.detectarRedeSocial(link.url) ?? ''; // Usando coalescência nula
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/adicionar_links_footer.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links_footer.php', {
                 usuario_id: usuario_id,
                 url: link.url,
             });
@@ -1693,7 +1693,7 @@ export default class PaginaUsuario extends Vue {
         link.redeSocial = this.detectarRedeSocial(link.url) ?? '';  // Usando coalescência nula
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/editar_links_footer.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_links_footer.php', {
                 usuario_id: usuario_id,
                 id: link.id,
                 url: link.url,
@@ -1718,7 +1718,7 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/deletar_links_footer.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/deletar_links_footer.php', {
                 usuario_id: usuario_id,
                 id: link.id,
             });
@@ -1759,7 +1759,7 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/adicionar_nota_footer.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_nota_footer.php', {
                 usuario_id: usuario_id,
                 nota: nota.texto,
             });
@@ -1793,7 +1793,7 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/editar_nota_footer.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_nota_footer.php', {
                 usuario_id: usuario_id,
                 id: nota.id,  // Agora usa o id da nota
                 nota: nota.texto,
@@ -1817,7 +1817,7 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/remover_nota_footer.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/remover_nota_footer.php', {
                 usuario_id: usuario_id,
                 id: nota.id,  // Usa o id da nota para remover
             });
@@ -1863,7 +1863,7 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/adicionar_titulo.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_titulo.php', {
                 usuario_id: usuario_id,
                 titulo: titulo.titulo,
             });
@@ -1898,7 +1898,7 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/editar_titulo.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/editar_titulo.php', {
                 usuario_id: usuario_id,
                 id: titulo.id,  // Usa o id do título para editar
                 titulo: titulo.titulo,
@@ -1921,7 +1921,7 @@ export default class PaginaUsuario extends Vue {
         const usuario_id = sessionStorage.getItem('user_id');
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/remover_titulo.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/remover_titulo.php', {
                 usuario_id: usuario_id,
                 id: titulo.id,  // Usa o id do título para remover
             });
@@ -1967,7 +1967,7 @@ export default class PaginaUsuario extends Vue {
         }
 
         try {
-            const response = await axios.post('https://bioohub.me/src/backend/api/imagens_footer.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/imagens_footer.php', {
                 usuario_id: usuario_id,
                 imagem: imagemBase64  // Envia a imagem em base64
             });
@@ -2032,7 +2032,7 @@ export default class PaginaUsuario extends Vue {
                 return;
             }
 
-            const response = await axios.delete('https://bioohub.me/src/backend/api/imagens_footer.php', {
+            const response = await axios.delete('http://localhost/Projetos/bioohub/backend/api/imagens_footer.php', {
                 data: {
                     usuario_id: usuario_id,  // Passa o ID do usuário
                     id: imagemId
@@ -2088,7 +2088,7 @@ export default class PaginaUsuario extends Vue {
         }
 
         if (mapa.titulo && this.validarLocalizacao(mapa.url)) {
-            axios.post('https://bioohub.me/src/backend/api/adicionar_mapa_footer.php', {
+            axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_mapa_footer.php', {
                 usuario_id: usuario_id,
                 titulo: mapa.titulo,
                 url: mapa.url
@@ -2138,7 +2138,7 @@ export default class PaginaUsuario extends Vue {
         }
 
         if (mapa.titulo && this.validarLocalizacao(mapa.url)) {
-            axios.post('https://bioohub.me/src/backend/api/editar_mapa_footer.php', {
+            axios.post('http://localhost/Projetos/bioohub/backend/api/editar_mapa_footer.php', {
                 usuario_id: usuario_id,
                 id: mapa.id,  // O id agora é o real após a resposta do servidor
                 titulo: mapa.titulo,
@@ -2190,7 +2190,7 @@ export default class PaginaUsuario extends Vue {
             return;
         }
 
-        axios.post('https://bioohub.me/src/backend/api/remover_mapa_footer.php', {
+        axios.post('http://localhost/Projetos/bioohub/backend/api/remover_mapa_footer.php', {
             usuario_id: usuario_id,
             id: mapa.id  // Enviando o ID do mapa para remoção
         })

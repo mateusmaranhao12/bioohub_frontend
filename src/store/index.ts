@@ -222,7 +222,7 @@ export default createStore({
 
       if (userId) {
         // Fazendo a requisição para salvar os links no backend
-        axios.post('https://bioohub.me/src/backend/api/adicionar_links.php', {
+        axios.post('http://localhost/Projetos/bioohub/backend/api/adicionar_links.php', {
           userId: userId,
           links: state.links  // Os links estão no estado do Vuex
         })
@@ -241,7 +241,7 @@ export default createStore({
 
       if (userId) {
         // Fazendo a requisição para o backend para carregar os dados do usuário
-        axios.get(`https://bioohub.me/src/backend/api/usuario.php?username=${userId}`)
+        axios.get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${userId}`)
           .then(response => {
             // O backend retornará os dados completos, incluindo os links e outras informações do usuário
             if (response.data.usuario) {
@@ -291,7 +291,7 @@ export default createStore({
           usuario_id: userId,
         };
 
-        axios.post('https://bioohub.me/src/backend/api/imagens.php', dados, {
+        axios.post('http://localhost/Projetos/bioohub/backend/api/imagens.php', dados, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -311,7 +311,7 @@ export default createStore({
 
       if (userId) {
         // Carrega os dados do usuário do backend
-        axios.get(`https://bioohub.me/src/backend/api/usuario.php?username=${userId}`)
+        axios.get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${userId}`)
           .then(response => {
             if (response.data.perfil && response.data.perfil.foto_perfil) {
               const imagemUrl = `data:image/jpeg;base64,${response.data.perfil.foto_perfil}`;
@@ -337,7 +337,7 @@ export default createStore({
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
         axios
-          .get(`https://bioohub.me/src/backend/api/usuario.php?username=${userId}`)
+          .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${userId}`)
           .then((response) => {
             const videoUrl = response.data.video_url;
             if (videoUrl) {
@@ -363,7 +363,7 @@ export default createStore({
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
         axios
-          .get(`https://bioohub.me/src/backend/api/usuario.php?username=${userId}`)
+          .get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?username=${userId}`)
           .then((response) => {
             const mapaUrl = response.data.mapa_url;  // Obtém a URL do mapa do backend
             const mapaNome = response.data.mapa_nome; // Obtém o nome do mapa do backend
@@ -386,7 +386,7 @@ export default createStore({
     loadLinksAleatorios({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
-        axios.get(`https://bioohub.me/src/backend/api/usuario.php?usuario_id=${userId}`)
+        axios.get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?usuario_id=${userId}`)
           .then(response => {
             // Se os links forem encontrados, armazena no Vuex
             commit('SET_LINKS_ALEATORIOS', response.data.links_aleatorios);
@@ -419,7 +419,7 @@ export default createStore({
     loadNota({ commit, state }) {
       const userId = state.usuario?.id || sessionStorage.getItem('user_id');
       if (userId) {
-        axios.get(`https://bioohub.me/src/backend/api/usuario.php?usuario_id=${userId}`)
+        axios.get(`http://localhost/Projetos/bioohub/backend/api/usuario.php?usuario_id=${userId}`)
           .then(response => {
             // Se as notas forem encontradas, armazena no Vuex
             if (Array.isArray(response.data.notas)) {

@@ -199,7 +199,7 @@ export default class Cadastro extends Vue {
                 senha: this.usuarios.senha
             })
 
-            const response = await axios.post('https://bioohub.me/src/backend/api/cadastrar_usuario.php', {
+            const response = await axios.post('http://localhost/Projetos/bioohub/backend/api/cadastrar_usuario.php', {
                 usuario: this.usuarios.usuario,
                 email: this.usuarios.email,
                 senha: this.usuarios.senha
@@ -275,7 +275,7 @@ export default class Cadastro extends Vue {
                 }
 
                 // Verificação se o usuário ou e-mail já existe
-                axios.post('https://bioohub.me/src/backend/api/verificar_usuario.php', {
+                axios.post('http://localhost/Projetos/bioohub/backend/api/verificar_usuario.php', {
                     usuario: this.usuarios.usuario,
                     email: this.usuarios.email
                 })
